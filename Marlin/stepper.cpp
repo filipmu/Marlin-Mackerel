@@ -529,11 +529,15 @@ ISR(TIMER1_COMPA_vect)
 
     #ifndef ADVANCE
       if ((out_bits & (1<<E_AXIS)) != 0) {  // -direction
-        REV_E_DIR();
+        //REV_E_DIR();
+    	  WRITE(E0_DIR_PIN, !INVERT_E0_DIR);  //FMM change direction on extruder motor 1
+    	  WRITE(E1_DIR_PIN, !INVERT_E1_DIR);  //FMM change direction on extruder motor 2
         count_direction[E_AXIS]=-1;
       }
       else { // +direction
-        NORM_E_DIR();
+        //NORM_E_DIR();
+    	  WRITE(E0_DIR_PIN, INVERT_E0_DIR);  //FMM change direction on extruder motor 1
+    	  WRITE(E1_DIR_PIN, INVERT_E1_DIR);  //FMM change direction on extruder motor 2
         count_direction[E_AXIS]=1;
       }
     #endif //!ADVANCE
@@ -629,10 +633,15 @@ ISR(TIMER1_COMPA_vect)
       #ifndef ADVANCE
         counter_e += current_block->steps_e;
         if (counter_e > 0) {
-          WRITE_E_STEP(!INVERT_E_STEP_PIN);
+          //WRITE_E_STEP(!INVERT_E_STEP_PIN);
+          WRITE(E0_STEP_PIN, !INVERT_E_STEP_PIN);//FMM Write step pin for extruder motor 0
+          WRITE(E1_STEP_PIN, !INVERT_E_STEP_PIN);//FMM Write step pin for extruder motor 1
           counter_e -= current_block->step_event_count;
           count_position[E_AXIS]+=count_direction[E_AXIS];
-          WRITE_E_STEP(INVERT_E_STEP_PIN);
+          //WRITE_E_STEP(INVERT_E_STEP_PIN);
+          WRITE(E0_STEP_PIN, INVERT_E_STEP_PIN);//FMM Write step pin for extruder motor 0
+          WRITE(E1_STEP_PIN, INVERT_E_STEP_PIN);//FMM Write step pin for extruder motor 1
+          
         }
       #endif //!ADVANCE
       step_events_completed += 1;

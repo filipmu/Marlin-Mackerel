@@ -701,6 +701,17 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 //#define SERVO_ENDSTOPS {-1, -1, 0} // Servo index for X, Y, Z. Disable with -1
 //#define SERVO_ENDSTOP_ANGLES {0,0, 0,0, 70,0} // X,Y,Z Axis Extend and Retract angles
 
+/************************************************************************\
+* Support for using Marlin as a controller for Lyman Extruder
+* Settings
+*************************************************************************/
+
+#define LYMAN_EXTRUDER
+
+
+
+
+
 #include "Configuration_adv.h"
 #include "thermistortables.h"
 
