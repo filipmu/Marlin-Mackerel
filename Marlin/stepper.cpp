@@ -50,7 +50,8 @@ static unsigned char out_bits;        // The next stepping-bits to be output
 static long counter_x,       // Counter variables for the bresenham line tracer
             counter_y,
             counter_z,
-            counter_e;
+            counter_e,
+            counter_p;		//FMM added P_AXIS
 volatile static unsigned long step_events_completed; // The number of step events executed in the current block
 #ifdef ADVANCE
   static long advance_rate, advance, final_advance = 0;
@@ -85,8 +86,8 @@ static bool old_z_max_endstop=false;
 
 static bool check_endstops = true;
 
-volatile long count_position[NUM_AXIS] = { 0, 0, 0, 0};
-volatile signed char count_direction[NUM_AXIS] = { 1, 1, 1, 1};
+volatile long count_position[NUM_AXIS] = { 0, 0, 0, 0, 0};  //FMM added P_AXIS
+volatile signed char count_direction[NUM_AXIS] = { 1, 1, 1, 1, 1};  //FMM added P_AXIS
 
 //===========================================================================
 //=============================functions         ============================
@@ -325,6 +326,7 @@ ISR(TIMER1_COMPA_vect)
       counter_y = counter_x;
       counter_z = counter_x;
       counter_e = counter_x;
+      counter_p = counter_x;   //FMM added P_AXIS
       step_events_completed = 0;
 
       #ifdef Z_LATE_ENABLE
@@ -530,16 +532,31 @@ ISR(TIMER1_COMPA_vect)
     #ifndef ADVANCE
       if ((out_bits & (1<<E_AXIS)) != 0) {  // -direction
         //REV_E_DIR();
-    	  WRITE(E0_DIR_PIN, !INVERT_E0_DIR);  //FMM change direction on extruder motor 1
-    	  WRITE(E1_DIR_PIN, !INVERT_E1_DIR);  //FMM change direction on extruder motor 2
+    	  WRITE(E0_DIR_PIN, !INVERT_E0_DIR);  //FMM change direction on extruder motor 0
+    	  
         count_direction[E_AXIS]=-1;
       }
       else { // +direction
         //NORM_E_DIR();
-    	  WRITE(E0_DIR_PIN, INVERT_E0_DIR);  //FMM change direction on extruder motor 1
-    	  WRITE(E1_DIR_PIN, INVERT_E1_DIR);  //FMM change direction on extruder motor 2
+    	  WRITE(E0_DIR_PIN, INVERT_E0_DIR);  //FMM change direction on extruder motor 0
+    	  
         count_direction[E_AXIS]=1;
       }
+      
+      if ((out_bits & (1<<P_AXIS)) != 0) {  // -direction
+		  //REV_P_DIR();
+		  
+		  WRITE(P_DIR_PIN, !INVERT_P_DIR);  //FMM change direction on puller motor
+		  count_direction[P_AXIS]=-1;
+      }
+      else { // +direction
+		  //NORM_P_DIR();
+		  
+		  WRITE(P_DIR_PIN, INVERT_P_DIR);  //FMM change direction on puller motor 
+		  count_direction[P_AXIS]=1;
+      }
+      
+      
     #endif //!ADVANCE
 
 
@@ -635,14 +652,29 @@ ISR(TIMER1_COMPA_vect)
         if (counter_e > 0) {
           //WRITE_E_STEP(!INVERT_E_STEP_PIN);
           WRITE(E0_STEP_PIN, !INVERT_E_STEP_PIN);//FMM Write step pin for extruder motor 0
-          WRITE(E1_STEP_PIN, !INVERT_E_STEP_PIN);//FMM Write step pin for extruder motor 1
+          
           counter_e -= current_block->step_event_count;
           count_position[E_AXIS]+=count_direction[E_AXIS];
           //WRITE_E_STEP(INVERT_E_STEP_PIN);
           WRITE(E0_STEP_PIN, INVERT_E_STEP_PIN);//FMM Write step pin for extruder motor 0
-          WRITE(E1_STEP_PIN, INVERT_E_STEP_PIN);//FMM Write step pin for extruder motor 1
+          
           
         }
+        
+        counter_p += current_block->steps_p;
+		if (counter_p > 0) {
+		  //WRITE_E_STEP(!INVERT_E_STEP_PIN);
+		  
+		  WRITE(P_STEP_PIN, !INVERT_P_STEP_PIN);//FMM Write step pin for puller motor
+		  counter_p -= current_block->step_event_count;
+		  count_position[P_AXIS]+=count_direction[P_AXIS];
+		  //WRITE_E_STEP(INVERT_E_STEP_PIN);
+		  
+		  WRITE(P_STEP_PIN, INVERT_P_STEP_PIN);//FMM Write step pin for extruder motor 1
+		  
+		}
+        
+        
       #endif //!ADVANCE
       step_events_completed += 1;
       if(step_events_completed >= current_block->step_event_count) break;
@@ -743,12 +775,12 @@ ISR(TIMER1_COMPA_vect)
       if (e_steps[1] != 0) {
         WRITE(E1_STEP_PIN, INVERT_E_STEP_PIN);
         if (e_steps[1] < 0) {
-          WRITE(E1_DIR_PIN, INVERT_E1_DIR);
+          WRITE(E1_DIR_PIN, INVERT_P_DIR);
           e_steps[1]++;
           WRITE(E1_STEP_PIN, !INVERT_E_STEP_PIN);
         }
         else if (e_steps[1] > 0) {
-          WRITE(E1_DIR_PIN, !INVERT_E1_DIR);
+          WRITE(E1_DIR_PIN, !INVERT_P_DIR);
           e_steps[1]--;
           WRITE(E1_STEP_PIN, !INVERT_E_STEP_PIN);
         }
@@ -809,6 +841,11 @@ void st_init()
     SET_OUTPUT(E2_DIR_PIN);
   #endif
 
+#if defined(P_DIR_PIN) && P_DIR_PIN > -1   //FMM set output fot P_AXIS direction pin
+    SET_OUTPUT(P_DIR_PIN);
+  #endif    
+    
+    
   //Initialize Enable Pins - steppers default to disabled.
 
   #if defined(X_ENABLE_PIN) && X_ENABLE_PIN > -1
@@ -850,6 +887,11 @@ void st_init()
     if(!E_ENABLE_ON) WRITE(E2_ENABLE_PIN,HIGH);
   #endif
 
+#if defined(P_ENABLE_PIN) && (P_ENABLE_PIN > -1)
+   SET_OUTPUT(P_ENABLE_PIN);
+   if(!P_ENABLE_ON) WRITE(P_ENABLE_PIN,HIGH);
+ #endif    
+    
   //endstops and pullups
 
   #if defined(X_MIN_PIN) && X_MIN_PIN > -1
@@ -940,6 +982,12 @@ void st_init()
     disable_e2();
   #endif
 
+  #if defined(P_STEP_PIN) && (P_STEP_PIN > -1)  //FMM P_AXIS
+    SET_OUTPUT(P_STEP_PIN);
+    WRITE(P_STEP_PIN,INVERT_P_STEP_PIN);
+    disable_p();
+  #endif    
+    
   // waveform generation = 0100 = CTC
   TCCR1B &= ~(1<<WGM13);
   TCCR1B |=  (1<<WGM12);
@@ -987,13 +1035,14 @@ void st_synchronize()
   }
 }
 
-void st_set_position(const long &x, const long &y, const long &z, const long &e)
+void st_set_position(const long &x, const long &y, const long &z, const long &e, const long &p)  //FMM added p for P_AXIS
 {
   CRITICAL_SECTION_START;
   count_position[X_AXIS] = x;
   count_position[Y_AXIS] = y;
   count_position[Z_AXIS] = z;
   count_position[E_AXIS] = e;
+  count_position[P_AXIS] = p;  //FMM added for P_AXIS
   CRITICAL_SECTION_END;
 }
 
@@ -1001,6 +1050,14 @@ void st_set_e_position(const long &e)
 {
   CRITICAL_SECTION_START;
   count_position[E_AXIS] = e;
+  CRITICAL_SECTION_END;
+}
+
+
+void st_set_p_position(const long &p)  //FMM duplicated above function for P_AXIS
+{
+  CRITICAL_SECTION_START;
+  count_position[P_AXIS] = p;
   CRITICAL_SECTION_END;
 }
 
@@ -1028,7 +1085,7 @@ void finishAndDisableSteppers()
   disable_y();
   disable_z();
   disable_e0();
-  disable_e1();
+  disable_p();  //FMM P_AXIS
   disable_e2();
 }
 

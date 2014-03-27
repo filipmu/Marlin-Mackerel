@@ -63,9 +63,9 @@
 //===========================================================================
 
 unsigned long minsegmenttime;
-float max_feedrate[4]; // set the max speeds
-float axis_steps_per_unit[4];
-unsigned long max_acceleration_units_per_sq_second[4]; // Use M201 to override by software
+float max_feedrate[5]; // set the max speeds
+float axis_steps_per_unit[5];
+unsigned long max_acceleration_units_per_sq_second[5]; // Use M201 to override by software
 float minimumfeedrate;
 float acceleration;         // Normal acceleration mm/s^2  THIS IS THE DEFAULT ACCELERATION for all moves. M204 SXXXX
 float retract_acceleration; //  mm/s^2   filament pull-pack and push-forward  while standing still in the other axis M204 TXXXX
@@ -85,8 +85,8 @@ matrix_3x3 plan_bed_level_matrix = {
 #endif // #ifdef ENABLE_AUTO_BED_LEVELING
 
 // The current position of the tool in absolute steps
-long position[4];   //rescaled from extern when axis_steps_per_unit are changed by gcode
-static float previous_speed[4]; // Speed of previous path line segment
+long position[5];   //rescaled from extern when axis_steps_per_unit are changed by gcode
+static float previous_speed[5]; // Speed of previous path line segment
 static float previous_nominal_speed; // Nominal speed of previous path line segment
 
 #ifdef AUTOTEMP
@@ -392,6 +392,7 @@ void plan_init() {
   previous_speed[1] = 0.0;
   previous_speed[2] = 0.0;
   previous_speed[3] = 0.0;
+  previous_speed[4] = 0.0;
   previous_nominal_speed = 0.0;
 }
 
@@ -417,6 +418,7 @@ void getHighESpeed()
       (block_buffer[block_index].steps_y != 0) ||
       (block_buffer[block_index].steps_z != 0)) {
       float se=(float(block_buffer[block_index].steps_e)/float(block_buffer[block_index].step_event_count))*block_buffer[block_index].nominal_speed;
+      
       //se; mm/sec;
       if(se>high)
       {
@@ -447,6 +449,7 @@ void check_axes_activity()
   unsigned char y_active = 0;  
   unsigned char z_active = 0;
   unsigned char e_active = 0;
+  unsigned char p_active = 0;
   unsigned char tail_fan_speed = fanSpeed;
   #ifdef BARICUDA
   unsigned char tail_valve_pressure = ValvePressure;
@@ -469,16 +472,17 @@ void check_axes_activity()
       if(block->steps_y != 0) y_active++;
       if(block->steps_z != 0) z_active++;
       if(block->steps_e != 0) e_active++;
+      if(block->steps_p != 0) p_active++;
       block_index = (block_index+1) & (BLOCK_BUFFER_SIZE - 1);
     }
   }
   if((DISABLE_X) && (x_active == 0)) disable_x();
   if((DISABLE_Y) && (y_active == 0)) disable_y();
   if((DISABLE_Z) && (z_active == 0)) disable_z();
+  if((DISABLE_P) && (p_active == 0)) disable_p();
   if((DISABLE_E) && (e_active == 0))
   {
     disable_e0();
-    disable_e1();
     disable_e2(); 
   }
 #if defined(FAN_PIN) && FAN_PIN > -1
@@ -523,9 +527,9 @@ float junction_deviation = 0.1;
 // mm. Microseconds specify how many microseconds the move should take to perform. To aid acceleration
 // calculation the caller must also provide the physical length of the line in millimeters.
 #ifdef ENABLE_AUTO_BED_LEVELING
-void plan_buffer_line(float x, float y, float z, const float &e, float feed_rate, const uint8_t &extruder)
+void plan_buffer_line(float x, float y, float z, const float &e, const float &p, float feed_rate, const uint8_t &extruder)  //FMM added p parameter
 #else
-void plan_buffer_line(const float &x, const float &y, const float &z, const float &e, float feed_rate, const uint8_t &extruder)
+void plan_buffer_line(const float &x, const float &y, const float &z, const float &e, const float &p, float feed_rate, const uint8_t &extruder)  //FMM added p parameter
 #endif  //ENABLE_AUTO_BED_LEVELING
 {
   // Calculate the buffer head after we push this byte
@@ -547,11 +551,12 @@ void plan_buffer_line(const float &x, const float &y, const float &z, const floa
   // The target position of the tool in absolute steps
   // Calculate target position in absolute steps
   //this should be done after the wait, because otherwise a M92 code within the gcode disrupts this calculation somehow
-  long target[4];
+  long target[5];  //FMM updated from 4 to 5 size array
   target[X_AXIS] = lround(x*axis_steps_per_unit[X_AXIS]);
   target[Y_AXIS] = lround(y*axis_steps_per_unit[Y_AXIS]);
   target[Z_AXIS] = lround(z*axis_steps_per_unit[Z_AXIS]);     
   target[E_AXIS] = lround(e*axis_steps_per_unit[E_AXIS]);
+  target[P_AXIS] = lround(p*axis_steps_per_unit[P_AXIS]);  //fmm added P_AXIS and variable p
 
   #ifdef PREVENT_DANGEROUS_EXTRUDE
   if(target[E_AXIS]!=position[E_AXIS])
@@ -596,7 +601,13 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
   block->steps_e *= volumetric_multiplier[active_extruder];
   block->steps_e *= extrudemultiply;
   block->steps_e /= 100;
-  block->step_event_count = max(block->steps_x, max(block->steps_y, max(block->steps_z, block->steps_e)));
+  block->steps_p = labs(target[P_AXIS]-position[P_AXIS]);  //FMM added P_AXIS
+  //block->steps_p *= volumetric_multiplier[active_extruder];  //FMM not really needed
+  block->steps_p *= pullermultiply;
+  block->steps_p /= 100;
+  
+  
+  block->step_event_count = max(block->steps_x, max(block->steps_y, max(block->steps_z, max(block->steps_e, block->steps_p))));  //FMM added P_AXIS
 
   // Bail if this is a zero-length block
   if (block->step_event_count <= dropsegments)
@@ -639,7 +650,10 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
   {
     block->direction_bits |= (1<<E_AXIS); 
   }
-
+  if (target[P_AXIS] < position[P_AXIS])  //FMM added P_AXIS
+  {
+    block->direction_bits |= (1<<P_AXIS); 
+  }
   block->active_extruder = extruder;
 
   //enable active axes
@@ -658,14 +672,21 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
 #endif
 
   // Enable all
+  
+  //FMM modify based on extruder and puller motor
   if(block->steps_e != 0)
   {
     enable_e0();
-    enable_e1();
-    enable_e2(); 
   }
-
-  if (block->steps_e == 0)
+  
+  if(block->steps_p != 0)  //FMM duplicate above for P_AXIS
+    {
+      enable_p();
+    }
+  
+  
+//FMM consider changing below for P_AXIS
+  if (block->steps_e == 0 && block->steps_p ==0)
   {
     if(feed_rate<mintravelfeedrate) feed_rate=mintravelfeedrate;
   }
@@ -674,7 +695,7 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
     if(feed_rate<minimumfeedrate) feed_rate=minimumfeedrate;
   } 
 
-  float delta_mm[4];
+  float delta_mm[5];
   #ifndef COREXY
     delta_mm[X_AXIS] = (target[X_AXIS]-position[X_AXIS])/axis_steps_per_unit[X_AXIS];
     delta_mm[Y_AXIS] = (target[Y_AXIS]-position[Y_AXIS])/axis_steps_per_unit[Y_AXIS];
@@ -684,9 +705,11 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
   #endif
   delta_mm[Z_AXIS] = (target[Z_AXIS]-position[Z_AXIS])/axis_steps_per_unit[Z_AXIS];
   delta_mm[E_AXIS] = ((target[E_AXIS]-position[E_AXIS])/axis_steps_per_unit[E_AXIS])*volumetric_multiplier[active_extruder]*extrudemultiply/100.0;
+  delta_mm[P_AXIS] = ((target[P_AXIS]-position[P_AXIS])/axis_steps_per_unit[P_AXIS])*pullermultiply/100.0;  //FMM added P_AXIS
+  
   if ( block->steps_x <=dropsegments && block->steps_y <=dropsegments && block->steps_z <=dropsegments )
   {
-    block->millimeters = fabs(delta_mm[E_AXIS]);
+    block->millimeters = max(fabs(delta_mm[E_AXIS]),fabs(delta_mm[P_AXIS]));  //FMM consider adding P_AXIS
   } 
   else
   {
@@ -726,9 +749,9 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
   block->nominal_rate = ceil(block->step_event_count * inverse_second); // (step/sec) Always > 0
 
   // Calculate and limit speed in mm/sec for each axis
-  float current_speed[4];
+  float current_speed[5];
   float speed_factor = 1.0; //factor <=1 do decrease speed
-  for(int i=0; i < 4; i++)
+  for(int i=0; i < 5; i++)
   {
     current_speed[i] = delta_mm[i] * inverse_second;
     if(fabs(current_speed[i]) > max_feedrate[i])
@@ -773,7 +796,7 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
   // Correct the speed  
   if( speed_factor < 1.0)
   {
-    for(unsigned char i=0; i < 4; i++)
+    for(unsigned char i=0; i < 5; i++)
     {
       current_speed[i] *= speed_factor;
     }
@@ -797,6 +820,8 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
       block->acceleration_st = axis_steps_per_sqr_second[Y_AXIS];
     if(((float)block->acceleration_st * (float)block->steps_e / (float)block->step_event_count) > axis_steps_per_sqr_second[E_AXIS])
       block->acceleration_st = axis_steps_per_sqr_second[E_AXIS];
+    if(((float)block->acceleration_st * (float)block->steps_p / (float)block->step_event_count) > axis_steps_per_sqr_second[P_AXIS])  //FMM added P_AXIS
+         block->acceleration_st = axis_steps_per_sqr_second[P_AXIS];
     if(((float)block->acceleration_st * (float)block->steps_z / (float)block->step_event_count ) > axis_steps_per_sqr_second[Z_AXIS])
       block->acceleration_st = axis_steps_per_sqr_second[Z_AXIS];
   }
@@ -850,6 +875,8 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
     vmax_junction = min(vmax_junction, max_z_jerk/2);
   if(fabs(current_speed[E_AXIS]) > max_e_jerk/2) 
     vmax_junction = min(vmax_junction, max_e_jerk/2);
+  if(fabs(current_speed[P_AXIS]) > max_e_jerk/2)   //FMM changes to P_AXIS, but still using max_e_jerk for p
+      vmax_junction = min(vmax_junction, max_e_jerk/2);
   vmax_junction = min(vmax_junction, block->nominal_speed);
   float safe_speed = vmax_junction;
 
@@ -866,6 +893,9 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
     } 
     if(fabs(current_speed[E_AXIS] - previous_speed[E_AXIS]) > max_e_jerk) {
       vmax_junction_factor = min(vmax_junction_factor, (max_e_jerk/fabs(current_speed[E_AXIS] - previous_speed[E_AXIS])));
+    } 
+    if(fabs(current_speed[P_AXIS] - previous_speed[P_AXIS]) > max_e_jerk) {  //FMM added P_AXIS, but still using max_e_jerk
+      vmax_junction_factor = min(vmax_junction_factor, (max_e_jerk/fabs(current_speed[P_AXIS] - previous_speed[P_AXIS])));
     } 
     vmax_junction = min(previous_nominal_speed, vmax_junction * vmax_junction_factor); // Limit speed to max previous speed
   }
@@ -957,7 +987,7 @@ void plan_set_position(float x, float y, float z, const float &e)
 {
   apply_rotation_xyz(plan_bed_level_matrix, x, y, z);
 #else
-void plan_set_position(const float &x, const float &y, const float &z, const float &e)
+void plan_set_position(const float &x, const float &y, const float &z, const float &e, const float &p)
 {
 #endif // ENABLE_AUTO_BED_LEVELING
 
@@ -965,18 +995,26 @@ void plan_set_position(const float &x, const float &y, const float &z, const flo
   position[Y_AXIS] = lround(y*axis_steps_per_unit[Y_AXIS]);
   position[Z_AXIS] = lround(z*axis_steps_per_unit[Z_AXIS]);     
   position[E_AXIS] = lround(e*axis_steps_per_unit[E_AXIS]);  
-  st_set_position(position[X_AXIS], position[Y_AXIS], position[Z_AXIS], position[E_AXIS]);
+  position[P_AXIS] = lround(p*axis_steps_per_unit[P_AXIS]);  //FMM added P_AXIS
+  st_set_position(position[X_AXIS], position[Y_AXIS], position[Z_AXIS], position[E_AXIS], position[P_AXIS]);  //FMM added P_AXIS
   previous_nominal_speed = 0.0; // Resets planner junction speeds. Assumes start from rest.
   previous_speed[0] = 0.0;
   previous_speed[1] = 0.0;
   previous_speed[2] = 0.0;
   previous_speed[3] = 0.0;
+  previous_speed[4] = 0.0;
 }
 
 void plan_set_e_position(const float &e)
 {
   position[E_AXIS] = lround(e*axis_steps_per_unit[E_AXIS]);  
   st_set_e_position(position[E_AXIS]);
+}
+
+void plan_set_p_position(const float &p)  //FMM created similar function for P_AXIS
+{
+  position[P_AXIS] = lround(p*axis_steps_per_unit[P_AXIS]);  
+  st_set_p_position(position[P_AXIS]);
 }
 
 uint8_t movesplanned()

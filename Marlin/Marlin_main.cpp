@@ -188,6 +188,7 @@ float homing_feedrate[] = HOMING_FEEDRATE;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
 int feedmultiply=100; //100->1 200->2
 int saved_feedmultiply;
+int pullermultiply = 100;
 int extrudemultiply=100; //100->1 200->2
 int extruder_multiply[EXTRUDERS] = {100
   #if EXTRUDERS > 1
@@ -205,7 +206,7 @@ float volumetric_multiplier[EXTRUDERS] = {1.0
     #endif
   #endif
 };
-float current_position[NUM_AXIS] = { 0.0, 0.0, 0.0, 0.0 };
+float current_position[NUM_AXIS] = { 0.0, 0.0, 0.0, 0.0, 0.0};  //FMM added P_AXIS
 float add_homeing[3]={0,0,0};
 #ifdef DELTA
 float endstop_adj[3]={0,0,0};
@@ -277,8 +278,8 @@ int EtoPPressure=0;
 //===========================================================================
 //=============================Private Variables=============================
 //===========================================================================
-const char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
-static float destination[NUM_AXIS] = {  0.0, 0.0, 0.0, 0.0};
+const char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E', 'P'};
+static float destination[NUM_AXIS] = {  0.0, 0.0, 0.0, 0.0, 0.0};
 static float offset[3] = {0.0, 0.0, 0.0};
 static bool home_all_axis = true;
 static float feedrate = 1500.0, next_feedrate, saved_feedrate;
@@ -870,7 +871,7 @@ static void set_bed_level_equation_lsq(double *plane_equation_coefficients)
     // but the bed at 0 so we don't go below it.
     current_position[Z_AXIS] = zprobe_zoffset; // in the lsq we reach here after raising the extruder due to the loop structure
 
-    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], current_position[P_AXIS]);
 }
 
 #else // not AUTO_BED_LEVELING_GRID
@@ -910,7 +911,7 @@ static void run_z_probe() {
 
     // move down until you find the bed
     float zPosition = -10;
-    plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], zPosition, current_position[E_AXIS], feedrate/60, active_extruder);
+    plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], zPosition, current_position[E_AXIS], current_position[P_AXIS],feedrate/60, active_extruder);
     st_synchronize();
 
         // we have to let the planner know where we are right now as it is not where we said to go.
@@ -919,18 +920,18 @@ static void run_z_probe() {
 
     // move up the retract distance
     zPosition += home_retract_mm(Z_AXIS);
-    plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], zPosition, current_position[E_AXIS], feedrate/60, active_extruder);
+    plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], zPosition, current_position[E_AXIS], current_position[P_AXIS],feedrate/60, active_extruder);
     st_synchronize();
 
     // move back down slowly to find bed
     feedrate = homing_feedrate[Z_AXIS]/4;
     zPosition -= home_retract_mm(Z_AXIS) * 2;
-    plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], zPosition, current_position[E_AXIS], feedrate/60, active_extruder);
+    plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], zPosition, current_position[E_AXIS], current_position[P_AXIS],feedrate/60, active_extruder);
     st_synchronize();
 
     current_position[Z_AXIS] = st_get_position_mm(Z_AXIS);
     // make sure the planner knows where we are as it may be a bit different than we last said to move to
-    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS],current_position[P_AXIS]);
 }
 
 static void do_blocking_move_to(float x, float y, float z) {
@@ -941,7 +942,7 @@ static void do_blocking_move_to(float x, float y, float z) {
     current_position[X_AXIS] = x;
     current_position[Y_AXIS] = y;
     current_position[Z_AXIS] = z;
-    plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate/60, active_extruder);
+    plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS],current_position[P_AXIS], feedrate/60, active_extruder);
     st_synchronize();
 
     feedrate = oldFeedRate;
@@ -1041,7 +1042,7 @@ static void homeaxis(int axis) {
 #endif
 
     current_position[axis] = 0;
-    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS],current_position[P_AXIS] );  //FMM added P_AXIS
 
 
     // Engage Servo endstop if enabled
@@ -1059,13 +1060,13 @@ static void homeaxis(int axis) {
 
     destination[axis] = 1.5 * max_length(axis) * axis_home_dir;
     feedrate = homing_feedrate[axis];
-    plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
+    plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS], feedrate/60, active_extruder); //FMM added P_axis
     st_synchronize();
 
     current_position[axis] = 0;
-    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], current_position[P_AXIS]); //FMM added P_axis
     destination[axis] = -home_retract_mm(axis) * axis_home_dir;
-    plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
+    plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS], feedrate/60, active_extruder); //FMM added P_AXIS
     st_synchronize();
 
     destination[axis] = 2*home_retract_mm(axis) * axis_home_dir;
@@ -1074,14 +1075,14 @@ static void homeaxis(int axis) {
 #else
     feedrate = homing_feedrate[axis]/2 ;
 #endif
-    plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
+    plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS], feedrate/60, active_extruder);  //FMM added P_AXIS
     st_synchronize();
 #ifdef DELTA
     // retrace by the amount specified in endstop_adj
     if (endstop_adj[axis] * axis_home_dir < 0) {
-      plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+      plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS],current_position[P_AXIS]);
       destination[axis] = endstop_adj[axis];
-      plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
+      plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS],feedrate/60, active_extruder);
       st_synchronize();
     }
 #endif
@@ -1244,7 +1245,7 @@ void process_commands()
           destination[Y_AXIS] = 3 * Z_MAX_LENGTH;
           destination[Z_AXIS] = 3 * Z_MAX_LENGTH;
           feedrate = 1.732 * homing_feedrate[X_AXIS];
-          plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
+          plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS],feedrate/60, active_extruder);
           st_synchronize();
           endstops_hit_on_purpose();
 
@@ -1287,7 +1288,7 @@ void process_commands()
         feedrate = homing_feedrate[X_AXIS];
         if(homing_feedrate[Y_AXIS]<feedrate)
           feedrate =homing_feedrate[Y_AXIS];
-        plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
+        plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS],destination[P_AXIS], feedrate/60, active_extruder);
         st_synchronize();
 
         axis_is_at_home(X_AXIS);
@@ -1295,7 +1296,7 @@ void process_commands()
         plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
         destination[X_AXIS] = current_position[X_AXIS];
         destination[Y_AXIS] = current_position[Y_AXIS];
-        plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
+        plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS],feedrate/60, active_extruder);
         feedrate = 0.0;
         st_synchronize();
         endstops_hit_on_purpose();
@@ -1348,7 +1349,7 @@ void process_commands()
             #if defined (Z_RAISE_BEFORE_HOMING) && (Z_RAISE_BEFORE_HOMING > 0)
               destination[Z_AXIS] = Z_RAISE_BEFORE_HOMING * home_dir(Z_AXIS) * (-1);    // Set destination away from bed
               feedrate = max_feedrate[Z_AXIS];
-              plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate, active_extruder);
+              plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS],feedrate, active_extruder);
               st_synchronize();
             #endif
             HOMEAXIS(Z);
@@ -1362,7 +1363,7 @@ void process_commands()
             current_position[Z_AXIS] = 0;
 
             plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-            plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate, active_extruder);
+            plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS],feedrate, active_extruder);
             st_synchronize();
             current_position[X_AXIS] = destination[X_AXIS];
             current_position[Y_AXIS] = destination[Y_AXIS];
@@ -1381,7 +1382,7 @@ void process_commands()
               plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
               destination[Z_AXIS] = Z_RAISE_BEFORE_HOMING * home_dir(Z_AXIS) * (-1);    // Set destination away from bed
               feedrate = max_feedrate[Z_AXIS];
-              plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate, active_extruder);
+              plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS],feedrate, active_extruder);
               st_synchronize();
 
               HOMEAXIS(Z);
@@ -1410,7 +1411,7 @@ void process_commands()
           current_position[Z_AXIS] += zprobe_zoffset;  //Add Z_Probe offset (the distance is negative)
         }
       #endif
-      plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+      plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], current_position[P_AXIS]);  //FMM added P_AXIS
 #endif // else DELTA
 
       #ifdef ENDSTOPS_ONLY_FOR_HOMING
@@ -1600,7 +1601,7 @@ void process_commands()
       relative_mode = true;
       break;
     case 92: // G92
-      if(!code_seen(axis_codes[E_AXIS]))
+      if(!code_seen(axis_codes[E_AXIS]) && !code_seen(axis_codes[P_AXIS]))  //FMM added P_AXIS
         st_synchronize();
       for(int8_t i=0; i < NUM_AXIS; i++) {
         if(code_seen(axis_codes[i])) {
@@ -1608,9 +1609,13 @@ void process_commands()
              current_position[i] = code_value();
              plan_set_e_position(current_position[E_AXIS]);
            }
+           else if(i == P_AXIS){  //FMM Added P_AXIS logic
+        	 current_position[i] = code_value();
+        	 plan_set_p_position(current_position[P_AXIS]);  //FMM need to modify this function to handle P axis
+           }
            else {
              current_position[i] = code_value()+add_homeing[i];
-             plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+             plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], current_position[P_AXIS]);  //FMM added P_AXIS
            }
         }
       }
@@ -1657,7 +1662,7 @@ void process_commands()
         enable_y();
         enable_z();
         enable_e0();
-        enable_e1();
+        enable_p();
         enable_e2();
       break;
 
@@ -2087,7 +2092,7 @@ void process_commands()
         disable_heater();
         st_synchronize();
         disable_e0();
-        disable_e1();
+        disable_p();
         disable_e2();
         finishAndDisableSteppers();
         fanSpeed = 0;
@@ -2119,12 +2124,12 @@ void process_commands()
       }
       else
       {
-        bool all_axis = !((code_seen(axis_codes[X_AXIS])) || (code_seen(axis_codes[Y_AXIS])) || (code_seen(axis_codes[Z_AXIS]))|| (code_seen(axis_codes[E_AXIS])));
+        bool all_axis = !((code_seen(axis_codes[X_AXIS])) || (code_seen(axis_codes[Y_AXIS])) || (code_seen(axis_codes[Z_AXIS]))|| (code_seen(axis_codes[E_AXIS]))||(code_seen(axis_codes[P_AXIS])));  //FMM added P_AXIS
         if(all_axis)
         {
           st_synchronize();
           disable_e0();
-          disable_e1();
+          disable_p();
           disable_e2();
           finishAndDisableSteppers();
         }
@@ -2137,7 +2142,7 @@ void process_commands()
           #if ((E0_ENABLE_PIN != X_ENABLE_PIN) && (E1_ENABLE_PIN != Y_ENABLE_PIN)) // Only enable on boards that have seperate ENABLE_PINS
             if(code_seen('E')) {
               disable_e0();
-              disable_e1();
+              disable_p();
               disable_e2();
             }
           #endif
@@ -2187,7 +2192,9 @@ void process_commands()
       SERIAL_PROTOCOL(current_position[Z_AXIS]);
       SERIAL_PROTOCOLPGM(" E:");
       SERIAL_PROTOCOL(current_position[E_AXIS]);
-
+      SERIAL_PROTOCOLPGM(" P:");				//FMM added P_AXIS
+      SERIAL_PROTOCOL(current_position[P_AXIS]);
+            
       SERIAL_PROTOCOLPGM(MSG_COUNT_X);
       SERIAL_PROTOCOL(float(st_get_position(X_AXIS))/axis_steps_per_unit[X_AXIS]);
       SERIAL_PROTOCOLPGM(" Y:");
@@ -2730,22 +2737,24 @@ void process_commands()
         target[Y_AXIS]=current_position[Y_AXIS];
         target[Z_AXIS]=current_position[Z_AXIS];
         target[E_AXIS]=current_position[E_AXIS];
+        target[P_AXIS]=current_position[P_AXIS];  //FMM added P_AXIS
         lastpos[X_AXIS]=current_position[X_AXIS];
         lastpos[Y_AXIS]=current_position[Y_AXIS];
         lastpos[Z_AXIS]=current_position[Z_AXIS];
         lastpos[E_AXIS]=current_position[E_AXIS];
+        lastpos[P_AXIS]=current_position[P_AXIS];  //FMM added P_AXIS
         //retract by E
         if(code_seen('E'))
         {
-          target[E_AXIS]+= code_value();
+          target[E_AXIS]+= code_value();  //FMM consider adding P_AXIS?
         }
         else
         {
           #ifdef FILAMENTCHANGE_FIRSTRETRACT
-            target[E_AXIS]+= FILAMENTCHANGE_FIRSTRETRACT ;
+            target[E_AXIS]+= FILAMENTCHANGE_FIRSTRETRACT ;   //FMM consider adding P_AXIS?
           #endif
         }
-        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder);
+        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS],target[P_AXIS], feedrate/60, active_extruder);  //FMM added P_AXIS
 
         //lift Z
         if(code_seen('Z'))
@@ -2758,7 +2767,7 @@ void process_commands()
             target[Z_AXIS]+= FILAMENTCHANGE_ZADD ;
           #endif
         }
-        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder);
+        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], target[P_AXIS],feedrate/60, active_extruder);  //FMM added P_AXIS
 
         //move xy
         if(code_seen('X'))
@@ -2782,26 +2791,26 @@ void process_commands()
           #endif
         }
 
-        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder);
+        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], target[P_AXIS], feedrate/60, active_extruder);  //FMM added P_AXIS
 
         if(code_seen('L'))
         {
-          target[E_AXIS]+= code_value();
+          target[E_AXIS]+= code_value();  //FMM consider adding P_AXIS
         }
         else
         {
           #ifdef FILAMENTCHANGE_FINALRETRACT
-            target[E_AXIS]+= FILAMENTCHANGE_FINALRETRACT ;
+            target[E_AXIS]+= FILAMENTCHANGE_FINALRETRACT ;  //FMM consider adding P_AXIS
           #endif
         }
 
-        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder);
+        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], target[P_AXIS],feedrate/60, active_extruder);  //FMM added P_AXIS
 
         //finish moves
         st_synchronize();
         //disable extruder steppers so filament can be removed
         disable_e0();
-        disable_e1();
+        disable_p();
         disable_e2();
         delay(100);
         LCD_ALERTMESSAGEPGM(MSG_FILAMENTCHANGE);
@@ -2833,20 +2842,22 @@ void process_commands()
         //return to normal
         if(code_seen('L'))
         {
-          target[E_AXIS]+= -code_value();
+          target[E_AXIS]+= -code_value();  //FMM consider adding P_AXIS
         }
         else
         {
           #ifdef FILAMENTCHANGE_FINALRETRACT
-            target[E_AXIS]+=(-1)*FILAMENTCHANGE_FINALRETRACT ;
+            target[E_AXIS]+=(-1)*FILAMENTCHANGE_FINALRETRACT ;  //FMM consider adding P_AXIS
           #endif
         }
         current_position[E_AXIS]=target[E_AXIS]; //the long retract of L is compensated by manual filament feeding
+        current_position[P_AXIS]=target[P_AXIS];   //FMM added P_AXIS
         plan_set_e_position(current_position[E_AXIS]);
-        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder); //should do nothing
-        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder); //move xy back
-        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder); //move z back
-        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], lastpos[E_AXIS], feedrate/60, active_extruder); //final untretract
+        plan_set_p_position(current_position[P_AXIS]);  //FMM added P_AXIS
+        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], target[P_AXIS],feedrate/60, active_extruder); //should do nothing
+        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], target[Z_AXIS], target[E_AXIS], target[P_AXIS],feedrate/60, active_extruder); //move xy back
+        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], target[E_AXIS], target[P_AXIS],feedrate/60, active_extruder); //move z back
+        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], lastpos[E_AXIS], lastpos[P_AXIS],feedrate/60, active_extruder); //final untretract
     }
     break;
     #endif //FILAMENTCHANGEENABLE
@@ -2996,11 +3007,11 @@ void process_commands()
         {
           // Park old head: 1) raise 2) move to park position 3) lower
           plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + TOOLCHANGE_PARK_ZLIFT,
-                current_position[E_AXIS], max_feedrate[Z_AXIS], active_extruder);
+                current_position[E_AXIS], current_position[P_AXIS], max_feedrate[Z_AXIS], active_extruder);
           plan_buffer_line(x_home_pos(active_extruder), current_position[Y_AXIS], current_position[Z_AXIS] + TOOLCHANGE_PARK_ZLIFT,
-                current_position[E_AXIS], max_feedrate[X_AXIS], active_extruder);
+                current_position[E_AXIS], current_position[P_AXIS], max_feedrate[X_AXIS], active_extruder);
           plan_buffer_line(x_home_pos(active_extruder), current_position[Y_AXIS], current_position[Z_AXIS],
-                current_position[E_AXIS], max_feedrate[Z_AXIS], active_extruder);
+                current_position[E_AXIS], current_position[P_AXIS], max_feedrate[Z_AXIS], active_extruder);
           st_synchronize();
         }
 
@@ -3051,7 +3062,7 @@ void process_commands()
         // Set the new active extruder and position
         active_extruder = tmp_extruder;
       #endif //else DUAL_X_CARRIAGE
-        plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+        plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], current_position[P_AXIS]);  //FMM added P_AXIS
         // Move to the old position if 'F' was in the parameters
         if(make_move && Stopped == false) {
            prepare_move();
@@ -3216,7 +3227,7 @@ void prepare_move()
     }
     calculate_delta(destination);
     plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS],
-                     destination[E_AXIS], feedrate*feedmultiply/60/100.0,
+                     destination[E_AXIS], destination[P_AXIS], feedrate*feedmultiply/60/100.0,
                      active_extruder);
   }
 #else
@@ -3229,7 +3240,7 @@ void prepare_move()
       // move duplicate extruder into correct duplication position.
       plan_set_position(inactive_extruder_x_pos, current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
       plan_buffer_line(current_position[X_AXIS] + duplicate_extruder_x_offset, current_position[Y_AXIS], current_position[Z_AXIS],
-          current_position[E_AXIS], max_feedrate[X_AXIS], 1);
+          current_position[E_AXIS], current_position[P_AXIS], max_feedrate[X_AXIS], 1);
       plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
       st_synchronize();
       extruder_duplication_enabled = true;
@@ -3252,11 +3263,11 @@ void prepare_move()
       }
       delayed_move_time = 0;
       // unpark extruder: 1) raise, 2) move into starting XY position, 3) lower
-      plan_buffer_line(raised_parked_position[X_AXIS], raised_parked_position[Y_AXIS], raised_parked_position[Z_AXIS],    current_position[E_AXIS], max_feedrate[Z_AXIS], active_extruder);
+      plan_buffer_line(raised_parked_position[X_AXIS], raised_parked_position[Y_AXIS], raised_parked_position[Z_AXIS],    current_position[E_AXIS], current_position[P_AXIS],max_feedrate[Z_AXIS], active_extruder);
       plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], raised_parked_position[Z_AXIS],
-          current_position[E_AXIS], min(max_feedrate[X_AXIS],max_feedrate[Y_AXIS]), active_extruder);
+          current_position[E_AXIS], current_position[P_AXIS],min(max_feedrate[X_AXIS],max_feedrate[Y_AXIS]), active_extruder);
       plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS],
-          current_position[E_AXIS], max_feedrate[Z_AXIS], active_extruder);
+          current_position[E_AXIS], current_position[P_AXIS],max_feedrate[Z_AXIS], active_extruder);
       active_extruder_parked = false;
     }
   }
@@ -3264,10 +3275,10 @@ void prepare_move()
 
   // Do not use feedmultiply for E or Z only moves
   if( (current_position[X_AXIS] == destination [X_AXIS]) && (current_position[Y_AXIS] == destination [Y_AXIS])) {
-      plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
+      plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS], feedrate/60, active_extruder);  //FMM added P_AXIS
   }
   else {
-    plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate*feedmultiply/60/100.0, active_extruder);
+    plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS], feedrate*feedmultiply/60/100.0, active_extruder);  //FMM added P_AXIS
   }
 #endif //else DELTA
   for(int8_t i=0; i < NUM_AXIS; i++) {
@@ -3383,7 +3394,7 @@ void manage_inactivity()
         disable_y();
         disable_z();
         disable_e0();
-        disable_e1();
+        disable_p();
         disable_e2();
       }
     }
@@ -3414,7 +3425,7 @@ void manage_inactivity()
      float oldepos=current_position[E_AXIS];
      float oldedes=destination[E_AXIS];
      plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS],
-                      destination[E_AXIS]+EXTRUDER_RUNOUT_EXTRUDE*EXTRUDER_RUNOUT_ESTEPS/axis_steps_per_unit[E_AXIS],
+                      destination[E_AXIS]+EXTRUDER_RUNOUT_EXTRUDE*EXTRUDER_RUNOUT_ESTEPS/axis_steps_per_unit[E_AXIS], destination[P_AXIS],
                       EXTRUDER_RUNOUT_SPEED/60.*EXTRUDER_RUNOUT_ESTEPS/axis_steps_per_unit[E_AXIS], active_extruder);
      current_position[E_AXIS]=oldepos;
      destination[E_AXIS]=oldedes;
@@ -3449,7 +3460,7 @@ void kill()
   disable_y();
   disable_z();
   disable_e0();
-  disable_e1();
+  disable_p();
   disable_e2();
 
 #if defined(PS_ON_PIN) && PS_ON_PIN > -1

@@ -227,6 +227,7 @@
 #define INVERT_Y_STEP_PIN false
 #define INVERT_Z_STEP_PIN false
 #define INVERT_E_STEP_PIN false
+#define INVERT_P_STEP_PIN false
 
 //default stepper release if idle
 #define DEFAULT_STEPPER_DEACTIVE_TIME 60

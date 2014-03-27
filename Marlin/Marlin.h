@@ -150,9 +150,9 @@ void manage_inactivity();
   #define disable_e0() /* nothing */
 #endif
 
-#if (EXTRUDERS > 1) && defined(E1_ENABLE_PIN) && (E1_ENABLE_PIN > -1)
-  #define enable_e1() WRITE(E1_ENABLE_PIN, E_ENABLE_ON)
-  #define disable_e1() WRITE(E1_ENABLE_PIN,!E_ENABLE_ON)
+#if defined(P_ENABLE_PIN) && (P_ENABLE_PIN > -1)
+  #define enable_p() WRITE(P_ENABLE_PIN, P_ENABLE_ON)
+  #define disable_p() WRITE(P_ENABLE_PIN,!P_ENABLE_ON)
 #else
   #define enable_e1()  /* nothing */
   #define disable_e1() /* nothing */
@@ -167,7 +167,7 @@ void manage_inactivity();
 #endif
 
 
-enum AxisEnum {X_AXIS=0, Y_AXIS=1, Z_AXIS=2, E_AXIS=3};
+enum AxisEnum {X_AXIS=0, Y_AXIS=1, Z_AXIS=2, E_AXIS=3, P_AXIS=4};  //FMM added P_AXIS to list for puller motor
 
 
 void FlushSerialRequestResend();
@@ -203,6 +203,7 @@ void setPwmFrequency(uint8_t pin, int val);
 extern float homing_feedrate[];
 extern bool axis_relative_modes[];
 extern int feedmultiply;
+extern int pullermultiply;
 extern int extrudemultiply; // Sets extrude multiply factor (in percent) for all extruders
 extern int extruder_multiply[EXTRUDERS]; // sets extrude multiply factor (in percent) for each extruder individually
 extern float volumetric_multiplier[EXTRUDERS]; // reciprocal of cross-sectional area of filament (in square millimeters), stored this way to reduce computational burden in planner
