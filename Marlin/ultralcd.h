@@ -42,6 +42,9 @@
   extern int absPreheatHotendTemp;
   extern int absPreheatHPBTemp;
   extern int absPreheatFanSpeed;
+  
+  //FMM section
+  extern volatile long e_velocity;  //in steps per second
     
   void lcd_buzz(long duration,uint16_t freq);
   bool lcd_clicked();

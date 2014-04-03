@@ -683,7 +683,9 @@ static void lcd_move_e()
 {
     if (encoderPosition != 0)
     {
-        current_position[E_AXIS] += float((int)encoderPosition) * move_menu_scale;
+        
+    	//remove below temporarily 
+    	current_position[E_AXIS] += float((int)encoderPosition) * move_menu_scale;
         encoderPosition = 0;
         #ifdef DELTA
         calculate_delta(current_position);
@@ -691,11 +693,22 @@ static void lcd_move_e()
         #else
         plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], current_position[P_AXIS],manual_feedrate[E_AXIS]/60, active_extruder);
         #endif
+ 
+    	
+    	/*
+    	//new code for testing
+    	e_velocity += float((int)encoderPosition);
+    	encoderPosition = 0;
+    	*/
         lcdDrawUpdate = 1;
     }
     if (lcdDrawUpdate)
     {
-        lcd_implementation_drawedit(PSTR("Extruder"), ftostr31(current_position[E_AXIS]));
+        //remove code below temporarily
+    	lcd_implementation_drawedit(PSTR("Extruder"), ftostr31(current_position[E_AXIS]));
+    	
+    	//new code for testing
+    	//lcd_implementation_drawedit(PSTR("Extruder V"), itostr4(e_velocity));
     }
     if (LCD_CLICKED)
     {
@@ -710,6 +723,7 @@ static void lcd_move_p()
     if (encoderPosition != 0)
     {
         current_position[P_AXIS] += float((int)encoderPosition) * move_menu_scale;
+        //current_position[E_AXIS] += float((int)encoderPosition) * move_menu_scale;  //FMM move both together
         encoderPosition = 0;
         #ifdef DELTA
         calculate_delta(current_position);

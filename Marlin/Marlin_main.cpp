@@ -3107,7 +3107,7 @@ void ClearToSend()
 
 void get_coordinates()
 {
-  bool seen[4]={false,false,false,false};
+  bool seen[5]={false,false,false,false,false};  //FMM added P_AXIS
   for(int8_t i=0; i < NUM_AXIS; i++) {
     if(code_seen(axis_codes[i]))
     {
