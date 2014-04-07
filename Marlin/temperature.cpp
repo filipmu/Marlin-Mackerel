@@ -617,6 +617,9 @@ static float analog2temp(int raw, uint8_t e) {
     }
   #endif
 
+    //for debugging FMMDEBUGTEMP
+    return 220.0;
+    		
   if(heater_ttbl_map[e] != NULL)
   {
     float celsius = 0;
@@ -669,6 +672,8 @@ static float analog2tempBed(int raw) {
   #elif defined BED_USES_AD595
     return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
   #else
+    //for debugging FMMDEBUGTEMP
+    return 70.0;
     return 0;
   #endif
 }
@@ -679,9 +684,13 @@ static void updateTemperaturesFromRawValues()
 {
     for(uint8_t e=0;e<EXTRUDERS;e++)
     {
+    	
         current_temperature[e] = analog2temp(current_temperature_raw[e], e);
+    	
     }
+    
     current_temperature_bed = analog2tempBed(current_temperature_bed_raw);
+    
     #ifdef TEMP_SENSOR_1_AS_REDUNDANT
       redundant_temperature = analog2temp(redundant_temperature_raw, 1);
     #endif

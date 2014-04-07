@@ -190,6 +190,7 @@ int feedmultiply=100; //100->1 200->2
 int saved_feedmultiply;
 int pullermultiply = 100;
 int extrudemultiply=100; //100->1 200->2
+float act_feedrate;  //real time feed rate
 int extruder_multiply[EXTRUDERS] = {100
   #if EXTRUDERS > 1
     , 100
@@ -575,6 +576,24 @@ void loop()
   manage_inactivity();
   checkHitEndstops();
   lcd_update();
+  
+  //FMM generate extruder motion based on LCD inputs
+  
+  //check that planning buffer is not full
+  
+  //calculate move
+  destination[E_AXIS] = (float)0.1 + current_position[E_AXIS];  //extruder
+  destination[P_AXIS] = (float)0.2 + current_position[P_AXIS]; //puller
+  feedrate=20*60;
+  act_feedrate=feedrate*feedmultiply/60.0/100.0;
+  
+  //send move
+  previous_millis_cmd = millis();  //refresh the kill watchdog timer
+  plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS], act_feedrate, active_extruder);  //FMM added P_AXIS
+  current_position[E_AXIS]=destination[E_AXIS];
+  current_position[P_AXIS]=destination[P_AXIS];
+  
+  
 }
 
 void get_command()
@@ -3475,6 +3494,9 @@ void kill()
 
 void Stop()
 {
+	
+	
+
   disable_heater();
   if(Stopped == false) {
     Stopped = true;
@@ -3483,6 +3505,7 @@ void Stop()
     SERIAL_ERRORLNPGM(MSG_ERR_STOPPED);
     LCD_MESSAGEPGM(MSG_STOPPED);
   }
+  
 }
 
 bool IsStopped() { return Stopped; };

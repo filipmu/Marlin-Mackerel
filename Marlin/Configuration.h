@@ -1,6 +1,38 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+
+/*Notes for to dos
+* Basic motion control
+* Come up with right settings steps/mm, acceleration, and feed rate to get good behavior
+* Allow motion to be turned on/off via LCD
+* 
+* Figure our why motors pulse - complete was resetting failure
+* Figure out why motors miss steps (add heating fins?)
+* 
+* Calibrate the extruder in RPM
+* calibrate the puller in mm based on urethane wheel diameter
+* Add the control for two motors
+* link the motor velocities
+* 
+* Display items
+* Show more on the main display
+* 
+* Temp control
+* figure out the right thermister
+* seems to hit max or min temp
+* tune the PID
+* 
+
+Debug notes:
+- Hardcoded the temperature reading of the extruder for testing - search for FMMDEBUGTEMP
+
+
+*/
+
+
+
+
 // This configuration file contains the basic settings.
 // Advanced settings can be found in Configuration_adv.h
 // BASIC SETTINGS: select your board type, temperature sensor type, axis scaling, and endstop configuration
@@ -129,8 +161,8 @@
 // 147 is Pt100 with 4k7 pullup
 // 110 is Pt100 with 1k pullup (non standard)
 
-#define TEMP_SENSOR_0 -1
-#define TEMP_SENSOR_1 -1
+#define TEMP_SENSOR_0 1
+#define TEMP_SENSOR_1 0
 #define TEMP_SENSOR_2 0
 #define TEMP_SENSOR_BED 0
 
@@ -440,12 +472,12 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 
 // default settings
 
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200.0*8/3,760*1.1, 800}  // default steps per unit for Ultimaker  //FMM added P_AXIS
-#define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 25, 25}    // (mm/sec)  //FMM added P_AXIS
-#define DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000,10000}    // X, Y, Z, E,P maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200.0*8/3,614, 663}  // default steps per unit for Ultimaker  //FMM added P_AXIS
+#define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 30, 40}    // (mm/sec)  //FMM added P_AXIS
+#define DEFAULT_MAX_ACCELERATION      {9000,9000,100,100,100}    // X, Y, Z, E,P maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
 
 #define DEFAULT_ACCELERATION          3000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  3000   // X, Y, Z and E max acceleration in mm/s^2 for retracts
+#define DEFAULT_RETRACT_ACCELERATION  100   // X, Y, Z and E max acceleration in mm/s^2 for retracts
 
 // Offset of the extruders (uncomment if using more than one and relying on firmware to position when changing).
 // The offset has to be X=0, Y=0 for the extruder 0 hotend (default extruder).
@@ -456,8 +488,8 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 // The speed change that does not require acceleration (i.e. the software might assume it can be done instantaneously)
 #define DEFAULT_XYJERK                20.0    // (mm/sec)
 #define DEFAULT_ZJERK                 0.4     // (mm/sec)
-#define DEFAULT_EJERK                 5.0    // (mm/sec)
-#define DEFAULT_PJERK				  5.0	// (mm/sec)
+#define DEFAULT_EJERK                 1.0    // (mm/sec)
+#define DEFAULT_PJERK				  1.0	// (mm/sec)
 
 //===========================================================================
 //=============================Additional Features===========================
