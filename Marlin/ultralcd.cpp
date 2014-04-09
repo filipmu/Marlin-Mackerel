@@ -245,6 +245,19 @@ static void lcd_sdcard_resume()
     card.startFileprint();
 }
 
+static void lcd_extruder_pause()
+{
+    extrude_status=extrude_status & 254;
+}
+static void lcd_extruder_resume()
+{
+    extrude_status=extrude_status|1;
+}
+
+
+
+
+
 static void lcd_sdcard_stop()
 {
     card.sdprinting = false;
@@ -269,6 +282,11 @@ static void lcd_main_menu()
         MENU_ITEM(submenu, MSG_PREPARE, lcd_prepare_menu);
     }
     MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
+    if (extrude_status & 1 >0)
+    	MENU_ITEM(function, MSG_PAUSE_EXTRUDER, lcd_extruder_pause);
+    else
+    	MENU_ITEM(function, MSG_RESUME_EXTRUDER, lcd_extruder_resume);
+/*
 #ifdef SDSUPPORT
     if (card.cardOK)
     {
@@ -292,6 +310,7 @@ static void lcd_main_menu()
 #endif
     }
 #endif
+*/
     END_MENU();
 }
 
@@ -381,6 +400,7 @@ static void lcd_tune_menu()
 #if TEMP_SENSOR_BED != 0
     MENU_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
 #endif
+    MENU_ITEM_EDIT(int3, MSG_PUL_RATIO, &pullermultiply, 10, 999);
     MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
     MENU_ITEM_EDIT(int3, MSG_FLOW, &extrudemultiply, 10, 999);
     MENU_ITEM_EDIT(int3, MSG_FLOW0, &extruder_multiply[0], 10, 999);
@@ -906,6 +926,7 @@ static void lcd_control_motion_menu()
     MENU_ITEM_EDIT(float52, MSG_YSTEPS, &axis_steps_per_unit[Y_AXIS], 5, 9999);
     MENU_ITEM_EDIT(float51, MSG_ZSTEPS, &axis_steps_per_unit[Z_AXIS], 5, 9999);
     MENU_ITEM_EDIT(float51, MSG_ESTEPS, &axis_steps_per_unit[E_AXIS], 5, 9999);
+    MENU_ITEM_EDIT(float51, MSG_PSTEPS, &axis_steps_per_unit[P_AXIS], 5, 9999);
 #ifdef ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
     MENU_ITEM_EDIT(bool, MSG_ENDSTOP_ABORT, &abort_on_endstop_hit);
 #endif
@@ -1496,6 +1517,22 @@ char *ftostr31ns(const float &x)
   conv[1]=(xx/100)%10+'0';
   conv[2]=(xx/10)%10+'0';
   conv[3]='.';
+  conv[4]=(xx)%10+'0';
+  conv[5]=0;
+  return conv;
+}
+
+char *ftostr22(const float &x)
+{
+  long xx=x*100;
+  if (xx >= 0)
+    conv[0]=(xx/1000)%10+'0';
+  else
+    conv[0]='-';
+  xx=abs(xx);
+  conv[1]=(xx/100)%10+'0';
+  conv[2]='.';
+  conv[3]=(xx/10)%10+'0';
   conv[4]=(xx)%10+'0';
   conv[5]=0;
   return conv;
