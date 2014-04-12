@@ -38,7 +38,7 @@
 	#ifdef CUSTOM_MENDEL_NAME
 		#define MACHINE_NAME CUSTOM_MENDEL_NAME
 	#else
-		#define MACHINE_NAME "Mendel"
+		#define MACHINE_NAME "Lyman Extruder"
 	#endif
 
 // Default firmware set to Mendel
@@ -68,7 +68,7 @@
 // LCD Menu Messages
 // Please note these are limited to 17 characters!
 
-	#define WELCOME_MSG MACHINE_NAME " ready."
+	#define WELCOME_MSG MACHINE_NAME " OK."
 	#define MSG_SD_INSERTED "Card inserted"
 	#define MSG_SD_REMOVED "Card removed"
 	#define MSG_MAIN "Main"
@@ -104,8 +104,9 @@
 	#define MSG_MOVE_01MM "Move 0.1mm"
 	#define MSG_MOVE_1MM "Move 1mm"
 	#define MSG_MOVE_10MM "Move 10mm"
-	#define MSG_SPEED "Speed"
+	#define MSG_SPEED "Speed mm/s"
 	#define MSG_NOZZLE "Nozzle"
+	#define MSG_HEATER "Extruder T"
 	#define MSG_NOZZLE1 "Nozzle2"
 	#define MSG_NOZZLE2 "Nozzle3"
 	#define MSG_BED "Bed"

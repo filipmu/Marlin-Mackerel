@@ -618,7 +618,7 @@ static float analog2temp(int raw, uint8_t e) {
   #endif
 
     //for debugging FMMDEBUGTEMP
-    return 220.0;
+    //return 220.0;
     		
   if(heater_ttbl_map[e] != NULL)
   {
@@ -673,7 +673,7 @@ static float analog2tempBed(int raw) {
     return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
   #else
     //for debugging FMMDEBUGTEMP
-    return 70.0;
+    //return 70.0;
     return 0;
   #endif
 }
