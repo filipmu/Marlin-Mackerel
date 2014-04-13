@@ -603,8 +603,8 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
   block->steps_e /= 100;
   block->steps_p = labs(target[P_AXIS]-position[P_AXIS]);  //FMM added P_AXIS
   //block->steps_p *= volumetric_multiplier[active_extruder];  //FMM not really needed
-  block->steps_p *= pullermultiply;
-  block->steps_p /= 100;
+  //block->steps_p *= pullermultiply; // FMM done at time of block request may not be needed
+  //block->steps_p /= 100; //FMM done at time of block request may not be needed
   
   
   block->step_event_count = max(block->steps_x, max(block->steps_y, max(block->steps_z, max(block->steps_e, block->steps_p))));  //FMM added P_AXIS
