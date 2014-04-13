@@ -187,6 +187,9 @@ CardReader card;
 float homing_feedrate[] = HOMING_FEEDRATE;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
 char extrude_status =0;
+float filament_width_desired= DESIRED_FILAMENT_DIA; //holds the desired filament width (i.e like 2.6mm)
+bool filament_control = false; //indicates that the filament width should control extrusion
+volatile float filament_width_meas = DESIRED_FILAMENT_DIA; //holds the filament width as measured by the sensor, default to desired
 int feedmultiply=100; //100->1 200->2
 int saved_feedmultiply;
 int pullermultiply = 100;

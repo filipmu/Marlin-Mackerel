@@ -409,6 +409,14 @@ static void lcd_implementation_status_screen()
     lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
     if (tTarget < 10)
         lcd.print(' ');
+    
+    //Check for filament sensor and show width
+   #if (FILWIDTH_PIN > -1)
+      lcd.setCursor(10, 0);
+      lcd_printPGM(PSTR("Dia "));
+      lcd.print(ftostr22(analog2widthFil()));
+   #endif
+
 
 # if EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
     //If we have an 2nd extruder or heated bed, show that in the top right corner
@@ -471,7 +479,7 @@ static void lcd_implementation_status_screen()
 # endif//LCD_WIDTH > 19
     lcd.setCursor(LCD_WIDTH - 6, 1);
     lcd.print('E');
-    lcd.print(ftostr22(act_feedrate/pullermultiply*100.0));
+    lcd.print(ftostr22(act_feedrate/pullermultiply*100.0*0.6));  //convert to rpm
 #endif//LCD_HEIGHT > 2
 
 #if LCD_HEIGHT > 3

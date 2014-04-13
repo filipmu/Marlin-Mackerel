@@ -489,6 +489,13 @@
     #define SDPOWER            -1
     #define SDSS               53
     #define LED_PIN            13
+
+	#if MOTHERBOARD == 34  //FMM added for Filament Extruder
+	  //define analog pin for the filament width sensor input
+	  //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
+      #define FILWIDTH_PIN        5
+    #endif
+
   #endif
 
   #if MOTHERBOARD == 33 || MOTHERBOARD == 35 || MOTHERBOARD == 67 || MOTHERBOARD == 68

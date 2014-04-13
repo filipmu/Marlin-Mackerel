@@ -3,15 +3,15 @@
 
 
 /*Notes for to dos
-* Basic motion control
+* Basic motion control - complete
 * Come up with right settings steps/mm, acceleration, and feed rate to get good behavior
-* Allow motion to be turned on/off via LCD
+* Allow motion to be turned on/off via LCD - complete
 * 
 * Figure our why motors pulse - complete was resetting failure
 * Figure out why motors miss steps (add heating fins?)
 * 
-* Calibrate the extruder in RPM
-* calibrate the puller in mm based on urethane wheel diameter
+* Calibrate the extruder in RPM - complete
+* calibrate the puller in mm based on urethane wheel diameter - complete
 * Add the control for two motors
 * link the motor velocities
 * 
@@ -19,8 +19,8 @@
 * Show more on the main display
 * 
 * Temp control
-* figure out the right thermister
-* seems to hit max or min temp
+* figure out the right thermister - complete
+* seems to hit max or min temp - fixed
 * tune the PID
 * 
 
@@ -472,7 +472,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 
 // default settings
 
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200.0*8/3,614, 663}  // default steps per unit for Ultimaker  //FMM added P_AXIS
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200.0*8/3,614, 663}  // default steps per unit for Ultimaker  //FMM added P_AXIS 
 #define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 30, 40}    // (mm/sec)  //FMM added P_AXIS
 #define DEFAULT_MAX_ACCELERATION      {9000,9000,100,100,100}    // X, Y, Z, E,P maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
 
@@ -511,7 +511,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define PLA_PREHEAT_HPB_TEMP 70
 #define PLA_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
 
-#define ABS_PREHEAT_HOTEND_TEMP 240
+#define ABS_PREHEAT_HOTEND_TEMP 180  //Set to 180 deg C based on Hugh's suggestion
 #define ABS_PREHEAT_HPB_TEMP 100
 #define ABS_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
 
@@ -743,7 +743,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 *************************************************************************/
 
 #define LYMAN_EXTRUDER
-
+#define DESIRED_FILAMENT_DIA 2.6 //define the desired Filament diameter
 
 
 

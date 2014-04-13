@@ -39,6 +39,7 @@
 //===========================================================================
 int target_temperature[EXTRUDERS] = { 0 };
 int target_temperature_bed = 0;
+int current_raw_filwidth = 0;  //Holds measured filament diameter
 int current_temperature_raw[EXTRUDERS] = { 0 };
 float current_temperature[EXTRUDERS] = { 0.0 };
 int current_temperature_bed_raw = 0;
@@ -678,6 +679,30 @@ static float analog2tempBed(int raw) {
   #endif
 }
 
+ 	// For converting raw Filament Width to milimeters
+ 	float analog2widthFil() {
+ 	  return current_raw_filwidth/16383.0*5.0;
+ 	  //return current_raw_filwidth;
+ 	}
+	
+ 	// For converting raw Filament Width to an extrusion ratio that is based on area, from a width input
+ 	int widthFil_to_extrusion_ratio(float nominal_width) {
+	  
+ 	  float temp;
+	  
+ 	  #if (FILWIDTH_PIN > -1)    //check if a sensor is supported
+ 	    filament_width_meas=current_raw_filwidth/16383.0*5.0;
+ 	  #endif  
+	    
+ 	    temp=nominal_width/filament_width_meas;
+	  
+ 	  return (temp*temp*100.0);
+ 	}
+
+
+
+
+
 /* Called to get the raw values into the the actual temperatures. The raw values are created in interrupt context,
     and this function is called from normal context as it is too slow to run in interrupts and will block the stepper routine otherwise */
 static void updateTemperaturesFromRawValues()
@@ -796,6 +821,17 @@ void tp_init()
        DIDR2 |= 1<<(TEMP_BED_PIN - 8); 
     #endif
   #endif
+       
+	//Filip added for Filament Sensor
+	 #if defined(FILWIDTH_PIN) && (FILWIDTH_PIN > -1)
+	   #if FILWIDTH_PIN < 8
+		  DIDR0 |= 1<<FILWIDTH_PIN; 
+	   #else
+		  DIDR2 |= 1<<(FILWIDTH_PIN - 8); 
+	   #endif
+	 #endif
+     
+       
   
   // Use timer0 for temperature measurement
   // Interleave temperature interrupt with millies interrupt
@@ -1049,7 +1085,9 @@ ISR(TIMER0_COMPB_vect)
   static unsigned long raw_temp_1_value = 0;
   static unsigned long raw_temp_2_value = 0;
   static unsigned long raw_temp_bed_value = 0;
-  static unsigned char temp_state = 8;
+  static unsigned long raw_filwidth_value = 0;  //FMM added for filament width sensor
+
+  static unsigned char temp_state = 10;  //FMM  one 2 more cases for filament width sensor measurement
   static unsigned char pwm_count = (1 << SOFT_PWM_SCALE);
   static unsigned char soft_pwm_0;
   #if (EXTRUDERS > 1) || defined(HEATERS_PARALLEL)
@@ -1188,10 +1226,36 @@ ISR(TIMER0_COMPB_vect)
       #if defined(TEMP_2_PIN) && (TEMP_2_PIN > -1)
         raw_temp_2_value += ADC;
       #endif
-      temp_state = 0;
+      temp_state = 8;
       temp_count++;
       break;
-    case 8: //Startup, delay initial temp reading a tiny bit so the hardware can settle.
+ 
+      
+      
+    case 8: //Prepare FILWIDTH
+      #if defined(FILWIDTH_PIN) && (FILWIDTH_PIN> -1)
+       #if FILWIDTH_PIN>7
+         ADCSRB = 1<<MUX5;
+	   #else
+         ADCSRB = 0;
+       #endif  
+       ADMUX = ((1 << REFS0) | (FILWIDTH_PIN & 0x07));
+       ADCSRA |= 1<<ADSC; // Start conversion
+      #endif
+      lcd_buttons_update();
+      temp_state = 9;
+      break;
+    case 9:   //Measure FILWIDTH
+      #if defined(FILWIDTH_PIN) && (FILWIDTH_PIN > -1)
+       //raw_filwidth_value += ADC;  //remove to use IIR filter approach
+       raw_filwidth_value= raw_filwidth_value-(raw_filwidth_value>>5);  //multipliy raw_filwidth_value by 31/32
+       raw_filwidth_value= raw_filwidth_value + (ADC<<5);  //add new ADC reading
+      #endif
+      temp_state = 0;  
+      break;
+
+      
+    case 10: //Startup, delay initial temp reading a tiny bit so the hardware can settle.
       temp_state = 0;
       break;
 //    default:
@@ -1215,6 +1279,12 @@ ISR(TIMER0_COMPB_vect)
       current_temperature_raw[2] = raw_temp_2_value;
 #endif
       current_temperature_bed_raw = raw_temp_bed_value;
+      
+      //Filip add similar code for Filament Sensor
+#if defined(FILWIDTH_PIN) && (FILWIDTH_PIN > -1)
+      current_raw_filwidth = raw_filwidth_value>>6;  //need to divide to get to 0-16384 range since we used 1/32 IIR filter approach
+#endif
+
     }
     
     temp_meas_ready = true;
@@ -1223,6 +1293,7 @@ ISR(TIMER0_COMPB_vect)
     raw_temp_1_value = 0;
     raw_temp_2_value = 0;
     raw_temp_bed_value = 0;
+    //raw_filwidth_value = 0;  //remove so that we use a IIR filter
 
 #if HEATER_0_RAW_LO_TEMP > HEATER_0_RAW_HI_TEMP
     if(current_temperature_raw[0] <= maxttemp_raw[0]) {
