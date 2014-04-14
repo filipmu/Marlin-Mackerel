@@ -585,9 +585,9 @@ void loop()
   
   //check that planning buffer is not full
   if(extrude_status & 1 >0){
-	  //calculate move
-	  destination[E_AXIS] = (float)0.1 + current_position[E_AXIS];  //extruder
-	  destination[P_AXIS] = (float)0.1*pullermultiply/100.0 + current_position[P_AXIS]; //puller
+	  //calculate move  - always scale step size to feedmultiply (was previously fix step side of 0.1)
+	  destination[E_AXIS] = (float)feedmultiply/100.0 + current_position[E_AXIS];  //extruder
+	  destination[P_AXIS] = (float)feedmultiply/100.0*pullermultiply/100.0 + current_position[P_AXIS]; //puller
 	  feedrate=20*60;
 	  act_feedrate=feedrate*feedmultiply/60.0/100.0;
 	  
