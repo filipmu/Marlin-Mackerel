@@ -26,6 +26,7 @@
 
 Debug notes:
 - Hardcoded the temperature reading of the extruder for testing - search for FMMDEBUGTEMP
+- Change how milimeters is calculated in the planner - search for FMMDEBUGMMPLAN
 
 
 */
@@ -215,10 +216,15 @@ Debug notes:
   #define PID_dT ((OVERSAMPLENR * 8.0)/(F_CPU / 64.0 / 256.0)) //sampling period of the temperature routine
 
 // If you are using a pre-configured hotend then you can use one of the value sets by uncommenting it
+//Lyman Filament Extruder
+    #define  DEFAULT_Kp 12.66
+    #define  DEFAULT_Ki 0.27
+    #define  DEFAULT_Kd 146.24
+
 // Ultimaker
-    #define  DEFAULT_Kp 22.2
-    #define  DEFAULT_Ki 1.08
-    #define  DEFAULT_Kd 114
+//    #define  DEFAULT_Kp 22.2
+//    #define  DEFAULT_Ki 1.08
+//    #define  DEFAULT_Kd 114
 
 // MakerGear
 //    #define  DEFAULT_Kp 7.0
@@ -472,12 +478,12 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 
 // default settings
 
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200.0*8/3,154*2, 166*2}  // default steps per unit for Ultimaker  //FMM added P_AXIS *2 for 1/2 step
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200.0*8/3,154*4, 166*4}  // default steps per unit for Ultimaker  //FMM added P_AXIS *4 for 1/4 step
 #define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 30, 40}    // (mm/sec)  //FMM added P_AXIS
-#define DEFAULT_MAX_ACCELERATION      {9000,9000,100,100,100}    // X, Y, Z, E,P maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
+#define DEFAULT_MAX_ACCELERATION      {9000,9000,100,900,900}    // X, Y, Z, E,P maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
 
 #define DEFAULT_ACCELERATION          3000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  100   // X, Y, Z and E max acceleration in mm/s^2 for retracts
+#define DEFAULT_RETRACT_ACCELERATION  900   // X, Y, Z and E max acceleration in mm/s^2 for retracts
 
 // Offset of the extruders (uncomment if using more than one and relying on firmware to position when changing).
 // The offset has to be X=0, Y=0 for the extruder 0 hotend (default extruder).
@@ -501,10 +507,10 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 // M501 - reads parameters from EEPROM (if you need reset them after you changed them temporarily).
 // M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
 //define this to enable EEPROM support
-//#define EEPROM_SETTINGS
+#define EEPROM_SETTINGS
 //to disable EEPROM Serial responses and decrease program space by ~1700 byte: comment this out:
 // please keep turned on if you can.
-//#define EEPROM_CHITCHAT
+#define EEPROM_CHITCHAT
 
 // Preheat Constants
 #define PLA_PREHEAT_HOTEND_TEMP 180

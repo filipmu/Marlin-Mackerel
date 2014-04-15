@@ -474,12 +474,12 @@ static void lcd_implementation_status_screen()
     //lcd_printPGM(PSTR(" Y"));
     lcd_printPGM(PSTR(" F"));
     //lcd.print(ftostr3(current_position[Y_AXIS]));
-    lcd.print(ftostr22(act_feedrate));
+    lcd.print(ftostr22(act_feedrate*pullermultiply/100.0));  //calculate the feed rate in mm/sec
 #  endif//EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
 # endif//LCD_WIDTH > 19
     lcd.setCursor(LCD_WIDTH - 6, 1);
     lcd.print('E');
-    lcd.print(ftostr22(act_feedrate/pullermultiply*100.0*0.6));  //convert to rpm
+    lcd.print(ftostr22(act_feedrate*0.6));  //convert to rpm
 #endif//LCD_HEIGHT > 2
 
 #if LCD_HEIGHT > 3

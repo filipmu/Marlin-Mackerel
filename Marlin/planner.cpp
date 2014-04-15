@@ -705,11 +705,16 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
   #endif
   delta_mm[Z_AXIS] = (target[Z_AXIS]-position[Z_AXIS])/axis_steps_per_unit[Z_AXIS];
   delta_mm[E_AXIS] = ((target[E_AXIS]-position[E_AXIS])/axis_steps_per_unit[E_AXIS])*volumetric_multiplier[active_extruder]*extrudemultiply/100.0;
-  delta_mm[P_AXIS] = ((target[P_AXIS]-position[P_AXIS])/axis_steps_per_unit[P_AXIS])*pullermultiply/100.0;  //FMM added P_AXIS
+  //delta_mm[P_AXIS] = ((target[P_AXIS]-position[P_AXIS])/axis_steps_per_unit[P_AXIS])*pullermultiply/100.0;  //FMM added P_AXIS
+  delta_mm[P_AXIS] = ((target[P_AXIS]-position[P_AXIS])/axis_steps_per_unit[P_AXIS]);  //FMM not sure if we need puller multiply here since used at block creation
   
   if ( block->steps_x <=dropsegments && block->steps_y <=dropsegments && block->steps_z <=dropsegments )
   {
-    block->millimeters = max(fabs(delta_mm[E_AXIS]),fabs(delta_mm[P_AXIS]));  //FMM consider adding P_AXIS
+    //block->millimeters = max(fabs(delta_mm[E_AXIS]),fabs(delta_mm[P_AXIS]));  //FMM consider adding P_AXIS
+    if(block->steps_e>dropsegments)
+    	block->millimeters = fabs(delta_mm[E_AXIS]);  // change how milimeters is calculated so that only E is used, unless P is only axis moving FMMDEBUGMMPLAN
+    else
+    	block->millimeters = fabs(delta_mm[P_AXIS]);
   } 
   else
   {

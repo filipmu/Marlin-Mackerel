@@ -104,7 +104,7 @@
 	#define MSG_MOVE_01MM "Move 0.1mm"
 	#define MSG_MOVE_1MM "Move 1mm"
 	#define MSG_MOVE_10MM "Move 10mm"
-	#define MSG_SPEED "Speed mm/s"
+	#define MSG_SPEED "E Speed Fact"
 	#define MSG_NOZZLE "Nozzle"
 	#define MSG_HEATER "Extruder T"
 	#define MSG_NOZZLE1 "Nozzle2"
