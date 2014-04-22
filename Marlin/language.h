@@ -107,6 +107,7 @@
 	#define MSG_SPEED "E Speed Fact"
 	#define MSG_NOZZLE "Nozzle"
 	#define MSG_HEATER "Extruder T"
+    #define MSG_FILAMENT "Fil Dia"
 	#define MSG_NOZZLE1 "Nozzle2"
 	#define MSG_NOZZLE2 "Nozzle3"
 	#define MSG_BED "Bed"

@@ -485,7 +485,8 @@ void lcd_preheat_extruder()
 {
     setTargetHotend0(absPreheatHotendTemp);
    // setTargetBed(absPreheatHPBTemp);
-   // fanSpeed = absPreheatFanSpeed;
+    fanSpeed = absPreheatFanSpeed;
+    LCD_ALERTMESSAGEPGM("Extruder Warming Up");
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
 }
@@ -941,7 +942,8 @@ static void lcd_control_temperature_preheat_abs_settings_menu()
     START_MENU();
     MENU_ITEM(back, MSG_TEMPERATURE, lcd_control_temperature_menu);
     MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &absPreheatFanSpeed, 0, 255);
-    MENU_ITEM_EDIT(int3, MSG_NOZZLE, &absPreheatHotendTemp, 0, HEATER_0_MAXTEMP - 15);
+    MENU_ITEM_EDIT(int3, MSG_HEATER, &absPreheatHotendTemp, 0, HEATER_0_MAXTEMP - 15);
+    MENU_ITEM_EDIT(float32,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
 #if TEMP_SENSOR_BED != 0
     MENU_ITEM_EDIT(int3, MSG_BED, &absPreheatHPBTemp, 0, BED_MAXTEMP - 15);
 #endif
