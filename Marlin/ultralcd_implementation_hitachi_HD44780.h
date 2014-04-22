@@ -410,12 +410,13 @@ static void lcd_implementation_status_screen()
     if (tTarget < 10)
         lcd.print(' ');
     
-    //Check for filament sensor and show width
-   #if (FILWIDTH_PIN > -1)
-      lcd.setCursor(10, 0);
-      lcd_printPGM(PSTR("Dia "));
-      lcd.print(ftostr22(analog2widthFil()));
-   #endif
+    lcd.setCursor(12, 0);
+    lcd_printPGM(PSTR("RPM"));
+    lcd.print(ftostr22(extruder_rpm));  //convert to rpm
+    
+
+      
+   
 
 
 # if EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
@@ -466,27 +467,45 @@ static void lcd_implementation_status_screen()
     if (tTarget < 10)
         lcd.print(' ');
 #  else
-    lcd.setCursor(0,1);
-    //lcd.print('X');
-    lcd.print('L');
-    //lcd.print(ftostr3(current_position[X_AXIS]));
-    lcd.print(ftostr32(current_position[P_AXIS]/1000));
-    //lcd_printPGM(PSTR(" Y"));
-    lcd_printPGM(PSTR(" F"));
-    //lcd.print(ftostr3(current_position[Y_AXIS]));
-    lcd.print(ftostr22(act_feedrate*pullermultiply/100.0));  //calculate the feed rate in mm/sec
+    
+    //Check for filament sensor and show width
+   #if (FILWIDTH_PIN > -1)
+      lcd.setCursor(0, 1);
+      lcd.print('d');
+      //lcd.print(ftostr12(analog2widthFil()));
+      lcd.print(ftostr12(current_filwidth));
+   #endif   
+   lcd.setCursor(6,1);
+   lcd.print(LCD_STR_FEEDRATE[0]);
+   lcd.print(ftostr22(puller_feedrate));  //give the feed rate in mm/sec
+   lcd.setCursor(13,1);   
+   lcd.print('L');
+   lcd.print(ftostr6(current_position[P_AXIS]));
+   
+   
 #  endif//EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
 # endif//LCD_WIDTH > 19
-    lcd.setCursor(LCD_WIDTH - 6, 1);
-    lcd.print('E');
-    lcd.print(ftostr22(act_feedrate*0.6));  //convert to rpm
+    
 #endif//LCD_HEIGHT > 2
 
 #if LCD_HEIGHT > 3
     lcd.setCursor(0, 2);
-    lcd.print(LCD_STR_FEEDRATE[0]);
-    lcd.print(itostr3(feedmultiply));
-    lcd.print('%');
+    lcd_printPGM(PSTR("Av"));
+    lcd.print(ftostr12(avg_measured_filament_width));
+    lcd.setCursor(7, 2);
+    lcd_printPGM(PSTR("Mn"));
+    lcd.print(ftostr12(min_measured_filament_width));
+    lcd.setCursor(14, 2);
+    lcd_printPGM(PSTR("Mx"));
+    lcd.print(ftostr12(max_measured_filament_width));
+            
+            
+    //lcd.print(LCD_STR_FEEDRATE[0]);
+   // lcd.print(itostr3(feedmultiply));
+    //lcd.print('%');
+    
+    /*
+    // Review the below to see if we want row 3 to alternate between avg,min,max and the below with time or a setting.
 # if LCD_WIDTH > 19
 #  ifdef SDSUPPORT
     lcd.setCursor(7, 2);
@@ -509,6 +528,9 @@ static void lcd_implementation_status_screen()
     }else{
         lcd_printPGM(PSTR("--:--"));
     }
+    
+    */
+    
 #endif
 
     //Status message line on the last line

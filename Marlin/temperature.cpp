@@ -39,7 +39,8 @@
 //===========================================================================
 int target_temperature[EXTRUDERS] = { 0 };
 int target_temperature_bed = 0;
-int current_raw_filwidth = 0;  //Holds measured filament diameter
+int current_raw_filwidth = 0;  //Holds measured filament diameter in raw format
+float current_filwidth = 0; //Holds current measured filament diameter in mm
 int current_temperature_raw[EXTRUDERS] = { 0 };
 float current_temperature[EXTRUDERS] = { 0.0 };
 int current_temperature_bed_raw = 0;
@@ -719,7 +720,11 @@ static void updateTemperaturesFromRawValues()
     #ifdef TEMP_SENSOR_1_AS_REDUNDANT
       redundant_temperature = analog2temp(redundant_temperature_raw, 1);
     #endif
-    //Reset the watchdog after we know we have a temperature measurement.
+ 
+     current_filwidth=analog2widthFil();
+     
+      
+      //Reset the watchdog after we know we have a temperature measurement.
     watchdog_reset();
 
     CRITICAL_SECTION_START;

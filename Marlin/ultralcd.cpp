@@ -224,8 +224,8 @@ static void lcd_status_screen()
 
     if (feedmultiply < 10)
         feedmultiply = 10;
-    if (feedmultiply > 999)
-        feedmultiply = 999;
+    if (feedmultiply > 200)
+        feedmultiply = 200;
 #endif//ULTIPANEL
 }
 
@@ -246,16 +246,41 @@ static void lcd_sdcard_resume()
     starttime=millis();
 }
 
+
+static void lcd_clear_statistics()
+	{
+	avg_measured_filament_width=0;
+	sum_measured_filament_width=0;
+	n_measured_filament_width=0;
+	min_measured_filament_width=0;
+	max_measured_filament_width=0;
+	lcd_return_to_status();
+	
+	}
+
+static void lcd_enable_statistics()
+	{
+	extrude_status = extrude_status | 128;
+	lcd_return_to_status();
+	}
+
+static void lcd_disable_statistics()
+	{
+	extrude_status = extrude_status & 127;
+	lcd_return_to_status();
+	}
+
 static void lcd_extruder_pause()
 {
     extrude_status=extrude_status & 254;
+    lcd_disable_statistics();
 }
 static void lcd_extruder_resume()
 {
     extrude_status=extrude_status|1;
+    starttime=millis();
+    lcd_enable_statistics();
 }
-
-
 
 
 
@@ -276,6 +301,17 @@ static void lcd_main_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_WATCH, lcd_status_screen);
+    if (extrude_status & 1 >0)
+       	MENU_ITEM(function, MSG_PAUSE_EXTRUDER, lcd_extruder_pause);
+       else
+       	MENU_ITEM(function, MSG_RESUME_EXTRUDER, lcd_extruder_resume);
+    
+    MENU_ITEM(function, MSG_CLEAR_STATS, lcd_clear_statistics);
+    if(extrude_status & 128>0)
+    	MENU_ITEM(function, MSG_DISABLE_STATS, lcd_disable_statistics);
+    else
+    	MENU_ITEM(function, MSG_ENABLE_STATS, lcd_enable_statistics);
+    
     if (movesplanned() || IS_SD_PRINTING)
     {
         MENU_ITEM(submenu, MSG_TUNE, lcd_tune_menu);
@@ -283,10 +319,7 @@ static void lcd_main_menu()
         MENU_ITEM(submenu, MSG_PREPARE, lcd_prepare_menu);
     }
     MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
-    if (extrude_status & 1 >0)
-    	MENU_ITEM(function, MSG_PAUSE_EXTRUDER, lcd_extruder_pause);
-    else
-    	MENU_ITEM(function, MSG_RESUME_EXTRUDER, lcd_extruder_resume);
+   
 /*
 #ifdef SDSUPPORT
     if (card.cardOK)
@@ -386,6 +419,10 @@ static void lcd_babystep_z()
 }
 #endif //BABYSTEPPING
 
+
+
+
+
 static void lcd_tune_menu()
 {
     START_MENU();
@@ -439,6 +476,7 @@ void lcd_preheat_abs0()
     setTargetHotend0(absPreheatHotendTemp);
     setTargetBed(absPreheatHPBTemp);
     fanSpeed = absPreheatFanSpeed;
+    LCD_ALERTMESSAGEPGM("Extruder Warming Up");
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
 }
@@ -580,6 +618,7 @@ void lcd_cooldown()
     setTargetHotend2(0);
     setTargetBed(0);
     fanSpeed = 0;
+    LCD_ALERTMESSAGEPGM("Extruder Cooling");
     lcd_return_to_status();
 }
 
@@ -1534,6 +1573,8 @@ char *ftostr31ns(const float &x)
   return conv;
 }
 
+
+
 char *ftostr22(const float &x)
 {
   long xx=x*100;
@@ -1547,6 +1588,21 @@ char *ftostr22(const float &x)
   conv[3]=(xx/10)%10+'0';
   conv[4]=(xx)%10+'0';
   conv[5]=0;
+  return conv;
+}
+
+char *ftostr12(const float &x)
+{
+  long xx=x*100;
+  if (xx >= 0)
+    conv[0]=(xx/100)%10+'0';
+  else
+    conv[0]='-';
+  xx=abs(xx);
+  conv[1]='.';
+  conv[2]=(xx/10)%10+'0';
+  conv[3]=(xx)%10+'0';
+  conv[4]=0;
   return conv;
 }
 
@@ -1635,6 +1691,37 @@ char *itostr4(const int &xx)
   conv[4]=0;
   return conv;
 }
+
+//  convert float to string with 123456 format
+char *ftostr6(const float &x)
+{
+  long xx=abs(x);
+  
+  if (xx >= 100000)
+      conv[0]=(xx/100000)%10+'0';
+    else
+      conv[0]=' ';
+  if (xx >= 10000)
+    conv[1]=(xx/10000)%10+'0';
+  else
+    conv[1]=' ';
+  if (xx >= 1000)
+    conv[2]=(xx/1000)%10+'0';
+  else
+    conv[2]=' ';
+  if (xx >= 100)
+    conv[3]=(xx/100)%10+'0';
+  else
+    conv[3]=' ';
+  if (xx >= 10)
+    conv[4]=(xx/10)%10+'0';
+  else
+    conv[4]=' ';
+  conv[5]=(xx)%10+'0';
+  conv[6]=0;
+  return conv;
+}
+
 
 //  convert float to string with 12345 format
 char *ftostr5(const float &x)

@@ -186,7 +186,7 @@ CardReader card;
 #endif
 float homing_feedrate[] = HOMING_FEEDRATE;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
-char extrude_status =0;
+unsigned char extrude_status =0;
 float filament_width_desired= DESIRED_FILAMENT_DIA; //holds the desired filament width (i.e like 2.6mm)
 bool filament_control = false; //indicates that the filament width should control extrusion
 volatile float filament_width_meas = DESIRED_FILAMENT_DIA; //holds the filament width as measured by the sensor, default to desired
@@ -194,7 +194,14 @@ int feedmultiply=100; //100->1 200->2
 int saved_feedmultiply;
 int pullermultiply = 100;
 int extrudemultiply=100; //100->1 200->2
-float act_feedrate;  //real time feed rate
+float extruder_feedrate;  //extruder real time 'feed rate' - yet we are really interested in RPM
+float extruder_rpm; //real time extruder rpm
+float puller_feedrate; //puller motor feed rate in mm/sec
+float max_measured_filament_width=0;
+float min_measured_filament_width=0;
+float sum_measured_filament_width=0;  //numerator in average
+float n_measured_filament_width=0;  //denominator in average
+float avg_measured_filament_width=0; //average
 int extruder_multiply[EXTRUDERS] = {100
   #if EXTRUDERS > 1
     , 100
@@ -318,6 +325,8 @@ unsigned long stoptime=0;
 
 static uint8_t tmp_extruder;
 
+static float extruder_increment;  //used to calculate the increment to add to create the next planning move for the extruder motor
+static float puller_increment; //used to calculate the increment to add to create the next planning move for the puller motor
 
 bool Stopped=false;
 
@@ -581,21 +590,59 @@ void loop()
   checkHitEndstops();
   lcd_update();
   
+  //FMM calculate max, min, and average filament width
+  
+  if(extrude_status & 128 >0) //check whether we should collect stats on filament width
+	  {
+	  if (min_measured_filament_width>current_filwidth || min_measured_filament_width==0)
+		  min_measured_filament_width=current_filwidth;
+	  if (max_measured_filament_width<current_filwidth)
+	  		  max_measured_filament_width=current_filwidth;
+	  sum_measured_filament_width = sum_measured_filament_width+current_filwidth;
+	  n_measured_filament_width = n_measured_filament_width + 1.0;
+	  avg_measured_filament_width=sum_measured_filament_width/n_measured_filament_width;
+	  
+	  }
+	  
+  
+  
   //FMM generate extruder motion based on LCD inputs
   
   //check that planning buffer is not full
   if(extrude_status & 1 >0){
-	  //calculate move  - always scale step size to feedmultiply (was previously fix step side of 0.1)
-	  destination[E_AXIS] = (float)feedmultiply/100.0 + current_position[E_AXIS];  //extruder
-	  destination[P_AXIS] = (float)feedmultiply/100.0*pullermultiply/100.0 + current_position[P_AXIS]; //puller
 	  feedrate=20*60;
-	  act_feedrate=feedrate*feedmultiply/60.0/100.0;
+	  extruder_increment=feedmultiply/100.0;
+	  puller_increment=extruder_increment*pullermultiply/100.0;
+	  
+	  extruder_feedrate=feedrate*extruder_increment/60.0;
+	  puller_feedrate=extruder_feedrate*pullermultiply/100.0;
+	  
+	  //calculate move  - always scale step size to feedmultiply (was previously fix step side of 0.1)
+	  destination[P_AXIS] = puller_increment + current_position[P_AXIS]; //puller
+	  
+	  	  
+	  	  
+	  if(degHotend(active_extruder)>EXTRUDE_MINTEMP)  //check that extruder is at temp
+		  {//calculate move  - always scale step size to feedmultiply (was previously fix step side of 0.1)
+		  destination[E_AXIS] = extruder_increment + current_position[E_AXIS];  //extruder
+		  extruder_rpm=extruder_feedrate*0.6;  //convert to rpm
+		  }
+	  else
+		  extruder_rpm=0.0;
+	  
 	  
 	  //send move
 	  previous_millis_cmd = millis();  //refresh the kill watchdog timer
-	  plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS], act_feedrate, active_extruder);  //FMM added P_AXIS
+	  plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS], extruder_feedrate, active_extruder);  //FMM added P_AXIS
 	  current_position[E_AXIS]=destination[E_AXIS];
 	  current_position[P_AXIS]=destination[P_AXIS];
+  }
+  else{
+	  extruder_increment=0;
+	  extruder_feedrate=0;
+	  puller_increment=0;
+	  puller_feedrate=0;
+	  extruder_rpm=0;
   }
   
 }

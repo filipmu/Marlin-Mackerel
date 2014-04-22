@@ -200,11 +200,18 @@ void setPwmFrequency(uint8_t pin, int val);
   #define CRITICAL_SECTION_END    SREG = _sreg;
 #endif //CRITICAL_SECTION_START
 
-extern float act_feedrate;
+extern float extruder_feedrate;
+extern float extruder_rpm; 
+extern float puller_feedrate;
 extern float homing_feedrate[];
 extern bool axis_relative_modes[];
-extern char extrude_status;
+extern unsigned char extrude_status;
 extern float filament_width_desired; //holds the desired filament width (2.7mm)
+extern float max_measured_filament_width;
+extern float min_measured_filament_width;
+extern float sum_measured_filament_width; 
+extern float n_measured_filament_width;  
+extern float avg_measured_filament_width; 
 extern bool filament_control; //indicates that the filament width should control extrusion
 extern volatile float filament_width_meas; //holds the filament width as measured by the sensor
 extern int feedmultiply;

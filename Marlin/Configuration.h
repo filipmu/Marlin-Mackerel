@@ -4,25 +4,35 @@
 
 /*Notes for to dos
 * Basic motion control - complete
-* Come up with right settings steps/mm, acceleration, and feed rate to get good behavior
+* Come up with right settings steps/mm, acceleration, and feed rate to get good behavior - complete
 * Allow motion to be turned on/off via LCD - complete
 * 
-* Figure our why motors pulse - complete was resetting failure
-* Figure out why motors miss steps (add heating fins?)
+* Figure our why motors pulse - complete was resetting failure 
+* Figure out why motors miss steps (add heating fins?) - complete
 * 
 * Calibrate the extruder in RPM - complete
 * calibrate the puller in mm based on urethane wheel diameter - complete
-* Add the control for two motors
-* link the motor velocities
+* Add the control for two motors  - complete
+* link the motor velocities so that the puller motor is a percentage of the extruder RPM - complete
 * 
 * Display items
-* Show more on the main display
+* Show more on the main display (length, rpm, diameter) - complete
 * 
 * Temp control
 * figure out the right thermister - complete
 * seems to hit max or min temp - fixed
-* tune the PID
+* tune the PID - complete
 * 
+* Filament width
+* Add input and code for filament width sensor - complete
+* 
+* add an input for turning the extruder motor on/off
+* get PID to work with the filament width to puller speed control and add LCD manual/automatic control
+* add filament dia max,min, avg, and some way to clear and freeze it
+* add winder on/off control with an input, screen way, and #define to enable/disable in code
+* make sure new configuration items are saved in flash
+* add new g-codes for manual/automatic control to allow it to be controlled via pronterface
+* clean-up of LCD menus
 
 Debug notes:
 - Hardcoded the temperature reading of the extruder for testing - search for FMMDEBUGTEMP
@@ -478,8 +488,8 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 
 // default settings
 
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200.0*8/3,154*4, 166*4}  // default steps per unit for Ultimaker  //FMM added P_AXIS *4 for 1/4 step
-#define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 30, 40}    // (mm/sec)  //FMM added P_AXIS
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200.0*8/3,154*16, 30.6*16}  // default steps per unit for Ultimaker  //FMM added P_AXIS *16 for 1/16 step
+#define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 40, 40}    // (mm/sec)  //FMM added P_AXIS
 #define DEFAULT_MAX_ACCELERATION      {9000,9000,100,900,900}    // X, Y, Z, E,P maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
 
 #define DEFAULT_ACCELERATION          3000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
