@@ -412,8 +412,12 @@ static void lcd_implementation_status_screen()
     
     lcd.setCursor(12, 0);
     lcd_printPGM(PSTR("RPM"));
-    lcd.print(ftostr22(extruder_rpm));  //convert to rpm
-    
+    if((extrude_status & ES_SWITCH_SET) && (extrude_status & ES_HOT_SET))  //check if extruder motor switch is on
+    	lcd.print(ftostr22(extruder_rpm));  //convert to rpm
+    else if(extrude_status & ES_HOT_SET)
+    	lcd_printPGM(PSTR(" Off "));
+    else
+    	lcd_printPGM(PSTR(" Cold "));
 
       
    

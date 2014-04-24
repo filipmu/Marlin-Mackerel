@@ -494,6 +494,8 @@
 	  //define analog pin for the filament width sensor input
 	  //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
       #define FILWIDTH_PIN        5
+	  //Use the RAMPS 1.4 Digital input D3 (usually XMIN endstop pin)
+	  #define EXTRUDER_MOTOR_ON_OFF_PIN		3
     #endif
 
   #endif

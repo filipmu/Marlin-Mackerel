@@ -260,24 +260,24 @@ static void lcd_clear_statistics()
 
 static void lcd_enable_statistics()
 	{
-	extrude_status = extrude_status | 128;
+	extrude_status = extrude_status | ES_STATS_SET;
 	lcd_return_to_status();
 	}
 
 static void lcd_disable_statistics()
 	{
-	extrude_status = extrude_status & 127;
+	extrude_status = extrude_status & ES_STATS_CLEAR;
 	lcd_return_to_status();
 	}
 
 static void lcd_extruder_pause()
 {
-    extrude_status=extrude_status & 254;
+    extrude_status=extrude_status & ES_ENABLE_CLEAR;
     lcd_disable_statistics();
 }
 static void lcd_extruder_resume()
 {
-    extrude_status=extrude_status|1;
+    extrude_status=extrude_status|ES_ENABLE_SET;
     starttime=millis();
     lcd_enable_statistics();
 }
@@ -296,22 +296,46 @@ static void lcd_sdcard_stop()
     autotempShutdown();
 }
 
+void lcd_preheat_extruder()
+{
+    setTargetHotend0(absPreheatHotendTemp);
+   // setTargetBed(absPreheatHPBTemp);
+    fanSpeed = absPreheatFanSpeed;
+    LCD_MESSAGEPGM("Extruder Warming Up");
+    lcd_return_to_status();
+    setWatch(); // heater sanity check timer
+}
+
+
+void lcd_cooldown()
+{
+    setTargetHotend0(0);
+    setTargetHotend1(0);
+    setTargetHotend2(0);
+    setTargetBed(0);
+    fanSpeed = 0;
+    LCD_MESSAGEPGM("Extruder Cooling");
+    lcd_return_to_status();
+}
+
+
 /* Menu implementation */
 static void lcd_main_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_WATCH, lcd_status_screen);
-    if (extrude_status & 1 >0)
+    MENU_ITEM(function, MSG_PREHEAT_ABS, lcd_preheat_extruder);
+    if (extrude_status & ES_ENABLE_SET >0)
        	MENU_ITEM(function, MSG_PAUSE_EXTRUDER, lcd_extruder_pause);
        else
        	MENU_ITEM(function, MSG_RESUME_EXTRUDER, lcd_extruder_resume);
     
     MENU_ITEM(function, MSG_CLEAR_STATS, lcd_clear_statistics);
-    if(extrude_status & 128>0)
+    if(extrude_status & ES_STATS_SET>0)
     	MENU_ITEM(function, MSG_DISABLE_STATS, lcd_disable_statistics);
     else
     	MENU_ITEM(function, MSG_ENABLE_STATS, lcd_enable_statistics);
-    
+    MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
     if (movesplanned() || IS_SD_PRINTING)
     {
         MENU_ITEM(submenu, MSG_TUNE, lcd_tune_menu);
@@ -476,20 +500,12 @@ void lcd_preheat_abs0()
     setTargetHotend0(absPreheatHotendTemp);
     setTargetBed(absPreheatHPBTemp);
     fanSpeed = absPreheatFanSpeed;
-    LCD_ALERTMESSAGEPGM("Extruder Warming Up");
+    LCD_MESSAGEPGM("Extruder Warming Up");
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
 }
 
-void lcd_preheat_extruder()
-{
-    setTargetHotend0(absPreheatHotendTemp);
-   // setTargetBed(absPreheatHPBTemp);
-    fanSpeed = absPreheatFanSpeed;
-    LCD_ALERTMESSAGEPGM("Extruder Warming Up");
-    lcd_return_to_status();
-    setWatch(); // heater sanity check timer
-}
+
 
 
 #if TEMP_SENSOR_1 != 0 //2nd extruder preheat
@@ -612,16 +628,7 @@ static void lcd_preheat_abs_menu()
     END_MENU();
 }
 
-void lcd_cooldown()
-{
-    setTargetHotend0(0);
-    setTargetHotend1(0);
-    setTargetHotend2(0);
-    setTargetBed(0);
-    fanSpeed = 0;
-    LCD_ALERTMESSAGEPGM("Extruder Cooling");
-    lcd_return_to_status();
-}
+
 
 static void lcd_prepare_menu()
 {
@@ -641,10 +648,10 @@ static void lcd_prepare_menu()
     MENU_ITEM(submenu, MSG_PREHEAT_ABS, lcd_preheat_abs_menu);
   #else
  //   MENU_ITEM(function, MSG_PREHEAT_PLA, lcd_preheat_pla0);
-    MENU_ITEM(function, MSG_PREHEAT_ABS, lcd_preheat_extruder);
+ //   MENU_ITEM(function, MSG_PREHEAT_ABS, lcd_preheat_extruder);
   #endif
 #endif
-    MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
+//    MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
 #if PS_ON_PIN > -1
     if (powersupply)
     {

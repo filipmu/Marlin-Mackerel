@@ -26,9 +26,9 @@
 * Filament width
 * Add input and code for filament width sensor - complete
 * 
-* add an input for turning the extruder motor on/off
+* add an input for turning the extruder motor on/off - complete
 * get PID to work with the filament width to puller speed control and add LCD manual/automatic control
-* add filament dia max,min, avg, and some way to clear and freeze it
+* add filament dia max,min, avg, and some way to clear and freeze it - complete
 * add winder on/off control with an input, screen way, and #define to enable/disable in code
 * make sure new configuration items are saved in flash
 * add new g-codes for manual/automatic control to allow it to be controlled via pronterface

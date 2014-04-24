@@ -423,6 +423,14 @@ void setup_photpin()
   #endif
 }
 
+void setup_extruder_on_off_pin()
+	{
+	#if defined(EXTRUDER_MOTOR_ON_OFF_PIN) && EXTRUDER_MOTOR_ON_OFF_PIN > -1
+	   SET_INPUT(EXTRUDER_MOTOR_ON_OFF_PIN);
+	   WRITE(EXTRUDER_MOTOR_ON_OFF_PIN,HIGH);  //enable high pullup for input pin
+	#endif
+	}
+
 void setup_powerhold()
 {
   #if defined(SUICIDE_PIN) && SUICIDE_PIN > -1
@@ -592,7 +600,7 @@ void loop()
   
   //FMM calculate max, min, and average filament width
   
-  if(extrude_status & 128 >0) //check whether we should collect stats on filament width
+  if(extrude_status & ES_STATS_SET >0) //check whether we should collect stats on filament width
 	  {
 	  if (min_measured_filament_width>current_filwidth || min_measured_filament_width==0)
 		  min_measured_filament_width=current_filwidth;
@@ -608,8 +616,31 @@ void loop()
   
   //FMM generate extruder motion based on LCD inputs
   
-  //check that planning buffer is not full
-  if(extrude_status & 1 >0){
+  if (READ(EXTRUDER_MOTOR_ON_OFF_PIN))  //check if pin is high (=off)
+	  extrude_status=extrude_status & ES_SWITCH_CLEAR;
+  else
+	  extrude_status= extrude_status | ES_SWITCH_SET;
+  
+  if(degHotend(active_extruder)>EXTRUDE_MINTEMP)  //check if extruder at min heated temp
+	  extrude_status=extrude_status | ES_HOT_SET;
+  else
+	  {
+	  extrude_status=extrude_status & ES_HOT_CLEAR;
+	  extrude_status=extrude_status & ES_TEMP_CLEAR;
+	  }
+ 
+  
+  
+		  
+  if(((degHotend(active_extruder) >= (degTargetHotend(active_extruder)-TEMP_WINDOW)) && (degHotend(active_extruder) <= (degTargetHotend(active_extruder)+TEMP_WINDOW)))  && ((extrude_status & ES_TEMP_SET)==0))  //check if extruder at or near setpoint
+  	  {
+	  extrude_status=extrude_status | ES_TEMP_SET;
+	  LCD_MESSAGEPGM(MSG_HEATING_COMPLETE);
+  	  }
+  	
+  
+  
+  if(extrude_status & ES_ENABLE_SET >0){
 	  feedrate=20*60;
 	  extruder_increment=feedmultiply/100.0;
 	  puller_increment=extruder_increment*pullermultiply/100.0;
@@ -620,9 +651,9 @@ void loop()
 	  //calculate move  - always scale step size to feedmultiply (was previously fix step side of 0.1)
 	  destination[P_AXIS] = puller_increment + current_position[P_AXIS]; //puller
 	  
+
 	  	  
-	  	  
-	  if(degHotend(active_extruder)>EXTRUDE_MINTEMP)  //check that extruder is at temp
+	  if((extrude_status & ES_HOT_SET) && (extrude_status & ES_SWITCH_SET))  //check that extruder is at temp and switch in on
 		  {//calculate move  - always scale step size to feedmultiply (was previously fix step side of 0.1)
 		  destination[E_AXIS] = extruder_increment + current_position[E_AXIS];  //extruder
 		  extruder_rpm=extruder_feedrate*0.6;  //convert to rpm

@@ -206,6 +206,20 @@ extern float puller_feedrate;
 extern float homing_feedrate[];
 extern bool axis_relative_modes[];
 extern unsigned char extrude_status;
+#define ES_ENABLE_SET 1
+#define ES_SWITCH_SET 2
+#define ES_AUTO_SET 4
+#define ES_HOT_SET 8
+#define ES_TEMP_SET 16
+#define ES_STATS_SET 128
+#define ES_ENABLE_CLEAR 254
+#define ES_SWITCH_CLEAR 253
+#define ES_AUTO_CLEAR 251
+#define ES_HOT_CLEAR 247
+#define ES_TEMP_CLEAR 239
+#define ES_STATS_CLEAR 127
+
+
 extern float filament_width_desired; //holds the desired filament width (2.7mm)
 extern float max_measured_filament_width;
 extern float min_measured_filament_width;
