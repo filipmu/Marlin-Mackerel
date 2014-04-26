@@ -162,6 +162,8 @@
 	#define MSG_RESUME_PRINT "Resume print"
     #define MSG_PAUSE_EXTRUDER "Pause extruder"
 	#define MSG_RESUME_EXTRUDER "Resume extruder"
+    #define MSG_AUTO_EXTRUDER "Extruder Auto Contrl"
+    #define MSG_MAN_EXTRUDER "Extruder Man Control"
 	#define MSG_CLEAR_STATS "Clear Statistics"
 	#define MSG_ENABLE_STATS "Enable Statistics"
 	#define MSG_DISABLE_STATS "Pause Statistics"

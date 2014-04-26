@@ -188,8 +188,6 @@ float homing_feedrate[] = HOMING_FEEDRATE;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
 unsigned char extrude_status =0;
 float filament_width_desired= DESIRED_FILAMENT_DIA; //holds the desired filament width (i.e like 2.6mm)
-bool filament_control = false; //indicates that the filament width should control extrusion
-volatile float filament_width_meas = DESIRED_FILAMENT_DIA; //holds the filament width as measured by the sensor, default to desired
 int feedmultiply=100; //100->1 200->2
 int saved_feedmultiply;
 int pullermultiply = 100;
@@ -202,6 +200,14 @@ float min_measured_filament_width=0;
 float sum_measured_filament_width=0;  //numerator in average
 float n_measured_filament_width=0;  //denominator in average
 float avg_measured_filament_width=0; //average
+float filament_p;
+float filament_i;
+float filament_d;
+float filament_i_state;
+float filament_error;
+float filament_control;
+float filament_meas_last;
+
 int extruder_multiply[EXTRUDERS] = {100
   #if EXTRUDERS > 1
     , 100
@@ -600,7 +606,7 @@ void loop()
   
   //FMM calculate max, min, and average filament width
   
-  if(extrude_status & ES_STATS_SET >0) //check whether we should collect stats on filament width
+  if((extrude_status & ES_STATS_SET) >0) //check whether we should collect stats on filament width
 	  {
 	  if (min_measured_filament_width>current_filwidth || min_measured_filament_width==0)
 		  min_measured_filament_width=current_filwidth;
@@ -640,7 +646,20 @@ void loop()
   	
   
   
-  if(extrude_status & ES_ENABLE_SET >0){
+  if((extrude_status & ES_ENABLE_SET) >0){
+	  
+	  
+	  if((extrude_status & ES_AUTO_SET) >0){
+		//  Extruder in Automatic control
+		  
+		  pullermultiply=(120 - filament_control);
+		  
+		  
+		  
+	  }
+	  
+	  
+	  
 	  feedrate=20*60;
 	  extruder_increment=feedmultiply/100.0;
 	  puller_increment=extruder_increment*pullermultiply/100.0;
@@ -2700,25 +2719,25 @@ void process_commands()
       }
       break;
     #endif //PIDTEMP
-    #ifdef PIDTEMPBED
+    //#ifdef PIDTEMPBED
     case 304: // M304
       {
-        if(code_seen('P')) bedKp = code_value();
-        if(code_seen('I')) bedKi = scalePID_i(code_value());
-        if(code_seen('D')) bedKd = scalePID_d(code_value());
+        if(code_seen('P')) fwidthKp = code_value();
+        if(code_seen('I')) fwidthKi = scalePID_i(code_value());
+        if(code_seen('D')) fwidthKd = scalePID_d(code_value());
 
         updatePID();
         SERIAL_PROTOCOL(MSG_OK);
         SERIAL_PROTOCOL(" p:");
-        SERIAL_PROTOCOL(bedKp);
+        SERIAL_PROTOCOL(fwidthKp);
         SERIAL_PROTOCOL(" i:");
-        SERIAL_PROTOCOL(unscalePID_i(bedKi));
+        SERIAL_PROTOCOL(unscalePID_i(fwidthKi));
         SERIAL_PROTOCOL(" d:");
-        SERIAL_PROTOCOL(unscalePID_d(bedKd));
+        SERIAL_PROTOCOL(unscalePID_d(fwidthKd));
         SERIAL_PROTOCOLLN("");
       }
       break;
-    #endif //PIDTEMP
+    //#endif //PIDTEMP
     case 240: // M240  Triggers a camera by emulating a Canon RC-1 : http://www.doc-diy.net/photo/rc-1_hacked/
      {
      	#ifdef CHDK

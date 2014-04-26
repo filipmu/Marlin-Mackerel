@@ -58,11 +58,11 @@ float current_temperature_bed = 0.0;
   #endif
 #endif //PIDTEMP
 
-#ifdef PIDTEMPBED
-  float bedKp=DEFAULT_bedKp;
-  float bedKi=(DEFAULT_bedKi*PID_dT);
-  float bedKd=(DEFAULT_bedKd/PID_dT);
-#endif //PIDTEMPBED
+//#ifdef PIDTEMPBED
+  float fwidthKp=DEFAULT_fwidthKp;
+  float fwidthKi=(DEFAULT_fwidthKi*PID_dT);
+  float fwidthKd=(DEFAULT_fwidthKd/PID_dT);
+//#endif //PIDTEMPBED
   
 #ifdef FAN_SOFT_PWM
   unsigned char fanSpeedSoftPwm;
@@ -94,20 +94,21 @@ static volatile bool temp_meas_ready = false;
   // static float pid_output[EXTRUDERS];
   static bool pid_reset[EXTRUDERS];
 #endif //PIDTEMP
-#ifdef PIDTEMPBED
+//#ifdef PIDTEMPBED
   //static cannot be external:
-  static float temp_iState_bed = { 0 };
-  static float temp_dState_bed = { 0 };
-  static float pTerm_bed;
-  static float iTerm_bed;
-  static float dTerm_bed;
+  static float dia_iState_fwidth = { 0 };
+  static float dia_dState_fwidth = { 0 };
+  static float pTerm_fwidth;
+  static float iTerm_fwidth;
+  static float dTerm_fwidth;
+  static bool pid_reset_fwidth;
   //int output;
-  static float pid_error_bed;
+  static float pid_error_fwidth;
   static float temp_iState_min_bed;
   static float temp_iState_max_bed;
-#else //PIDTEMPBED
+//#else //PIDTEMPBED
 	static unsigned long  previous_millis_bed_heater;
-#endif //PIDTEMPBED
+//#endif //PIDTEMPBED
   static unsigned char soft_pwm[EXTRUDERS];
 
 #ifdef FAN_SOFT_PWM
@@ -323,7 +324,7 @@ void updatePID()
   }
 #endif
 #ifdef PIDTEMPBED
-  temp_iState_max_bed = PID_INTEGRAL_DRIVE_MAX / bedKi;  
+  temp_iState_max_bed = PID_INTEGRAL_DRIVE_MAX / fwidthKi;  
 #endif
 }
   
@@ -526,75 +527,92 @@ void manage_heater()
   previous_millis_bed_heater = millis();
   #endif
 
-  #if TEMP_SENSOR_BED != 0
+ // #if TEMP_SENSOR_BED != 0
   
-  #ifdef PIDTEMPBED
-    pid_input = current_temperature_bed;
-
-    #ifndef PID_OPENLOOP
-		  pid_error_bed = target_temperature_bed - pid_input;
-		  pTerm_bed = bedKp * pid_error_bed;
-		  temp_iState_bed += pid_error_bed;
-		  temp_iState_bed = constrain(temp_iState_bed, temp_iState_min_bed, temp_iState_max_bed);
-		  iTerm_bed = bedKi * temp_iState_bed;
-
-		  //K1 defined in Configuration.h in the PID settings
-		  #define K2 (1.0-K1)
-		  dTerm_bed= (bedKd * (pid_input - temp_dState_bed))*K2 + (K1 * dTerm_bed);
-		  temp_dState_bed = pid_input;
-
-		  pid_output = constrain(pTerm_bed + iTerm_bed - dTerm_bed, 0, MAX_BED_POWER);
-
-    #else 
-      pid_output = constrain(target_temperature_bed, 0, MAX_BED_POWER);
-    #endif //PID_OPENLOOP
-
-	  if((current_temperature_bed > BED_MINTEMP) && (current_temperature_bed < BED_MAXTEMP)) 
+ // #ifdef PIDTEMPBED
+  
+  if((extrude_status & ES_AUTO_SET) >0)
 	  {
-	    soft_pwm_bed = (int)pid_output >> 1;
+		pid_input = current_filwidth;
+	
+		//#ifndef PID_OPENLOOP
+			  pid_error_fwidth = filament_width_desired - pid_input;
+			  
+			  if(pid_error_fwidth>1.0){
+				  pid_output=100;
+				  pid_reset_fwidth = true;  
+			  } else if(pid_error_fwidth<1.0){
+				  pid_output=-100;
+				  pid_reset_fwidth = true;
+			  }else{
+			  
+				  if(pid_reset_fwidth== true){
+					  dia_iState_fwidth=0.0;
+					  pid_reset_fwidth = false;
+				  }
+			  pTerm_fwidth = fwidthKp * pid_error_fwidth;
+			  dia_iState_fwidth += pid_error_fwidth;
+			  dia_iState_fwidth = constrain(dia_iState_fwidth, -100, 100);
+			  iTerm_fwidth = fwidthKi * dia_iState_fwidth;
+	
+			  //K1 defined in Configuration.h in the PID settings
+			  #define K2 (1.0-K1)
+			  dTerm_fwidth= (fwidthKd * (pid_input - dia_dState_fwidth))*K2 + (K1 * dTerm_fwidth);
+			  
+	
+			  pid_output = constrain(pTerm_fwidth + iTerm_fwidth - dTerm_fwidth, -100, 100);
+			  }
+			  dia_dState_fwidth = pid_input;
+			  filament_control=pid_output;
+	
+		//#else 
+		//  pid_output = constrain(target_temperature_bed, 0, MAX_BED_POWER);
+		//#endif //PID_OPENLOOP
+	
+		  
+	/*
+		#elif !defined(BED_LIMIT_SWITCHING)
+		  // Check if temperature is within the correct range
+		  if((current_temperature_bed > BED_MINTEMP) && (current_temperature_bed < BED_MAXTEMP))
+		  {
+			if(current_temperature_bed >= target_temperature_bed)
+			{
+			  soft_pwm_bed = 0;
+			}
+			else 
+			{
+			  soft_pwm_bed = MAX_BED_POWER>>1;
+			}
+		  }
+		  else
+		  {
+			soft_pwm_bed = 0;
+			WRITE(HEATER_BED_PIN,LOW);
+		  }
+		#else //#ifdef BED_LIMIT_SWITCHING
+		  // Check if temperature is within the correct band
+		  if((current_temperature_bed > BED_MINTEMP) && (current_temperature_bed < BED_MAXTEMP))
+		  {
+			if(current_temperature_bed > target_temperature_bed + BED_HYSTERESIS)
+			{
+			  soft_pwm_bed = 0;
+			}
+			else if(current_temperature_bed <= target_temperature_bed - BED_HYSTERESIS)
+			{
+			  soft_pwm_bed = MAX_BED_POWER>>1;
+			}
+		  }
+		  else
+		  {
+			soft_pwm_bed = 0;
+			WRITE(HEATER_BED_PIN,LOW);
+		  }
+	 //   #endif
+	 // #endif
+	  * 
+	  * 
+	  */
 	  }
-	  else {
-	    soft_pwm_bed = 0;
-	  }
-
-    #elif !defined(BED_LIMIT_SWITCHING)
-      // Check if temperature is within the correct range
-      if((current_temperature_bed > BED_MINTEMP) && (current_temperature_bed < BED_MAXTEMP))
-      {
-        if(current_temperature_bed >= target_temperature_bed)
-        {
-          soft_pwm_bed = 0;
-        }
-        else 
-        {
-          soft_pwm_bed = MAX_BED_POWER>>1;
-        }
-      }
-      else
-      {
-        soft_pwm_bed = 0;
-        WRITE(HEATER_BED_PIN,LOW);
-      }
-    #else //#ifdef BED_LIMIT_SWITCHING
-      // Check if temperature is within the correct band
-      if((current_temperature_bed > BED_MINTEMP) && (current_temperature_bed < BED_MAXTEMP))
-      {
-        if(current_temperature_bed > target_temperature_bed + BED_HYSTERESIS)
-        {
-          soft_pwm_bed = 0;
-        }
-        else if(current_temperature_bed <= target_temperature_bed - BED_HYSTERESIS)
-        {
-          soft_pwm_bed = MAX_BED_POWER>>1;
-        }
-      }
-      else
-      {
-        soft_pwm_bed = 0;
-        WRITE(HEATER_BED_PIN,LOW);
-      }
-    #endif
-  #endif
 }
 
 #define PGM_RD_W(x)   (short)pgm_read_word(&x)
@@ -750,7 +768,7 @@ void tp_init()
 #endif //PIDTEMP
 #ifdef PIDTEMPBED
     temp_iState_min_bed = 0.0;
-    temp_iState_max_bed = PID_INTEGRAL_DRIVE_MAX / bedKi;
+    temp_iState_max_bed = PID_INTEGRAL_DRIVE_MAX / fwidthKi;
 #endif //PIDTEMPBED
   }
 

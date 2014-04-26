@@ -282,6 +282,17 @@ static void lcd_extruder_resume()
     lcd_enable_statistics();
 }
 
+static void lcd_extruder_automatic()
+	{
+	extrude_status=extrude_status|ES_AUTO_SET;
+	lcd_return_to_status();
+	}
+
+static void lcd_extruder_manual()
+	{
+	extrude_status=extrude_status&ES_AUTO_CLEAR;
+	lcd_return_to_status();
+	}
 
 
 static void lcd_sdcard_stop()
@@ -325,13 +336,19 @@ static void lcd_main_menu()
     START_MENU();
     MENU_ITEM(back, MSG_WATCH, lcd_status_screen);
     MENU_ITEM(function, MSG_PREHEAT_ABS, lcd_preheat_extruder);
-    if (extrude_status & ES_ENABLE_SET >0)
-       	MENU_ITEM(function, MSG_PAUSE_EXTRUDER, lcd_extruder_pause);
+    if ((extrude_status & ES_ENABLE_SET) >0)
+       	{
+    	if((extrude_status & ES_AUTO_SET) >0)
+    		MENU_ITEM(function,MSG_MAN_EXTRUDER,lcd_extruder_manual);
+    	else
+    		MENU_ITEM(function,MSG_AUTO_EXTRUDER,lcd_extruder_automatic);
+    	MENU_ITEM(function, MSG_PAUSE_EXTRUDER, lcd_extruder_pause);
+       	}
        else
        	MENU_ITEM(function, MSG_RESUME_EXTRUDER, lcd_extruder_resume);
     
     MENU_ITEM(function, MSG_CLEAR_STATS, lcd_clear_statistics);
-    if(extrude_status & ES_STATS_SET>0)
+    if((extrude_status & ES_STATS_SET)>0)
     	MENU_ITEM(function, MSG_DISABLE_STATS, lcd_disable_statistics);
     else
     	MENU_ITEM(function, MSG_ENABLE_STATS, lcd_enable_statistics);
@@ -463,6 +480,7 @@ static void lcd_tune_menu()
     MENU_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
 #endif
     MENU_ITEM_EDIT(int3, MSG_PUL_RATIO, &pullermultiply, 10, 999);
+    MENU_ITEM_EDIT(float32,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
     MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
  //   MENU_ITEM_EDIT(int3, MSG_FLOW, &extrudemultiply, 10, 999);
  //   MENU_ITEM_EDIT(int3, MSG_FLOW0, &extruder_multiply[0], 10, 999);

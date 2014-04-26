@@ -551,7 +551,7 @@
     #define HEATER_2_PIN       -1
   #endif
 
-  #define TEMP_0_PIN         13   // ANALOG NUMBERING
+  #define TEMP_0_PIN         14   // ANALOG NUMBERING //T0 does not seem to work on Hugh's board
   #define TEMP_1_PIN         15   // ANALOG NUMBERING
   #if MOTHERBOARD == 68
     #define TEMP_2_PIN         12   // ANALOG NUMBERING

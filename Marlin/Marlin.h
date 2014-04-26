@@ -226,7 +226,7 @@ extern float min_measured_filament_width;
 extern float sum_measured_filament_width; 
 extern float n_measured_filament_width;  
 extern float avg_measured_filament_width; 
-extern bool filament_control; //indicates that the filament width should control extrusion
+extern float filament_control; //output of the PID controller
 extern volatile float filament_width_meas; //holds the filament width as measured by the sensor
 extern int feedmultiply;
 extern int pullermultiply;

@@ -66,9 +66,9 @@ extern float current_filwidth;
   float unscalePID_d(float d);
 
 #endif
-#ifdef PIDTEMPBED
-  extern float bedKp,bedKi,bedKd;
-#endif
+//#ifdef PIDTEMPBED
+  extern float fwidthKp,fwidthKi,fwidthKd;
+//#endif
   
   
 #ifdef BABYSTEPPING

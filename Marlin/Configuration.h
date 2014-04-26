@@ -267,12 +267,15 @@ Debug notes:
 // so you shouldn't use it unless you are OK with PWM on your bed.  (see the comment on enabling PIDTEMPBED)
 #define MAX_BED_POWER 255 // limits duty cycle to bed; 255=full current
 
-#ifdef PIDTEMPBED
+//#ifdef PIDTEMPBED
 //120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 //from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
-    #define  DEFAULT_bedKp 10.00
-    #define  DEFAULT_bedKi .023
-    #define  DEFAULT_bedKd 305.4
+
+
+//PID parameters for the filament control
+    #define  DEFAULT_fwidthKp 10.00
+    #define  DEFAULT_fwidthKi .023
+    #define  DEFAULT_fwidthKd 305.4
 
 //120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 //from pidautotune
@@ -281,7 +284,7 @@ Debug notes:
 //    #define  DEFAULT_bedKd 1675.16
 
 // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
-#endif // PIDTEMPBED
+//#endif // PIDTEMPBED
 
 
 
@@ -488,7 +491,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 
 // default settings
 
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200.0*8/3,154*16, 30.6*16}  // default steps per unit for Ultimaker  //FMM added P_AXIS *16 for 1/16 step
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200.0*8/3,30.6*16, 165.85*16}  // default steps per unit for Ultimaker  //FMM added P_AXIS *16 for 1/16 step
 #define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 40, 40}    // (mm/sec)  //FMM added P_AXIS
 #define DEFAULT_MAX_ACCELERATION      {9000,9000,100,900,900}    // X, Y, Z, E,P maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
 
