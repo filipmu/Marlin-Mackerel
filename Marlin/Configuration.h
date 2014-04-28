@@ -535,7 +535,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define PLA_PREHEAT_HPB_TEMP 70
 #define PLA_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
 
-#define ABS_PREHEAT_HOTEND_TEMP 180  //Set to 180 deg C based on Hugh's suggestion
+#define ABS_PREHEAT_HOTEND_TEMP 185  //Set to 185 deg C based on Hugh's suggestion
 #define ABS_PREHEAT_HPB_TEMP 100
 #define ABS_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
 
@@ -768,7 +768,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 
 #define LYMAN_EXTRUDER
 #define DEFAULT_FEEDMULTIPLY 20 //initial setting for feedmultiply when extruder motors are turned on
-#define DESIRED_FILAMENT_DIA 2.6 //define the desired Filament diameter
+#define DESIRED_FILAMENT_DIA 2.8 //define the desired Filament diameter
 #define DEFAULT_PULLER_MULTIPLY 200 //define default puller multiply (1000= 1.0)
 #define DEFAULT_PULLER_PID_BASE 120 //default base that PID control (+/- 100) is subtracted from
 
