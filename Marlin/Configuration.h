@@ -27,12 +27,17 @@
 * Add input and code for filament width sensor - complete
 * 
 * add an input for turning the extruder motor on/off - complete
-* get PID to work with the filament width to puller speed control and add LCD manual/automatic control
+* get PID to work with the filament width to puller speed control and add LCD manual/automatic control - complete
 * add filament dia max,min, avg, and some way to clear and freeze it - complete
 * add winder on/off control with an input, screen way, and #define to enable/disable in code
 * make sure new configuration items are saved in flash
 * add new g-codes for manual/automatic control to allow it to be controlled via pronterface
 * clean-up of LCD menus
+* 
+* need to make filament pid not time based but mm based - complete
+* change back to direct control, not incremental. - complete
+* add menus to change PID parameters for Filament
+* 
 
 Debug notes:
 - Hardcoded the temperature reading of the extruder for testing - search for FMMDEBUGTEMP
@@ -496,7 +501,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define DEFAULT_MAX_ACCELERATION      {9000,9000,100,900,900}    // X, Y, Z, E,P maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
 
 #define DEFAULT_ACCELERATION          3000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  900   // X, Y, Z and E max acceleration in mm/s^2 for retracts
+#define DEFAULT_RETRACT_ACCELERATION  200   // X, Y, Z and E max acceleration in mm/s^2 for retracts controls extruder acceleration
 
 // Offset of the extruders (uncomment if using more than one and relying on firmware to position when changing).
 // The offset has to be X=0, Y=0 for the extruder 0 hotend (default extruder).
@@ -762,9 +767,10 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 *************************************************************************/
 
 #define LYMAN_EXTRUDER
+#define DEFAULT_FEEDMULTIPLY 20 //initial setting for feedmultiply when extruder motors are turned on
 #define DESIRED_FILAMENT_DIA 2.6 //define the desired Filament diameter
-
-
+#define DEFAULT_PULLER_MULTIPLY 200 //define default puller multiply (1000= 1.0)
+#define DEFAULT_PULLER_PID_BASE 120 //default base that PID control (+/- 100) is subtracted from
 
 
 #include "Configuration_adv.h"

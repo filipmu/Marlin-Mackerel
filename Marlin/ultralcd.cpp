@@ -277,7 +277,8 @@ static void lcd_extruder_pause()
 }
 static void lcd_extruder_resume()
 {
-    extrude_status=extrude_status|ES_ENABLE_SET;
+	//feedmultiply=DEFAULT_FEEDMULTIPLY;
+	extrude_status=extrude_status|ES_ENABLE_SET;
     starttime=millis();
     lcd_enable_statistics();
 }

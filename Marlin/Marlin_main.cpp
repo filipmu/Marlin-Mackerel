@@ -188,9 +188,9 @@ float homing_feedrate[] = HOMING_FEEDRATE;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
 unsigned char extrude_status =0;
 float filament_width_desired= DESIRED_FILAMENT_DIA; //holds the desired filament width (i.e like 2.6mm)
-int feedmultiply=100; //100->1 200->2
+int feedmultiply=DEFAULT_FEEDMULTIPLY; //100->1 200->2
 int saved_feedmultiply;
-int pullermultiply = 100;
+int pullermultiply = DEFAULT_PULLER_MULTIPLY;
 int extrudemultiply=100; //100->1 200->2
 float extruder_feedrate;  //extruder real time 'feed rate' - yet we are really interested in RPM
 float extruder_rpm; //real time extruder rpm
@@ -333,6 +333,17 @@ static uint8_t tmp_extruder;
 
 static float extruder_increment;  //used to calculate the increment to add to create the next planning move for the extruder motor
 static float puller_increment; //used to calculate the increment to add to create the next planning move for the puller motor
+
+//PID variables
+static float dia_iState_fwidth = { 0 };
+static float dia_dState_fwidth = { 0 };
+static float pTerm_fwidth;
+static float iTerm_fwidth;
+static float dTerm_fwidth;
+static bool pid_reset_fwidth;
+  //int output;
+static float pid_error_fwidth;
+static float pid_input;
 
 bool Stopped=false;
 
@@ -649,23 +660,16 @@ void loop()
   if((extrude_status & ES_ENABLE_SET) >0){
 	  
 	  
-	  if((extrude_status & ES_AUTO_SET) >0){
-		//  Extruder in Automatic control
-		  
-		  pullermultiply=(120 - filament_control);
-		  
-		  
-		  
-	  }
+	  
 	  
 	  
 	  
 	  feedrate=20*60;
 	  extruder_increment=feedmultiply/100.0;
-	  puller_increment=extruder_increment*pullermultiply/100.0;
+	  puller_increment=extruder_increment*pullermultiply/1000.0;
 	  
 	  extruder_feedrate=feedrate*extruder_increment/60.0;
-	  puller_feedrate=extruder_feedrate*pullermultiply/100.0;
+	  puller_feedrate=extruder_feedrate*pullermultiply/1000.0;
 	  
 	  //calculate move  - always scale step size to feedmultiply (was previously fix step side of 0.1)
 	  destination[P_AXIS] = puller_increment + current_position[P_AXIS]; //puller
@@ -679,6 +683,57 @@ void loop()
 		  }
 	  else
 		  extruder_rpm=0.0;
+	  
+	  
+	  //calculate PID - delta is spatial, not time
+	  if((extrude_status & ES_AUTO_SET) >0){
+	  		//  Extruder in Automatic control
+	  		
+		  
+			pid_input = current_filwidth;
+		
+			//#ifndef PID_OPENLOOP
+				  pid_error_fwidth = filament_width_desired - pid_input;
+				  
+				  if(pid_error_fwidth>1.0){
+					  filament_control=100;
+					  pid_reset_fwidth = true;  
+				  } else if(pid_error_fwidth<1.0){
+					  filament_control=-100;
+					  pid_reset_fwidth = true;
+				  }else{
+				  
+					  if(pid_reset_fwidth== true){
+						  dia_iState_fwidth=0.0;
+						  pid_reset_fwidth = false;
+					  }
+				  pTerm_fwidth = fwidthKp * pid_error_fwidth;
+				  dia_iState_fwidth += pid_error_fwidth;
+				  dia_iState_fwidth = constrain(dia_iState_fwidth, -100, 100);
+				  iTerm_fwidth = fwidthKi * dia_iState_fwidth * puller_increment;  //use spatial dT=puller_increment
+		
+				  //K1 defined in Configuration.h in the PID settings
+				  #define K2 (1.0-K1)
+				  dTerm_fwidth= (fwidthKd/puller_increment * (pid_input - dia_dState_fwidth))*K2 + (K1 * dTerm_fwidth);  //use spatial dT=puller_increment
+				  
+		
+				  filament_control = constrain(pTerm_fwidth + iTerm_fwidth - dTerm_fwidth, -100, 100);
+				  }
+				  dia_dState_fwidth = pid_input;
+				  
+		  
+		  
+		  
+		  
+		  
+	  		  pullermultiply= DEFAULT_PULLER_PID_BASE - filament_control;
+	  		  
+	  		  
+	  		  
+	  	  } 
+	  
+	  
+	  
 	  
 	  
 	  //send move

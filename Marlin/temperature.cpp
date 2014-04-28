@@ -60,8 +60,8 @@ float current_temperature_bed = 0.0;
 
 //#ifdef PIDTEMPBED
   float fwidthKp=DEFAULT_fwidthKp;
-  float fwidthKi=(DEFAULT_fwidthKi*PID_dT);
-  float fwidthKd=(DEFAULT_fwidthKd/PID_dT);
+  float fwidthKi=DEFAULT_fwidthKi;  //removed delta T portion since we will handle explicitily
+  float fwidthKd=DEFAULT_fwidthKd;  //removed delta T portion since we will handle explicitily
 //#endif //PIDTEMPBED
   
 #ifdef FAN_SOFT_PWM
@@ -96,6 +96,9 @@ static volatile bool temp_meas_ready = false;
 #endif //PIDTEMP
 //#ifdef PIDTEMPBED
   //static cannot be external:
+  
+  //remove PID for filament
+  /*
   static float dia_iState_fwidth = { 0 };
   static float dia_dState_fwidth = { 0 };
   static float pTerm_fwidth;
@@ -104,6 +107,8 @@ static volatile bool temp_meas_ready = false;
   static bool pid_reset_fwidth;
   //int output;
   static float pid_error_fwidth;
+  
+  */
   static float temp_iState_min_bed;
   static float temp_iState_max_bed;
 //#else //PIDTEMPBED
@@ -530,7 +535,9 @@ void manage_heater()
  // #if TEMP_SENSOR_BED != 0
   
  // #ifdef PIDTEMPBED
-  
+ 
+  //remove PID from here and add to main
+  /*
   if((extrude_status & ES_AUTO_SET) >0)
 	  {
 		pid_input = current_filwidth;
@@ -564,6 +571,9 @@ void manage_heater()
 			  }
 			  dia_dState_fwidth = pid_input;
 			  filament_control=pid_output;
+	
+	*/
+	
 	
 		//#else 
 		//  pid_output = constrain(target_temperature_bed, 0, MAX_BED_POWER);
@@ -612,7 +622,12 @@ void manage_heater()
 	  * 
 	  * 
 	  */
+  
+  /*
 	  }
+	  
+	  */
+  
 }
 
 #define PGM_RD_W(x)   (short)pgm_read_word(&x)
