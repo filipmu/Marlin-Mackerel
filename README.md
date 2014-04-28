@@ -1,5 +1,5 @@
 ==========================
-Marlin 3D Printer Firmware
+Firmware for Lyman Extruder Controller based on Marlin 3D Printer Firmware
 ==========================
 Marlin has a GPL license because I believe in open development.
 Please do not use this code in products (3D printers, CNC etc) that are closed source or are crippled by a patent.
@@ -8,6 +8,8 @@ Please do not use this code in products (3D printers, CNC etc) that are closed s
 
 Quick Information
 ===================
+This is a highly modified version of Marlin that was designed in conjunction with Hugh Lyman to control a Lyman filament extruder with geared stepper motors.  It is currently designed to support the RAMPS 1.4 with Smart LCD 2004. It can control the extruder motor, puller motor, Extruder heater (PID) with thermistor, and has input for a filament width sensor.  This code is currently in design and development and not ready for causual users.
+
 This RepRap firmware is a mashup between <a href="https://github.com/kliment/Sprinter">Sprinter</a>, <a href="https://github.com/simen/grbl/tree">grbl</a> and many original parts.
 
 Derived from Sprinter and Grbl by Erik van der Zalm.
