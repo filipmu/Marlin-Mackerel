@@ -36,7 +36,17 @@
 * 
 * need to make filament pid not time based but mm based - complete
 * change back to direct control, not incremental. - complete
-* add menus to change PID parameters for Filament
+* add menus to change PID parameters for Filament - complete
+* 
+* Clear Stats did not zero out the L (length). - complete
+* Need to be able to adjust the M2 rpm same as M1. - complete
+* Clean up the multiplication factors
+* Clean up the Tune menu to remove factors no longer needed - complete
+* Change the feedmultiply to an absolute puller_feedrate - complete
+* Info page does not show M2 rpm. - complete
+* Need docs of each function in the menus.
+* Need to save M2 ratio in flash
+
 * 
 
 Debug notes:
@@ -277,10 +287,7 @@ Debug notes:
 //from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
 
 
-//PID parameters for the filament control
-    #define  DEFAULT_fwidthKp 10.00
-    #define  DEFAULT_fwidthKi .023
-    #define  DEFAULT_fwidthKd 305.4
+
 
 //120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 //from pidautotune
@@ -767,11 +774,28 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 *************************************************************************/
 
 #define LYMAN_EXTRUDER
-#define DEFAULT_FEEDMULTIPLY 20 //initial setting for feedmultiply when extruder motors are turned on
-#define DESIRED_FILAMENT_DIA 2.8 //define the desired Filament diameter
-#define DEFAULT_PULLER_MULTIPLY 200 //define default puller multiply (1000= 1.0)
-#define DEFAULT_PULLER_PID_BASE 120 //default base that PID control (+/- 100) is subtracted from
 
+
+#define DEFAULT_EXTRUDER_RPM 12 //define default extruder RPM
+#define EXTRUDER_RPM_MAX 15
+#define EXTRUDER_RPM_MIN 1
+#define DEFAULT_PULLER_FEEDRATE 5.0 //default puller feedrate when turned on
+#define PULLER_FEEDRATE_MIN 1.0 // min feedrate in manual control, 1 mm/sec min feed
+#define PULLER_FEEDRATE_MAX 12.0  // max feedrate in manual control 12mm/sec max feed
+#define PULLER_WHEEL_CIRC 120 //circumference of urethane puller wheel in mm
+
+#define DESIRED_FILAMENT_DIA 2.8 //define the default desired Filament diameter
+
+#define  DEFAULT_fwidthKp 1.00
+#define  DEFAULT_fwidthKi 0.0
+#define  DEFAULT_fwidthKd 0.0
+
+#define PULLER_PID_MIN_LIMIT 1.0 //min output limit of filament dia control in mm/sec
+#define PULLER_PID_MAX_LIMIT 12.0 //max output limit of filament dia control in mm/sec
+#define PULLER_PID_INTEGRATOR_WIND_LIMIT 100 //absolute value of integrator windup max value
+
+#define DEFAULT_PULLER_MULTIPLY 200 //define default puller multiply (1000= 1.0)
+#define DEFAULT_FEEDMULTIPLY 20 //initial setting for feedmultiply when extruder motors are turned on
 
 #include "Configuration_adv.h"
 #include "thermistortables.h"

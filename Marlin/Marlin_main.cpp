@@ -193,20 +193,23 @@ int saved_feedmultiply;
 int pullermultiply = DEFAULT_PULLER_MULTIPLY;
 int extrudemultiply=100; //100->1 200->2
 float extruder_feedrate;  //extruder real time 'feed rate' - yet we are really interested in RPM
-float extruder_rpm; //real time extruder rpm
-float puller_feedrate; //puller motor feed rate in mm/sec
+int extruder_rpm; //real time extruder rpm
+int extruder_rpm_set= DEFAULT_EXTRUDER_RPM; //setpoint for extruder RPM
+float puller_feedrate= DEFAULT_PULLER_FEEDRATE; //puller motor feed rate in mm/sec
+float puller_feedrate_last = DEFAULT_PULLER_FEEDRATE;
 float max_measured_filament_width=0;
 float min_measured_filament_width=0;
 float sum_measured_filament_width=0;  //numerator in average
 float n_measured_filament_width=0;  //denominator in average
 float avg_measured_filament_width=0; //average
-float filament_p;
-float filament_i;
-float filament_d;
-float filament_i_state;
-float filament_error;
-float filament_control;
-float filament_meas_last;
+float extrude_length=0; //length extruded
+
+
+
+
+
+float filament_control=0.0;
+
 
 int extruder_multiply[EXTRUDERS] = {100
   #if EXTRUDERS > 1
@@ -626,7 +629,7 @@ void loop()
 	  sum_measured_filament_width = sum_measured_filament_width+current_filwidth;
 	  n_measured_filament_width = n_measured_filament_width + 1.0;
 	  avg_measured_filament_width=sum_measured_filament_width/n_measured_filament_width;
-	  
+	  extrude_length=extrude_length+puller_increment;
 	  }
 	  
   
@@ -663,13 +666,22 @@ void loop()
 	  
 	  
 	  
+	 //old 
+	 // feedrate=20*60;
+	 // extruder_increment=feedmultiply/100.0;
+	 // puller_increment=extruder_increment*pullermultiply/1000.0;
 	  
-	  feedrate=20*60;
-	  extruder_increment=feedmultiply/100.0;
-	  puller_increment=extruder_increment*pullermultiply/1000.0;
+	  //extruder_feedrate=feedrate*extruder_increment/60.0;
+	  //puller_feedrate=extruder_feedrate*pullermultiply/1000.0;
 	  
-	  extruder_feedrate=feedrate*extruder_increment/60.0;
-	  puller_feedrate=extruder_feedrate*pullermultiply/1000.0;
+	 //new
+	  extruder_increment=(float)extruder_rpm_set/EXTRUDER_RPM_MAX*2;  //make extruder increment 1 unit for max RPM and scale down as RPM input decreases
+	  extruder_feedrate=(float)extruder_rpm_set/0.6;
+	  puller_increment=puller_feedrate*0.6/EXTRUDER_RPM_MAX*2;  //make puller increment vary to control it
+	  
+	  
+	  
+	  
 	  
 	  //calculate move  - always scale step size to feedmultiply (was previously fix step side of 0.1)
 	  destination[P_AXIS] = puller_increment + current_position[P_AXIS]; //puller
@@ -679,10 +691,16 @@ void loop()
 	  if((extrude_status & ES_HOT_SET) && (extrude_status & ES_SWITCH_SET))  //check that extruder is at temp and switch in on
 		  {//calculate move  - always scale step size to feedmultiply (was previously fix step side of 0.1)
 		  destination[E_AXIS] = extruder_increment + current_position[E_AXIS];  //extruder
-		  extruder_rpm=extruder_feedrate*0.6;  //convert to rpm
+		  //extruder_rpm=extruder_feedrate*0.6;  //convert to rpm
+		  extruder_rpm=extruder_rpm_set;
+		  feedrate=extruder_feedrate;
 		  }
 	  else
-		  extruder_rpm=0.0;
+		  {
+		  extruder_rpm=0;
+		  feedrate=puller_feedrate;
+		  }
+	  
 	  
 	  
 	  //calculate PID - delta is spatial, not time
@@ -694,12 +712,13 @@ void loop()
 		
 			//#ifndef PID_OPENLOOP
 				  pid_error_fwidth = filament_width_desired - pid_input;
+				  pTerm_fwidth = puller_feedrate_last - fwidthKp * pid_error_fwidth;
 				  
-				  if(pid_error_fwidth>1.0){
-					  filament_control=100;
+				  if(pTerm_fwidth>PULLER_PID_MAX_LIMIT){
+					  filament_control=PULLER_PID_MAX_LIMIT;
 					  pid_reset_fwidth = true;  
-				  } else if(pid_error_fwidth<1.0){
-					  filament_control=-100;
+				  } else if(pTerm_fwidth<PULLER_PID_MIN_LIMIT){
+					  filament_control=PULLER_PID_MIN_LIMIT;
 					  pid_reset_fwidth = true;
 				  }else{
 				  
@@ -707,17 +726,17 @@ void loop()
 						  dia_iState_fwidth=0.0;
 						  pid_reset_fwidth = false;
 					  }
-				  pTerm_fwidth = fwidthKp * pid_error_fwidth;
-				  dia_iState_fwidth += pid_error_fwidth;
-				  dia_iState_fwidth = constrain(dia_iState_fwidth, -100, 100);
-				  iTerm_fwidth = fwidthKi * dia_iState_fwidth * puller_increment;  //use spatial dT=puller_increment
+				  
+				  dia_iState_fwidth += pid_error_fwidth* puller_increment; //use spatial dT=puller_increment
+				  dia_iState_fwidth = constrain(dia_iState_fwidth, -PULLER_PID_INTEGRATOR_WIND_LIMIT, PULLER_PID_INTEGRATOR_WIND_LIMIT);
+				  iTerm_fwidth = fwidthKi * dia_iState_fwidth;  
 		
 				  //K1 defined in Configuration.h in the PID settings
 				  #define K2 (1.0-K1)
 				  dTerm_fwidth= (fwidthKd/puller_increment * (pid_input - dia_dState_fwidth))*K2 + (K1 * dTerm_fwidth);  //use spatial dT=puller_increment
 				  
 		
-				  filament_control = constrain(pTerm_fwidth + iTerm_fwidth - dTerm_fwidth, -100, 100);
+				  filament_control = constrain(pTerm_fwidth - iTerm_fwidth + dTerm_fwidth, PULLER_PID_MIN_LIMIT, PULLER_PID_MAX_LIMIT);
 				  }
 				  dia_dState_fwidth = pid_input;
 				  
@@ -725,12 +744,15 @@ void loop()
 		  
 		  
 		  
-		  
-	  		  pullermultiply= DEFAULT_PULLER_PID_BASE - filament_control;
+				  
+	  		  puller_feedrate=filament_control;
 	  		  
 	  		  
 	  		  
-	  	  } 
+	  	  } else {
+	  		  puller_feedrate_last=puller_feedrate;  //keep track of last puller_feedrate when running manual control
+	  	  }
+	  		  
 	  
 	  
 	  
@@ -738,7 +760,7 @@ void loop()
 	  
 	  //send move
 	  previous_millis_cmd = millis();  //refresh the kill watchdog timer
-	  plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS], extruder_feedrate, active_extruder);  //FMM added P_AXIS
+	  plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS], feedrate, active_extruder);  //FMM added P_AXIS
 	  current_position[E_AXIS]=destination[E_AXIS];
 	  current_position[P_AXIS]=destination[P_AXIS];
   }

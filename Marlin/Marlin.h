@@ -201,7 +201,8 @@ void setPwmFrequency(uint8_t pin, int val);
 #endif //CRITICAL_SECTION_START
 
 extern float extruder_feedrate;
-extern float extruder_rpm; 
+extern int extruder_rpm; 
+extern int extruder_rpm_set;
 extern float puller_feedrate;
 extern float homing_feedrate[];
 extern bool axis_relative_modes[];
@@ -226,6 +227,7 @@ extern float min_measured_filament_width;
 extern float sum_measured_filament_width; 
 extern float n_measured_filament_width;  
 extern float avg_measured_filament_width; 
+extern float extrude_length;
 extern float filament_control; //output of the PID controller
 extern volatile float filament_width_meas; //holds the filament width as measured by the sensor
 extern int feedmultiply;

@@ -111,6 +111,7 @@ char *ftostr31ns(const float &x); // float to string without sign character
 char *ftostr31(const float &x);
 char *ftostr32(const float &x);
 char *ftostr22(const float &x);
+char *ftostr21(const float &x);
 char *ftostr12(const float &x);
 char *ftostr6(const float &x);
 char *ftostr5(const float &x);

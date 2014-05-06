@@ -53,6 +53,7 @@ static void lcd_prepare_menu();
 static void lcd_move_menu();
 static void lcd_control_menu();
 static void lcd_control_temperature_menu();
+static void lcd_control_Filament_PID_menu();
 static void lcd_control_temperature_preheat_pla_settings_menu();
 static void lcd_control_temperature_preheat_abs_settings_menu();
 static void lcd_control_motion_menu();
@@ -75,6 +76,7 @@ static void menu_action_setting_edit_bool(const char* pstr, bool* ptr);
 static void menu_action_setting_edit_int3(const char* pstr, int* ptr, int minValue, int maxValue);
 static void menu_action_setting_edit_float3(const char* pstr, float* ptr, float minValue, float maxValue);
 static void menu_action_setting_edit_float32(const char* pstr, float* ptr, float minValue, float maxValue);
+static void menu_action_setting_edit_float22(const char* pstr, float* ptr, float minValue, float maxValue);
 static void menu_action_setting_edit_float5(const char* pstr, float* ptr, float minValue, float maxValue);
 static void menu_action_setting_edit_float51(const char* pstr, float* ptr, float minValue, float maxValue);
 static void menu_action_setting_edit_float52(const char* pstr, float* ptr, float minValue, float maxValue);
@@ -83,6 +85,7 @@ static void menu_action_setting_edit_callback_bool(const char* pstr, bool* ptr, 
 static void menu_action_setting_edit_callback_int3(const char* pstr, int* ptr, int minValue, int maxValue, menuFunc_t callbackFunc);
 static void menu_action_setting_edit_callback_float3(const char* pstr, float* ptr, float minValue, float maxValue, menuFunc_t callbackFunc);
 static void menu_action_setting_edit_callback_float32(const char* pstr, float* ptr, float minValue, float maxValue, menuFunc_t callbackFunc);
+static void menu_action_setting_edit_callback_float22(const char* pstr, float* ptr, float minValue, float maxValue, menuFunc_t callbackFunc);
 static void menu_action_setting_edit_callback_float5(const char* pstr, float* ptr, float minValue, float maxValue, menuFunc_t callbackFunc);
 static void menu_action_setting_edit_callback_float51(const char* pstr, float* ptr, float minValue, float maxValue, menuFunc_t callbackFunc);
 static void menu_action_setting_edit_callback_float52(const char* pstr, float* ptr, float minValue, float maxValue, menuFunc_t callbackFunc);
@@ -198,6 +201,7 @@ static void lcd_status_screen()
 
 #ifdef ULTIPANEL_FEEDMULTIPLY
     // Dead zone at 100% feedrate
+    /*
     if ((feedmultiply < 100 && (feedmultiply + int(encoderPosition)) > 100) ||
             (feedmultiply > 100 && (feedmultiply + int(encoderPosition)) < 100))
     {
@@ -220,12 +224,24 @@ static void lcd_status_screen()
         feedmultiply += int(encoderPosition);
         encoderPosition = 0;
     }
+    */
+    puller_feedrate += ((float)(int(encoderPosition)))*0.01;  //update puller_feedrate by .01 mm/sec increments
+    encoderPosition = 0;
+    
 #endif//ULTIPANEL_FEEDMULTIPLY
-
+    /*
     if (feedmultiply < 10)
         feedmultiply = 10;
-    if (feedmultiply > 200)
-        feedmultiply = 200;
+    if (feedmultiply > FEEDMULTIPLY_MAX)
+        feedmultiply = FEEDMULTIPLY_MAX;
+        
+    */
+    if (puller_feedrate < 1.0)
+    	puller_feedrate = 1.0;
+    if (puller_feedrate > PULLER_FEEDRATE_MAX)
+        puller_feedrate = PULLER_FEEDRATE_MAX;
+        
+        
 #endif//ULTIPANEL
 }
 
@@ -249,11 +265,12 @@ static void lcd_sdcard_resume()
 
 static void lcd_clear_statistics()
 	{
-	avg_measured_filament_width=0;
-	sum_measured_filament_width=0;
-	n_measured_filament_width=0;
-	min_measured_filament_width=0;
-	max_measured_filament_width=0;
+	avg_measured_filament_width=0.0;
+	sum_measured_filament_width=0.0;
+	n_measured_filament_width=0.0;
+	min_measured_filament_width=0.0;
+	max_measured_filament_width=0.0;
+	extrude_length=0.0;
 	lcd_return_to_status();
 	
 	}
@@ -336,7 +353,7 @@ static void lcd_main_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_WATCH, lcd_status_screen);
-    MENU_ITEM(function, MSG_PREHEAT_ABS, lcd_preheat_extruder);
+    
     if ((extrude_status & ES_ENABLE_SET) >0)
        	{
     	if((extrude_status & ES_AUTO_SET) >0)
@@ -353,13 +370,15 @@ static void lcd_main_menu()
     	MENU_ITEM(function, MSG_DISABLE_STATS, lcd_disable_statistics);
     else
     	MENU_ITEM(function, MSG_ENABLE_STATS, lcd_enable_statistics);
-    MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
+    
     if (movesplanned() || IS_SD_PRINTING)
     {
         MENU_ITEM(submenu, MSG_TUNE, lcd_tune_menu);
     }else{
         MENU_ITEM(submenu, MSG_PREPARE, lcd_prepare_menu);
     }
+    MENU_ITEM(function, MSG_PREHEAT_ABS, lcd_preheat_extruder);
+    MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
     MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
    
 /*
@@ -469,7 +488,8 @@ static void lcd_tune_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
-    MENU_ITEM_EDIT(int3, MSG_SPEED, &feedmultiply, 10, 999);
+    MENU_ITEM_EDIT(int3, MSG_EXT_RPM, &extruder_rpm_set,EXTRUDER_RPM_MIN,EXTRUDER_RPM_MAX);
+    MENU_ITEM_EDIT(float32, MSG_SPEED, &puller_feedrate, 1.0, PULLER_FEEDRATE_MAX);
     MENU_ITEM_EDIT(int3, MSG_HEATER, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15);
 #if TEMP_SENSOR_1 != 0
     MENU_ITEM_EDIT(int3, MSG_NOZZLE1, &target_temperature[1], 0, HEATER_1_MAXTEMP - 15);
@@ -480,7 +500,6 @@ static void lcd_tune_menu()
 #if TEMP_SENSOR_BED != 0
     MENU_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
 #endif
-    MENU_ITEM_EDIT(int3, MSG_PUL_RATIO, &pullermultiply, 10, 999);
     MENU_ITEM_EDIT(float32,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
     MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
  //   MENU_ITEM_EDIT(int3, MSG_FLOW, &extrudemultiply, 10, 999);
@@ -892,6 +911,7 @@ static void lcd_control_menu()
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
     MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
     MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
+    MENU_ITEM(submenu,MSG_FILAMENT_PID, lcd_control_Filament_PID_menu);
 #ifdef DOGLCD
 //    MENU_ITEM_EDIT(int3, MSG_CONTRAST, &lcd_contrast, 0, 63);
     MENU_ITEM(submenu, MSG_CONTRAST, lcd_set_contrast);
@@ -906,6 +926,17 @@ static void lcd_control_menu()
     MENU_ITEM(function, MSG_RESTORE_FAILSAFE, Config_ResetDefault);
     END_MENU();
 }
+
+
+static void lcd_control_Filament_PID_menu()
+	{
+	START_MENU();
+	MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
+	MENU_ITEM_EDIT(float52, MSG_PID_P, &fwidthKp, 0.0, 9990);
+	MENU_ITEM_EDIT(float52, MSG_PID_I, &fwidthKi, 0.0, 9990);
+	MENU_ITEM_EDIT(float52, MSG_PID_D, &fwidthKd, 0.0, 9990);
+	END_MENU();
+	}
 
 static void lcd_control_temperature_menu()
 {
@@ -1168,6 +1199,7 @@ void lcd_sdcard_menu()
         callbackFunc = callback;\
     }
 menu_edit_type(int, int3, itostr3, 1)
+menu_edit_type(float, float22, ftostr22, 10)
 menu_edit_type(float, float3, ftostr3, 1)
 menu_edit_type(float, float32, ftostr32, 100)
 menu_edit_type(float, float5, ftostr5, 0.01)
@@ -1619,6 +1651,21 @@ char *ftostr22(const float &x)
   return conv;
 }
 
+char *ftostr21(const float &x)
+{
+  long xx=x*10;
+  if (xx >= 0)
+    conv[0]=(xx/100)%10+'0';
+  else
+    conv[0]='-';
+  xx=abs(xx);
+  conv[1]=(xx/10)%10+'0';
+  conv[2]='.';
+  conv[3]=(xx)%10+'0';
+  conv[4]=0;
+  return conv;
+}
+
 char *ftostr12(const float &x)
 {
   long xx=x*100;
@@ -1651,6 +1698,7 @@ char *ftostr32(const float &x)
   return conv;
 }
 
+
 char *itostr31(const int &xx)
 {
   conv[0]=(xx>=0)?'+':'-';
@@ -1662,6 +1710,8 @@ char *itostr31(const int &xx)
   conv[6]=0;
   return conv;
 }
+
+
 
 char *itostr3(const int &xx)
 {

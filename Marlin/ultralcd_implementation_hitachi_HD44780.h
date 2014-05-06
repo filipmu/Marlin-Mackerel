@@ -410,14 +410,16 @@ static void lcd_implementation_status_screen()
     if (tTarget < 10)
         lcd.print(' ');
     
-    lcd.setCursor(12, 0);
+    lcd.setCursor(10, 0);
     lcd_printPGM(PSTR("RPM"));
+    lcd.print(ftostr21(puller_feedrate*(60.0/PULLER_WHEEL_CIRC)));
+    lcd_printPGM(PSTR("|"));
     if((extrude_status & ES_SWITCH_SET) && (extrude_status & ES_HOT_SET))  //check if extruder motor switch is on
-    	lcd.print(ftostr22(extruder_rpm));  //convert to rpm
+    	lcd.print(itostr2(extruder_rpm));  //convert to rpm
     else if(extrude_status & ES_HOT_SET)
-    	lcd_printPGM(PSTR(" Off "));
+    	lcd_printPGM(PSTR("OF"));
     else
-    	lcd_printPGM(PSTR(" Cold "));
+    	lcd_printPGM(PSTR("CO"));
 
       
    
@@ -484,7 +486,7 @@ static void lcd_implementation_status_screen()
    lcd.print(ftostr22(puller_feedrate));  //give the feed rate in mm/sec
    lcd.setCursor(13,1);   
    lcd.print('L');
-   lcd.print(ftostr6(current_position[P_AXIS]));
+   lcd.print(ftostr6(extrude_length));
    
    
 #  endif//EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
@@ -613,6 +615,8 @@ static void lcd_implementation_drawmenu_setting_edit_generic_P(uint8_t row, cons
 #define lcd_implementation_drawmenu_setting_edit_float3(row, pstr, pstr2, data, minValue, maxValue) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, ' ', ftostr3(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_float32_selected(row, pstr, pstr2, data, minValue, maxValue) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, '>', ftostr32(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_float32(row, pstr, pstr2, data, minValue, maxValue) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, ' ', ftostr32(*(data)))
+#define lcd_implementation_drawmenu_setting_edit_float22_selected(row, pstr, pstr2, data, minValue, maxValue) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, '>', ftostr22(*(data)))
+#define lcd_implementation_drawmenu_setting_edit_float22(row, pstr, pstr2, data, minValue, maxValue) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, ' ', ftostr22(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_float5_selected(row, pstr, pstr2, data, minValue, maxValue) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, '>', ftostr5(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_float5(row, pstr, pstr2, data, minValue, maxValue) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, ' ', ftostr5(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_float52_selected(row, pstr, pstr2, data, minValue, maxValue) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, '>', ftostr52(*(data)))
@@ -631,6 +635,8 @@ static void lcd_implementation_drawmenu_setting_edit_generic_P(uint8_t row, cons
 #define lcd_implementation_drawmenu_setting_edit_callback_float3(row, pstr, pstr2, data, minValue, maxValue, callback) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, ' ', ftostr3(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_callback_float32_selected(row, pstr, pstr2, data, minValue, maxValue, callback) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, '>', ftostr32(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_callback_float32(row, pstr, pstr2, data, minValue, maxValue, callback) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, ' ', ftostr32(*(data)))
+#define lcd_implementation_drawmenu_setting_edit_callback_float22_selected(row, pstr, pstr2, data, minValue, maxValue, callback) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, '>', ftostr22(*(data)))
+#define lcd_implementation_drawmenu_setting_edit_callback_float22(row, pstr, pstr2, data, minValue, maxValue, callback) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, ' ', ftostr22(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_callback_float5_selected(row, pstr, pstr2, data, minValue, maxValue, callback) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, '>', ftostr5(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_callback_float5(row, pstr, pstr2, data, minValue, maxValue, callback) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, ' ', ftostr5(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_callback_float52_selected(row, pstr, pstr2, data, minValue, maxValue, callback) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, '>', ftostr52(*(data)))
