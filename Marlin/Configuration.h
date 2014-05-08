@@ -302,7 +302,7 @@ Debug notes:
 
 //this prevents dangerous Extruder moves, i.e. if the temperature is under the limit
 //can be software-disabled for whatever purposes by
-//#define PREVENT_DANGEROUS_EXTRUDE
+#define PREVENT_DANGEROUS_EXTRUDE
 //if PREVENT_DANGEROUS_EXTRUDE is on, you can still disable (uncomment) very long bits of extrusion separately.
 #define PREVENT_LENGTHY_EXTRUDE
 
@@ -779,20 +779,20 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define DEFAULT_EXTRUDER_RPM 12 //define default extruder RPM
 #define EXTRUDER_RPM_MAX 15
 #define EXTRUDER_RPM_MIN 1
-#define DEFAULT_PULLER_FEEDRATE 5.0 //default puller feedrate when turned on
+#define DEFAULT_PULLER_FEEDRATE 6.0 //default puller feedrate when turned on
 #define PULLER_FEEDRATE_MIN 1.0 // min feedrate in manual control, 1 mm/sec min feed
 #define PULLER_FEEDRATE_MAX 12.0  // max feedrate in manual control 12mm/sec max feed
 #define PULLER_WHEEL_CIRC 120 //circumference of urethane puller wheel in mm
 
 #define DESIRED_FILAMENT_DIA 2.8 //define the default desired Filament diameter
 
-#define  DEFAULT_fwidthKp 1.00
-#define  DEFAULT_fwidthKi 0.0
-#define  DEFAULT_fwidthKd 0.0
+#define  DEFAULT_fwidthKp 0.01
+#define  DEFAULT_fwidthKi 0.02
+#define  DEFAULT_fwidthKd 3.00
 
 #define PULLER_PID_MIN_LIMIT 1.0 //min output limit of filament dia control in mm/sec
 #define PULLER_PID_MAX_LIMIT 12.0 //max output limit of filament dia control in mm/sec
-#define PULLER_PID_INTEGRATOR_WIND_LIMIT 100 //absolute value of integrator windup max value
+#define PULLER_PID_INTEGRATOR_WIND_LIMIT 100000 //absolute value of integrator windup max value
 
 #define DEFAULT_PULLER_MULTIPLY 200 //define default puller multiply (1000= 1.0)
 #define DEFAULT_FEEDMULTIPLY 20 //initial setting for feedmultiply when extruder motors are turned on

@@ -503,7 +503,7 @@
   #if MOTHERBOARD == 33 || MOTHERBOARD == 35 || MOTHERBOARD == 67 || MOTHERBOARD == 68
     #define FAN_PIN            9 // (Sprinter config)
   #else
-    #define FAN_PIN            4 // IO pin. Buffer needed
+    #define FAN_PIN            8 // FMM used for the winder motor
   #endif
 
   #if MOTHERBOARD == 77

@@ -80,6 +80,7 @@ static void menu_action_setting_edit_float22(const char* pstr, float* ptr, float
 static void menu_action_setting_edit_float5(const char* pstr, float* ptr, float minValue, float maxValue);
 static void menu_action_setting_edit_float51(const char* pstr, float* ptr, float minValue, float maxValue);
 static void menu_action_setting_edit_float52(const char* pstr, float* ptr, float minValue, float maxValue);
+static void menu_action_setting_edit_float53(const char* pstr, float* ptr, float minValue, float maxValue);
 static void menu_action_setting_edit_long5(const char* pstr, unsigned long* ptr, unsigned long minValue, unsigned long maxValue);
 static void menu_action_setting_edit_callback_bool(const char* pstr, bool* ptr, menuFunc_t callbackFunc);
 static void menu_action_setting_edit_callback_int3(const char* pstr, int* ptr, int minValue, int maxValue, menuFunc_t callbackFunc);
@@ -89,6 +90,7 @@ static void menu_action_setting_edit_callback_float22(const char* pstr, float* p
 static void menu_action_setting_edit_callback_float5(const char* pstr, float* ptr, float minValue, float maxValue, menuFunc_t callbackFunc);
 static void menu_action_setting_edit_callback_float51(const char* pstr, float* ptr, float minValue, float maxValue, menuFunc_t callbackFunc);
 static void menu_action_setting_edit_callback_float52(const char* pstr, float* ptr, float minValue, float maxValue, menuFunc_t callbackFunc);
+static void menu_action_setting_edit_callback_float53(const char* pstr, float* ptr, float minValue, float maxValue, menuFunc_t callbackFunc);
 static void menu_action_setting_edit_callback_long5(const char* pstr, unsigned long* ptr, unsigned long minValue, unsigned long maxValue, menuFunc_t callbackFunc);
 
 #define ENCODER_FEEDRATE_DEADZONE 10
@@ -489,7 +491,7 @@ static void lcd_tune_menu()
     START_MENU();
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
     MENU_ITEM_EDIT(int3, MSG_EXT_RPM, &extruder_rpm_set,EXTRUDER_RPM_MIN,EXTRUDER_RPM_MAX);
-    MENU_ITEM_EDIT(float32, MSG_SPEED, &puller_feedrate, 1.0, PULLER_FEEDRATE_MAX);
+    MENU_ITEM_EDIT(float22, MSG_SPEED, &puller_feedrate, 1.0, PULLER_FEEDRATE_MAX);
     MENU_ITEM_EDIT(int3, MSG_HEATER, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15);
 #if TEMP_SENSOR_1 != 0
     MENU_ITEM_EDIT(int3, MSG_NOZZLE1, &target_temperature[1], 0, HEATER_1_MAXTEMP - 15);
@@ -500,7 +502,7 @@ static void lcd_tune_menu()
 #if TEMP_SENSOR_BED != 0
     MENU_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
 #endif
-    MENU_ITEM_EDIT(float32,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
+    MENU_ITEM_EDIT(float22,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
     MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
  //   MENU_ITEM_EDIT(int3, MSG_FLOW, &extrudemultiply, 10, 999);
  //   MENU_ITEM_EDIT(int3, MSG_FLOW0, &extruder_multiply[0], 10, 999);
@@ -672,6 +674,9 @@ static void lcd_prepare_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
+    MENU_ITEM_EDIT(int3, MSG_EXT_RPM, &extruder_rpm_set,EXTRUDER_RPM_MIN,EXTRUDER_RPM_MAX);
+    MENU_ITEM_EDIT(float22, MSG_SPEED, &puller_feedrate, 1.0, PULLER_FEEDRATE_MAX);
+    MENU_ITEM_EDIT(float22,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
 #ifdef SDSUPPORT
     #ifdef MENU_ADDAUTOSTART
       MENU_ITEM(function, MSG_AUTOSTART, lcd_autostart_sd);
@@ -686,7 +691,7 @@ static void lcd_prepare_menu()
     MENU_ITEM(submenu, MSG_PREHEAT_ABS, lcd_preheat_abs_menu);
   #else
  //   MENU_ITEM(function, MSG_PREHEAT_PLA, lcd_preheat_pla0);
- //   MENU_ITEM(function, MSG_PREHEAT_ABS, lcd_preheat_extruder);
+    MENU_ITEM(function, MSG_PREHEAT_ABS, lcd_preheat_extruder);
   #endif
 #endif
 //    MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
@@ -868,11 +873,11 @@ static void lcd_move_menu_axis()
     MENU_ITEM(back, MSG_MOVE_AXIS, lcd_move_menu);
     MENU_ITEM(submenu, MSG_MOVE_E, lcd_move_e);
     MENU_ITEM(submenu, MSG_MOVE_P, lcd_move_p);
-    MENU_ITEM(submenu, MSG_MOVE_X, lcd_move_x);
-    MENU_ITEM(submenu, MSG_MOVE_Y, lcd_move_y);
+   // MENU_ITEM(submenu, MSG_MOVE_X, lcd_move_x);
+   // MENU_ITEM(submenu, MSG_MOVE_Y, lcd_move_y);
    // if (move_menu_scale < 10.0)
    // {
-        MENU_ITEM(submenu, MSG_MOVE_Z, lcd_move_z);
+   //     MENU_ITEM(submenu, MSG_MOVE_Z, lcd_move_z);
         
    // }
     END_MENU();
@@ -932,9 +937,9 @@ static void lcd_control_Filament_PID_menu()
 	{
 	START_MENU();
 	MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
-	MENU_ITEM_EDIT(float52, MSG_PID_P, &fwidthKp, 0.0, 9990);
-	MENU_ITEM_EDIT(float52, MSG_PID_I, &fwidthKi, 0.0, 9990);
-	MENU_ITEM_EDIT(float52, MSG_PID_D, &fwidthKd, 0.0, 9990);
+	MENU_ITEM_EDIT(float53, MSG_PID_P, &fwidthKp, 0.0, 99.999);
+	MENU_ITEM_EDIT(float53, MSG_PID_I, &fwidthKi, 0.0, 99.999);
+	MENU_ITEM_EDIT(float53, MSG_PID_D, &fwidthKd, 0.0, 99.999);
 	END_MENU();
 	}
 
@@ -1017,26 +1022,28 @@ static void lcd_control_motion_menu()
 #ifdef ENABLE_AUTO_BED_LEVELING
     MENU_ITEM_EDIT(float32, MSG_ZPROBE_ZOFFSET, &zprobe_zoffset, 0.5, 50);
 #endif
-    MENU_ITEM_EDIT(float5, MSG_ACC, &acceleration, 500, 99000);
-    MENU_ITEM_EDIT(float3, MSG_VXY_JERK, &max_xy_jerk, 1, 990);
-    MENU_ITEM_EDIT(float52, MSG_VZ_JERK, &max_z_jerk, 0.1, 990);
-    MENU_ITEM_EDIT(float3, MSG_VE_JERK, &max_e_jerk, 1, 990);
-    MENU_ITEM_EDIT(float3, MSG_VMAX MSG_X, &max_feedrate[X_AXIS], 1, 999);
-    MENU_ITEM_EDIT(float3, MSG_VMAX MSG_Y, &max_feedrate[Y_AXIS], 1, 999);
-    MENU_ITEM_EDIT(float3, MSG_VMAX MSG_Z, &max_feedrate[Z_AXIS], 1, 999);
-    MENU_ITEM_EDIT(float3, MSG_VMAX MSG_E, &max_feedrate[E_AXIS], 1, 999);
-    MENU_ITEM_EDIT(float3, MSG_VMIN, &minimumfeedrate, 0, 999);
-    MENU_ITEM_EDIT(float3, MSG_VTRAV_MIN, &mintravelfeedrate, 0, 999);
-    MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_X, &max_acceleration_units_per_sq_second[X_AXIS], 100, 99000, reset_acceleration_rates);
-    MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_Y, &max_acceleration_units_per_sq_second[Y_AXIS], 100, 99000, reset_acceleration_rates);
-    MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_Z, &max_acceleration_units_per_sq_second[Z_AXIS], 100, 99000, reset_acceleration_rates);
-    MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_E, &max_acceleration_units_per_sq_second[E_AXIS], 100, 99000, reset_acceleration_rates);
-    MENU_ITEM_EDIT(float5, MSG_A_RETRACT, &retract_acceleration, 100, 99000);
-    MENU_ITEM_EDIT(float52, MSG_XSTEPS, &axis_steps_per_unit[X_AXIS], 5, 9999);
-    MENU_ITEM_EDIT(float52, MSG_YSTEPS, &axis_steps_per_unit[Y_AXIS], 5, 9999);
-    MENU_ITEM_EDIT(float51, MSG_ZSTEPS, &axis_steps_per_unit[Z_AXIS], 5, 9999);
     MENU_ITEM_EDIT(float51, MSG_ESTEPS, &axis_steps_per_unit[E_AXIS], 5, 9999);
     MENU_ITEM_EDIT(float51, MSG_PSTEPS, &axis_steps_per_unit[P_AXIS], 5, 9999);
+    MENU_ITEM_EDIT(float5, MSG_A_RETRACT, &retract_acceleration, 100, 99000);
+    //MENU_ITEM_EDIT(float5, MSG_ACC, &acceleration, 500, 99000);
+    //MENU_ITEM_EDIT(float3, MSG_VXY_JERK, &max_xy_jerk, 1, 990);
+   // MENU_ITEM_EDIT(float52, MSG_VZ_JERK, &max_z_jerk, 0.1, 990);
+    MENU_ITEM_EDIT(float3, MSG_VE_JERK, &max_e_jerk, 1, 990);
+    //MENU_ITEM_EDIT(float3, MSG_VMAX MSG_X, &max_feedrate[X_AXIS], 1, 999);
+    //MENU_ITEM_EDIT(float3, MSG_VMAX MSG_Y, &max_feedrate[Y_AXIS], 1, 999);
+    //MENU_ITEM_EDIT(float3, MSG_VMAX MSG_Z, &max_feedrate[Z_AXIS], 1, 999);
+    MENU_ITEM_EDIT(float3, MSG_VMAX MSG_E, &max_feedrate[E_AXIS], 1, 999);
+    //MENU_ITEM_EDIT(float3, MSG_VMIN, &minimumfeedrate, 0, 999);
+   // MENU_ITEM_EDIT(float3, MSG_VTRAV_MIN, &mintravelfeedrate, 0, 999);
+    //MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_X, &max_acceleration_units_per_sq_second[X_AXIS], 100, 99000, reset_acceleration_rates);
+    //MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_Y, &max_acceleration_units_per_sq_second[Y_AXIS], 100, 99000, reset_acceleration_rates);
+   // MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_Z, &max_acceleration_units_per_sq_second[Z_AXIS], 100, 99000, reset_acceleration_rates);
+   // MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_E, &max_acceleration_units_per_sq_second[E_AXIS], 100, 99000, reset_acceleration_rates);
+    
+    //MENU_ITEM_EDIT(float52, MSG_XSTEPS, &axis_steps_per_unit[X_AXIS], 5, 9999);
+   // MENU_ITEM_EDIT(float52, MSG_YSTEPS, &axis_steps_per_unit[Y_AXIS], 5, 9999);
+   // MENU_ITEM_EDIT(float51, MSG_ZSTEPS, &axis_steps_per_unit[Z_AXIS], 5, 9999);
+    
 #ifdef ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
     MENU_ITEM_EDIT(bool, MSG_ENDSTOP_ABORT, &abort_on_endstop_hit);
 #endif
@@ -1205,6 +1212,7 @@ menu_edit_type(float, float32, ftostr32, 100)
 menu_edit_type(float, float5, ftostr5, 0.01)
 menu_edit_type(float, float51, ftostr51, 10)
 menu_edit_type(float, float52, ftostr52, 100)
+menu_edit_type(float, float53, ftostr53, 1000)
 menu_edit_type(unsigned long, long5, ftostr5, 0.01)
 
 #ifdef REPRAPWORLD_KEYPAD
@@ -1857,6 +1865,24 @@ char *ftostr52(const float &x)
   conv[7]=0;
   return conv;
 }
+
+//  convert float to string with +12.345 format
+char *ftostr53(const float &x)
+{
+  long xx=x*1000;
+  conv[0]=(xx>=0)?'+':'-';
+  xx=abs(xx);
+  conv[1]=(xx/10000)%10+'0';
+  conv[2]=(xx/1000)%10+'0';
+  conv[3]='.';
+  conv[4]=(xx/100)%10+'0';
+  conv[5]=(xx/10)%10+'0';
+  conv[6]=(xx)%10+'0';
+  conv[7]=0;
+  return conv;
+}
+
+
 
 // Callback for after editing PID i value
 // grab the PID i value out of the temp variable; scale it; then update the PID driver

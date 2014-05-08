@@ -140,7 +140,7 @@
 	#define MSG_VMIN "Vmin"
 	#define MSG_VTRAV_MIN "VTrav min"
 	#define MSG_AMAX "Amax "
-	#define MSG_A_RETRACT "A-retract"
+	#define MSG_A_RETRACT "Motor Acc"
 	#define MSG_XSTEPS "Xsteps/mm"
 	#define MSG_YSTEPS "Ysteps/mm"
 	#define MSG_ZSTEPS "Zsteps/mm"
