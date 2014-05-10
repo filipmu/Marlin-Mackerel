@@ -41,7 +41,7 @@
 
   extern int absPreheatHotendTemp;
   extern int absPreheatHPBTemp;
-  extern int absPreheatFanSpeed;
+  extern int default_winder_speed;
   
   //FMM section
   extern volatile long e_velocity;  //in steps per second

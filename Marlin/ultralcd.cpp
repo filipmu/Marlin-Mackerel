@@ -17,7 +17,7 @@ int plaPreheatFanSpeed;
 
 int absPreheatHotendTemp;
 int absPreheatHPBTemp;
-int absPreheatFanSpeed;
+int default_winder_speed;
 
 
 #ifdef ULTIPANEL
@@ -238,10 +238,10 @@ static void lcd_status_screen()
         feedmultiply = FEEDMULTIPLY_MAX;
         
     */
-    if (puller_feedrate < 1.0)
-    	puller_feedrate = 1.0;
+    if (puller_feedrate < PULLER_FEEDRATE_MIN)
+    	puller_feedrate = PULLER_FEEDRATE_MIN;
     if (puller_feedrate > PULLER_FEEDRATE_MAX)
-        puller_feedrate = PULLER_FEEDRATE_MAX;
+    	puller_feedrate = PULLER_FEEDRATE_MAX;
         
         
 #endif//ULTIPANEL
@@ -292,19 +292,26 @@ static void lcd_disable_statistics()
 static void lcd_extruder_pause()
 {
     extrude_status=extrude_status & ES_ENABLE_CLEAR;
+    puller_feedrate_default = puller_feedrate;   //save default feed rate
+    winderSpeed = 0;  //stop winder
+    digitalWrite(CONTROLLERFAN_PIN, 0); //stop fan
     lcd_disable_statistics();
 }
 static void lcd_extruder_resume()
 {
 	//feedmultiply=DEFAULT_FEEDMULTIPLY;
+	puller_feedrate = puller_feedrate_default;   //use default feed rate
 	extrude_status=extrude_status|ES_ENABLE_SET;
+	winderSpeed = default_winder_speed;  //start winder
+	digitalWrite(CONTROLLERFAN_PIN, 1);  //start Fan
     starttime=millis();
     lcd_enable_statistics();
 }
 
 static void lcd_extruder_automatic()
 	{
-	extrude_status=extrude_status|ES_AUTO_SET;
+	if(extrude_status& ES_HOT_SET>0)  //ensure extruder is hot before setting to automatic
+		extrude_status=extrude_status|ES_AUTO_SET;
 	lcd_return_to_status();
 	}
 
@@ -331,7 +338,7 @@ void lcd_preheat_extruder()
 {
     setTargetHotend0(absPreheatHotendTemp);
    // setTargetBed(absPreheatHPBTemp);
-    fanSpeed = absPreheatFanSpeed;
+    
     LCD_MESSAGEPGM("Extruder Warming Up");
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
@@ -344,7 +351,7 @@ void lcd_cooldown()
     setTargetHotend1(0);
     setTargetHotend2(0);
     setTargetBed(0);
-    fanSpeed = 0;
+    winderSpeed = 0;
     LCD_MESSAGEPGM("Extruder Cooling");
     lcd_return_to_status();
 }
@@ -491,7 +498,7 @@ static void lcd_tune_menu()
     START_MENU();
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
     MENU_ITEM_EDIT(int3, MSG_EXT_RPM, &extruder_rpm_set,EXTRUDER_RPM_MIN,EXTRUDER_RPM_MAX);
-    MENU_ITEM_EDIT(float22, MSG_SPEED, &puller_feedrate, 1.0, PULLER_FEEDRATE_MAX);
+    MENU_ITEM_EDIT(float22, MSG_SPEED, &puller_feedrate, PULLER_FEEDRATE_MIN, PULLER_FEEDRATE_MAX);
     MENU_ITEM_EDIT(int3, MSG_HEATER, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15);
 #if TEMP_SENSOR_1 != 0
     MENU_ITEM_EDIT(int3, MSG_NOZZLE1, &target_temperature[1], 0, HEATER_1_MAXTEMP - 15);
@@ -503,7 +510,7 @@ static void lcd_tune_menu()
     MENU_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
 #endif
     MENU_ITEM_EDIT(float22,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
-    MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
+    MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &winderSpeed, 0, 255);
  //   MENU_ITEM_EDIT(int3, MSG_FLOW, &extrudemultiply, 10, 999);
  //   MENU_ITEM_EDIT(int3, MSG_FLOW0, &extruder_multiply[0], 10, 999);
 #if TEMP_SENSOR_1 != 0
@@ -530,7 +537,7 @@ void lcd_preheat_pla0()
 {
     setTargetHotend0(plaPreheatHotendTemp);
     setTargetBed(plaPreheatHPBTemp);
-    fanSpeed = plaPreheatFanSpeed;
+    winderSpeed = plaPreheatFanSpeed;
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
 }
@@ -539,7 +546,7 @@ void lcd_preheat_abs0()
 {
     setTargetHotend0(absPreheatHotendTemp);
     setTargetBed(absPreheatHPBTemp);
-    fanSpeed = absPreheatFanSpeed;
+    
     LCD_MESSAGEPGM("Extruder Warming Up");
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
@@ -562,7 +569,7 @@ void lcd_preheat_abs1()
 {
     setTargetHotend1(absPreheatHotendTemp);
     setTargetBed(absPreheatHPBTemp);
-    fanSpeed = absPreheatFanSpeed;
+    fanSpeed = default_winder_speed;
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
 }
@@ -582,7 +589,7 @@ void lcd_preheat_abs2()
 {
     setTargetHotend2(absPreheatHotendTemp);
     setTargetBed(absPreheatHPBTemp);
-    fanSpeed = absPreheatFanSpeed;
+    fanSpeed = default_winder_speed;
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
 }
@@ -606,7 +613,7 @@ void lcd_preheat_abs012()
     setTargetHotend1(absPreheatHotendTemp);
     setTargetHotend2(absPreheatHotendTemp);
     setTargetBed(absPreheatHPBTemp);
-    fanSpeed = absPreheatFanSpeed;
+    fanSpeed = default_winder_speed;
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
 }
@@ -615,7 +622,7 @@ void lcd_preheat_abs012()
 void lcd_preheat_pla_bedonly()
 {
     setTargetBed(plaPreheatHPBTemp);
-    fanSpeed = plaPreheatFanSpeed;
+    
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
 }
@@ -623,7 +630,7 @@ void lcd_preheat_pla_bedonly()
 void lcd_preheat_abs_bedonly()
 {
     setTargetBed(absPreheatHPBTemp);
-    fanSpeed = absPreheatFanSpeed;
+    
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
 }
@@ -670,13 +677,15 @@ static void lcd_preheat_abs_menu()
 
 
 
+
 static void lcd_prepare_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
     MENU_ITEM_EDIT(int3, MSG_EXT_RPM, &extruder_rpm_set,EXTRUDER_RPM_MIN,EXTRUDER_RPM_MAX);
-    MENU_ITEM_EDIT(float22, MSG_SPEED, &puller_feedrate, 1.0, PULLER_FEEDRATE_MAX);
+    MENU_ITEM_EDIT(float22, MSG_SPEED, &puller_feedrate_default, PULLER_FEEDRATE_MIN, PULLER_FEEDRATE_MAX);
     MENU_ITEM_EDIT(float22,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
+    MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &default_winder_speed, 0, 255);
 #ifdef SDSUPPORT
     #ifdef MENU_ADDAUTOSTART
       MENU_ITEM(function, MSG_AUTOSTART, lcd_autostart_sd);
@@ -963,7 +972,7 @@ static void lcd_control_temperature_menu()
 #if TEMP_SENSOR_BED != 0
     MENU_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
 #endif
-    MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
+    
 #ifdef AUTOTEMP
     MENU_ITEM_EDIT(bool, MSG_AUTOTEMP, &autotemp_enabled);
     MENU_ITEM_EDIT(float3, MSG_MIN, &autotemp_min, 0, HEATER_0_MAXTEMP - 15);
@@ -988,7 +997,6 @@ static void lcd_control_temperature_preheat_pla_settings_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_TEMPERATURE, lcd_control_temperature_menu);
-    MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &plaPreheatFanSpeed, 0, 255);
     MENU_ITEM_EDIT(int3, MSG_NOZZLE, &plaPreheatHotendTemp, 0, HEATER_0_MAXTEMP - 15);
 #if TEMP_SENSOR_BED != 0
     MENU_ITEM_EDIT(int3, MSG_BED, &plaPreheatHPBTemp, 0, BED_MAXTEMP - 15);
@@ -1003,7 +1011,6 @@ static void lcd_control_temperature_preheat_abs_settings_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_TEMPERATURE, lcd_control_temperature_menu);
-    MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &absPreheatFanSpeed, 0, 255);
     MENU_ITEM_EDIT(int3, MSG_HEATER, &absPreheatHotendTemp, 0, HEATER_0_MAXTEMP - 15);
     MENU_ITEM_EDIT(float32,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
 #if TEMP_SENSOR_BED != 0
@@ -1022,6 +1029,7 @@ static void lcd_control_motion_menu()
 #ifdef ENABLE_AUTO_BED_LEVELING
     MENU_ITEM_EDIT(float32, MSG_ZPROBE_ZOFFSET, &zprobe_zoffset, 0.5, 50);
 #endif
+    MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &default_winder_speed, 0, 255);
     MENU_ITEM_EDIT(float51, MSG_ESTEPS, &axis_steps_per_unit[E_AXIS], 5, 9999);
     MENU_ITEM_EDIT(float51, MSG_PSTEPS, &axis_steps_per_unit[P_AXIS], 5, 9999);
     MENU_ITEM_EDIT(float5, MSG_A_RETRACT, &retract_acceleration, 100, 99000);

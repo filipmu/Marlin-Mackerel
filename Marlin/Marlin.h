@@ -230,8 +230,9 @@ extern float avg_measured_filament_width;
 extern float extrude_length;
 extern float filament_control; //output of the PID controller
 extern volatile float filament_width_meas; //holds the filament width as measured by the sensor
+extern float puller_feedrate_default;
 extern int feedmultiply;
-extern int pullermultiply;
+
 extern int extrudemultiply; // Sets extrude multiply factor (in percent) for all extruders
 extern int extruder_multiply[EXTRUDERS]; // sets extrude multiply factor (in percent) for each extruder individually
 extern float volumetric_multiplier[EXTRUDERS]; // reciprocal of cross-sectional area of filament (in square millimeters), stored this way to reduce computational burden in planner
@@ -248,14 +249,14 @@ extern float min_pos[3];
 extern float max_pos[3];
 extern bool axis_known_position[3];
 extern float zprobe_zoffset;
-extern int fanSpeed;
+extern int winderSpeed;
 #ifdef BARICUDA
 extern int ValvePressure;
 extern int EtoPPressure;
 #endif
 
 #ifdef FAN_SOFT_PWM
-extern unsigned char fanSpeedSoftPwm;
+extern unsigned char wSpeedSoftPwm;
 #endif
 
 #ifdef FWRETRACT

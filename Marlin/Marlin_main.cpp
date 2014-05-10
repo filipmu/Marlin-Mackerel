@@ -188,13 +188,14 @@ float homing_feedrate[] = HOMING_FEEDRATE;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
 unsigned char extrude_status =0;
 float filament_width_desired= DESIRED_FILAMENT_DIA; //holds the desired filament width (i.e like 2.6mm)
-int feedmultiply=DEFAULT_FEEDMULTIPLY; //100->1 200->2
+int feedmultiply; //100->1 200->2
 int saved_feedmultiply;
-int pullermultiply = DEFAULT_PULLER_MULTIPLY;
+
 int extrudemultiply=100; //100->1 200->2
 float extruder_feedrate;  //extruder real time 'feed rate' - yet we are really interested in RPM
 int extruder_rpm; //real time extruder rpm
 int extruder_rpm_set= DEFAULT_EXTRUDER_RPM; //setpoint for extruder RPM
+float puller_feedrate_default = DEFAULT_PULLER_FEEDRATE; //puller motor feed rate in mm/sec
 float puller_feedrate= DEFAULT_PULLER_FEEDRATE; //puller motor feed rate in mm/sec
 float puller_feedrate_last = DEFAULT_PULLER_FEEDRATE;
 float max_measured_filament_width=0;
@@ -258,7 +259,7 @@ float extruder_offset[NUM_EXTRUDER_OFFSETS][EXTRUDERS] = {
 };
 #endif
 uint8_t active_extruder = 0;
-int fanSpeed=0;
+int winderSpeed=0;
 #ifdef SERVO_ENDSTOPS
   int servo_endstops[] = SERVO_ENDSTOPS;
   int servo_endstop_angles[] = SERVO_ENDSTOP_ANGLES;
@@ -627,7 +628,7 @@ void loop()
   
   //FMM calculate max, min, and average filament width
   
-  if((extrude_status & ES_STATS_SET) >0) //check whether we should collect stats on filament width
+  if((extrude_status & (ES_STATS_SET | ES_ENABLE_SET))  == (ES_STATS_SET | ES_ENABLE_SET) ) //check whether we should collect stats on filament width
 	  {
 	  if (min_measured_filament_width>current_filwidth || min_measured_filament_width==0)
 		  min_measured_filament_width=current_filwidth;
@@ -662,6 +663,7 @@ void loop()
   if(((degHotend(active_extruder) >= (degTargetHotend(active_extruder)-TEMP_WINDOW)) && (degHotend(active_extruder) <= (degTargetHotend(active_extruder)+TEMP_WINDOW)))  && ((extrude_status & ES_TEMP_SET)==0))  //check if extruder at or near setpoint
   	  {
 	  extrude_status=extrude_status | ES_TEMP_SET;
+	  WRITE(BEEPER,HIGH);
 	  LCD_MESSAGEPGM(MSG_HEATING_COMPLETE);
   	  }
   	
@@ -711,7 +713,7 @@ void loop()
 	  
 	  
 	  //calculate PID - delta is spatial, not time
-	  if((extrude_status & ES_AUTO_SET) >0){
+	  if((extrude_status & (ES_AUTO_SET | ES_HOT_SET | ES_SWITCH_SET)) == (ES_AUTO_SET | ES_HOT_SET | ES_SWITCH_SET) ){  ///check for normal extrusion
 	  		//  Extruder in Automatic control
 	  		
 		  
@@ -793,7 +795,7 @@ void loop()
 	  		  
 	  	  } else {
 	  		  puller_feedrate_last=puller_feedrate;  //keep track of last puller_feedrate when running manual control
-	  		  iTerm_fwidth=0;  //reset the integral
+	  		  dia_iState_fwidth=0;  //reset the integral
 	  	  }
 	  		  
 	  
@@ -1459,9 +1461,9 @@ void process_commands()
 #endif //ENABLE_AUTO_BED_LEVELING
 
 
-      saved_feedrate = feedrate;
-      saved_feedmultiply = feedmultiply;
-      feedmultiply = 100;
+ //     saved_feedrate = feedrate;
+ //     saved_feedmultiply = feedmultiply;
+ //     feedmultiply = 100;
       previous_millis_cmd = millis();
 
       enable_endstops(true);
@@ -1658,8 +1660,8 @@ void process_commands()
         enable_endstops(false);
       #endif
 
-      feedrate = saved_feedrate;
-      feedmultiply = saved_feedmultiply;
+  //    feedrate = saved_feedrate;
+  //    feedmultiply = saved_feedmultiply;
       previous_millis_cmd = millis();
       endstops_hit_on_purpose();
       break;
@@ -2044,9 +2046,9 @@ void process_commands()
             break;
           }
         }
-      #if defined(FAN_PIN) && FAN_PIN > -1
-        if (pin_number == FAN_PIN)
-          fanSpeed = pin_status;
+      #if defined(WINDER_PIN) && WINDER_PIN > -1
+        if (pin_number == WINDER_PIN)
+          winderSpeed = pin_status;
       #endif
         if (pin_number > -1)
         {
@@ -2262,19 +2264,19 @@ void process_commands()
     #endif
         break;
 
-    #if defined(FAN_PIN) && FAN_PIN > -1
+    #if defined(WINDER_PIN) && WINDER_PIN > -1
       case 106: //M106 Fan On
         if (code_seen('S')){
-           fanSpeed=constrain(code_value(),0,255);
+           winderSpeed=constrain(code_value(),0,255);
         }
         else {
-          fanSpeed=255;
+          winderSpeed=255;
         }
         break;
       case 107: //M107 Fan Off
-        fanSpeed = 0;
+        winderSpeed = 0;
         break;
-    #endif //FAN_PIN
+    #endif //WINDER_PIN
     #ifdef BARICUDA
       // PWM for HEATER_1_PIN
       #if defined(HEATER_1_PIN) && HEATER_1_PIN > -1
@@ -2335,7 +2337,7 @@ void process_commands()
         disable_p();
         disable_e2();
         finishAndDisableSteppers();
-        fanSpeed = 0;
+        winderSpeed = 0;
         delay(1000); // Wait a little before to switch off
       #if defined(SUICIDE_PIN) && SUICIDE_PIN > -1
         st_synchronize();
@@ -3543,7 +3545,7 @@ void prepare_arc_move(char isclockwise) {
 
 #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
 
-#if defined(FAN_PIN)
+#if defined(WINDER_PIN)
   #if CONTROLLERFAN_PIN == FAN_PIN
     #error "You cannot set CONTROLLERFAN_PIN equal to FAN_PIN"
   #endif
@@ -3654,7 +3656,7 @@ void manage_inactivity()
       kill();
   #endif
   #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
-    controllerFan(); //Check if fan should be turned on to cool stepper drivers down
+    //controllerFan(); //Check if fan should be turned on to cool stepper drivers down
   #endif
   #ifdef EXTRUDER_RUNOUT_PREVENT
     if( (millis() - previous_millis_cmd) >  EXTRUDER_RUNOUT_SECONDS*1000 )

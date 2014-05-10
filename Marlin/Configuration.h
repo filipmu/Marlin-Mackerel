@@ -544,7 +544,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 
 #define ABS_PREHEAT_HOTEND_TEMP 185  //Set to 185 deg C based on Hugh's suggestion
 #define ABS_PREHEAT_HPB_TEMP 100
-#define ABS_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
+#define ABS_PREHEAT_WINDER_SPEED 255   // Insert Value between 0 and 255
 
 //LCD and SD support
 //#define ULTRA_LCD  //general LCD support, also 16x2
@@ -784,18 +784,20 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define PULLER_FEEDRATE_MAX 12.0  // max feedrate in manual control 12mm/sec max feed
 #define PULLER_WHEEL_CIRC 120 //circumference of urethane puller wheel in mm
 
+#define DEFAULT_WINDER_SPEED 128  //default winder speed (0-255)
+
 #define DESIRED_FILAMENT_DIA 2.8 //define the default desired Filament diameter
 
-#define  DEFAULT_fwidthKp 0.01
-#define  DEFAULT_fwidthKi 0.02
-#define  DEFAULT_fwidthKd 3.00
+#define  DEFAULT_fwidthKp 0.020
+#define  DEFAULT_fwidthKi 0.060
+#define  DEFAULT_fwidthKd 0.250
 
 #define PULLER_PID_MIN_LIMIT 1.0 //min output limit of filament dia control in mm/sec
 #define PULLER_PID_MAX_LIMIT 12.0 //max output limit of filament dia control in mm/sec
-#define PULLER_PID_INTEGRATOR_WIND_LIMIT 100000 //absolute value of integrator windup max value
+#define PULLER_PID_INTEGRATOR_WIND_LIMIT 1000000 //absolute value of integrator windup max value
 
-#define DEFAULT_PULLER_MULTIPLY 200 //define default puller multiply (1000= 1.0)
-#define DEFAULT_FEEDMULTIPLY 20 //initial setting for feedmultiply when extruder motors are turned on
+
+
 
 #include "Configuration_adv.h"
 #include "thermistortables.h"

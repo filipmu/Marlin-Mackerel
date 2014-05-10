@@ -40,7 +40,7 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
 #ifdef DELTA
 #define EEPROM_VERSION "V11"
 #else
-#define EEPROM_VERSION "V10"
+#define EEPROM_VERSION "V12"
 #endif
 
 #ifdef EEPROM_SETTINGS
@@ -69,14 +69,14 @@ void Config_StoreSettings()
   #endif
   #ifndef ULTIPANEL
   int plaPreheatHotendTemp = PLA_PREHEAT_HOTEND_TEMP, plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP, plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
-  int absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP, absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP, absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
+  int absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP, absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP, default_winder_speed = ABS_PREHEAT_FAN_SPEED;
   #endif
   EEPROM_WRITE_VAR(i,plaPreheatHotendTemp);
   EEPROM_WRITE_VAR(i,plaPreheatHPBTemp);
   EEPROM_WRITE_VAR(i,plaPreheatFanSpeed);
   EEPROM_WRITE_VAR(i,absPreheatHotendTemp);
   EEPROM_WRITE_VAR(i,absPreheatHPBTemp);
-  EEPROM_WRITE_VAR(i,absPreheatFanSpeed);
+  EEPROM_WRITE_VAR(i,default_winder_speed);
   EEPROM_WRITE_VAR(i,zprobe_zoffset);
   #ifdef PIDTEMP
     EEPROM_WRITE_VAR(i,Kp);
@@ -93,6 +93,16 @@ void Config_StoreSettings()
     int lcd_contrast = 32;
   #endif
   EEPROM_WRITE_VAR(i,lcd_contrast);
+  
+  //Lyman Extruder saved items
+  EEPROM_WRITE_VAR(i,extruder_rpm_set); //setpoint for extruder RPM
+  EEPROM_WRITE_VAR(i,puller_feedrate_default); //puller motor feed rate in mm/sec   
+  EEPROM_WRITE_VAR(i,filament_width_desired); //holds the desired filament width (i.e like 2.6mm)
+  EEPROM_WRITE_VAR(i,fwidthKp);
+  EEPROM_WRITE_VAR(i,fwidthKi);  //removed delta T portion since we will handle explicitily
+  EEPROM_WRITE_VAR(i,fwidthKd);
+   
+   
   char ver2[4]=EEPROM_VERSION;
   i=EEPROM_OFFSET;
   EEPROM_WRITE_VAR(i,ver2); // validate data
@@ -220,14 +230,14 @@ void Config_RetrieveSettings()
         #endif
         #ifndef ULTIPANEL
         int plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed;
-        int absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed;
+        int absPreheatHotendTemp, absPreheatHPBTemp, default_winder_speed;
         #endif
         EEPROM_READ_VAR(i,plaPreheatHotendTemp);
         EEPROM_READ_VAR(i,plaPreheatHPBTemp);
         EEPROM_READ_VAR(i,plaPreheatFanSpeed);
         EEPROM_READ_VAR(i,absPreheatHotendTemp);
         EEPROM_READ_VAR(i,absPreheatHPBTemp);
-        EEPROM_READ_VAR(i,absPreheatFanSpeed);
+        EEPROM_READ_VAR(i,default_winder_speed);
         EEPROM_READ_VAR(i,zprobe_zoffset);
         #ifndef PIDTEMP
         float Kp,Ki,Kd;
@@ -240,6 +250,15 @@ void Config_RetrieveSettings()
         int lcd_contrast;
         #endif
         EEPROM_READ_VAR(i,lcd_contrast);
+        
+        //Lyman Extruder saved items
+        EEPROM_READ_VAR(i,extruder_rpm_set); //setpoint for extruder RPM
+        EEPROM_READ_VAR(i,puller_feedrate_default); //puller motor feed rate in mm/sec   
+        EEPROM_READ_VAR(i,filament_width_desired); //holds the desired filament width (i.e like 2.6mm)
+        EEPROM_READ_VAR(i,fwidthKp);
+        EEPROM_READ_VAR(i,fwidthKi);  //removed delta T portion since we will handle explicitily
+        EEPROM_READ_VAR(i,fwidthKd);
+          
 
 		// Call updatePID (similar to when we have processed M301)
 		updatePID();
@@ -293,7 +312,7 @@ void Config_ResetDefault()
     plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
     absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP;
     absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP;
-    absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
+    default_winder_speed = DEFAULT_WINDER_SPEED;
 #endif
 #ifdef ENABLE_AUTO_BED_LEVELING
     zprobe_zoffset = -Z_PROBE_OFFSET_FROM_EXTRUDER;
@@ -313,7 +332,16 @@ void Config_ResetDefault()
     Kc = DEFAULT_Kc;
 #endif//PID_ADD_EXTRUSION_RATE
 #endif//PIDTEMP
-
+    
+ //load Lyman Extruder defaults   
+ extruder_rpm_set= DEFAULT_EXTRUDER_RPM; //setpoint for extruder RPM
+ puller_feedrate_default = DEFAULT_PULLER_FEEDRATE; //puller motor feed rate in mm/sec   
+ filament_width_desired= DESIRED_FILAMENT_DIA; //holds the desired filament width (i.e like 2.6mm)
+ fwidthKp=DEFAULT_fwidthKp;
+ fwidthKi=DEFAULT_fwidthKi;  //removed delta T portion since we will handle explicitily
+ fwidthKd=DEFAULT_fwidthKd;  
+ 
+ 
 SERIAL_ECHO_START;
 SERIAL_ECHOLNPGM("Hardcoded Default Settings Loaded");
 

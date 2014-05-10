@@ -579,6 +579,7 @@ ISR(TIMER1_COMPA_vect)
       }
       #endif //ADVANCE
 
+      /*//disable x
         counter_x += current_block->steps_x;
         if (counter_x > 0) {
         #ifdef DUAL_X_CARRIAGE
@@ -612,7 +613,9 @@ ISR(TIMER1_COMPA_vect)
           WRITE(X_STEP_PIN, INVERT_X_STEP_PIN);
         #endif
         }
-
+*/  //end disable x
+      
+      /*//disable y
         counter_y += current_block->steps_y;
         if (counter_y > 0) {
           WRITE(Y_STEP_PIN, !INVERT_Y_STEP_PIN);
@@ -629,7 +632,10 @@ ISR(TIMER1_COMPA_vect)
 			WRITE(Y2_STEP_PIN, INVERT_Y_STEP_PIN);
 		  #endif
         }
-
+*/  //end disable y
+      
+      /*// disable z
+      
       counter_z += current_block->steps_z;
       if (counter_z > 0) {
         WRITE(Z_STEP_PIN, !INVERT_Z_STEP_PIN);
@@ -646,6 +652,7 @@ ISR(TIMER1_COMPA_vect)
           WRITE(Z2_STEP_PIN, INVERT_Z_STEP_PIN);
         #endif
       }
+      */ // end disable z
 
       #ifndef ADVANCE
         counter_e += current_block->steps_e;

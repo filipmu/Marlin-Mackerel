@@ -450,7 +450,7 @@ void check_axes_activity()
   unsigned char z_active = 0;
   unsigned char e_active = 0;
   unsigned char p_active = 0;
-  unsigned char tail_fan_speed = fanSpeed;
+  unsigned char tail_winder_speed = winderSpeed;
   #ifdef BARICUDA
   unsigned char tail_valve_pressure = ValvePressure;
   unsigned char tail_e_to_p_pressure = EtoPPressure;
@@ -460,7 +460,7 @@ void check_axes_activity()
   if(block_buffer_tail != block_buffer_head)
   {
     uint8_t block_index = block_buffer_tail;
-    tail_fan_speed = block_buffer[block_index].fan_speed;
+    tail_winder_speed = block_buffer[block_index].winder_speed;
     #ifdef BARICUDA
     tail_valve_pressure = block_buffer[block_index].valve_pressure;
     tail_e_to_p_pressure = block_buffer[block_index].e_to_p_pressure;
@@ -485,7 +485,7 @@ void check_axes_activity()
     disable_e0();
     disable_e2(); 
   }
-#if defined(FAN_PIN) && FAN_PIN > -1
+#if defined(WINDER_PIN) && WINDER_PIN > -1
   #ifdef FAN_KICKSTART_TIME
     static unsigned long fan_kick_end;
     if (tail_fan_speed) {
@@ -503,9 +503,9 @@ void check_axes_activity()
   #ifdef FAN_SOFT_PWM
   fanSpeedSoftPwm = tail_fan_speed;
   #else
-  analogWrite(FAN_PIN,tail_fan_speed);
+  analogWrite(WINDER_PIN,tail_winder_speed);
   #endif//!FAN_SOFT_PWM
-#endif//FAN_PIN > -1
+#endif//WINDER_PIN > -1
 #ifdef AUTOTEMP
   getHighESpeed();
 #endif
@@ -598,9 +598,9 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
 #endif
   block->steps_z = labs(target[Z_AXIS]-position[Z_AXIS]);
   block->steps_e = labs(target[E_AXIS]-position[E_AXIS]);
-  block->steps_e *= volumetric_multiplier[active_extruder];
-  block->steps_e *= extrudemultiply;
-  block->steps_e /= 100;
+ // block->steps_e *= volumetric_multiplier[active_extruder];
+  //block->steps_e *= extrudemultiply;
+ // block->steps_e /= 100;
   block->steps_p = labs(target[P_AXIS]-position[P_AXIS]);  //FMM added P_AXIS
   //block->steps_p *= volumetric_multiplier[active_extruder];  //FMM not really needed
   //block->steps_p *= pullermultiply; // FMM done at time of block request may not be needed
@@ -615,7 +615,7 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
     return; 
   }
 
-  block->fan_speed = fanSpeed;
+  block->winder_speed = winderSpeed;
   #ifdef BARICUDA
   block->valve_pressure = ValvePressure;
   block->e_to_p_pressure = EtoPPressure;
@@ -704,7 +704,8 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
     delta_mm[Y_AXIS] = ((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-position[Y_AXIS]))/axis_steps_per_unit[Y_AXIS];
   #endif
   delta_mm[Z_AXIS] = (target[Z_AXIS]-position[Z_AXIS])/axis_steps_per_unit[Z_AXIS];
-  delta_mm[E_AXIS] = ((target[E_AXIS]-position[E_AXIS])/axis_steps_per_unit[E_AXIS])*volumetric_multiplier[active_extruder]*extrudemultiply/100.0;
+ // delta_mm[E_AXIS] = ((target[E_AXIS]-position[E_AXIS])/axis_steps_per_unit[E_AXIS])*volumetric_multiplier[active_extruder]*extrudemultiply/100.0;  //FMM not used
+  delta_mm[E_AXIS] = ((target[E_AXIS]-position[E_AXIS])/axis_steps_per_unit[E_AXIS]);
   //delta_mm[P_AXIS] = ((target[P_AXIS]-position[P_AXIS])/axis_steps_per_unit[P_AXIS])*pullermultiply/100.0;  //FMM added P_AXIS
   delta_mm[P_AXIS] = ((target[P_AXIS]-position[P_AXIS])/axis_steps_per_unit[P_AXIS]);  //FMM not sure if we need puller multiply here since used at block creation
   
