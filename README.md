@@ -94,14 +94,14 @@ If all goes well the firmware is uploading
 Running the Lyman Extruder
 ==========================
 
-Turn on the heater – select Preheat ABS from the Main Menu.
-Wait until temp hits setpoint (185 deg).  Beeper will go.  Can press knob to shut off.
-Turn on the motors – select  Resume Extruder from the Main Menu.
-Adjust the Puller motor speed via the knob to achieve close to the filament diameter desired (2.8mm).  Can use the Tune menu or Control menu to make adjustments to motor speeds, etc.
-Switch to Extruder Auto Con from the Main Menu to  go to automatic control of the puller motor.
-Can Clear Statistics on the Main Menu to start collecting data now that filament is under control.
-Select Pause Extruder on the Main Menu when finished with run.
-Select Cooldown on the Main Menu to shut off heater.
+1. Turn on the heater – select Preheat ABS from the Main Menu.
+2. Wait until temp hits setpoint (185 deg).  Beeper will go.  Can press knob to shut off.
+3. Turn on the motors – select  Resume Extruder from the Main Menu.
+4. Adjust the Puller motor speed via the knob to achieve close to the filament diameter desired (2.8mm).  Can use the Tune menu or Control menu to make adjustments to motor speeds, etc.
+5. Switch to Extruder Auto Con from the Main Menu to  go to automatic control of the puller motor.
+6. Can Clear Statistics on the Main Menu to start collecting data now that filament is under control.
+7. Select Pause Extruder on the Main Menu when finished with run.
+8. Select Cooldown on the Main Menu to shut off heater.
 
 
 
