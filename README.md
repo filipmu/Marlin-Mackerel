@@ -96,6 +96,9 @@ If all goes well the firmware is uploading
 Running the Lyman Extruder
 ==========================
 
+See http://www.thingiverse.com/thing:265375 for the extruder build and operation.
+
+
 1. Turn on the heater – select Preheat ABS from the Main Menu.
 2. Wait until temp hits setpoint (185 deg).  Beeper will go.  Can press knob to shut off.
 3. Turn on the motors – select  Resume Extruder from the Main Menu.
