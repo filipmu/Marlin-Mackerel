@@ -628,7 +628,7 @@ void loop()
   
   //FMM calculate max, min, and average filament width
   
-  if((extrude_status & (ES_STATS_SET | ES_ENABLE_SET))  == (ES_STATS_SET | ES_ENABLE_SET) ) //check whether we should collect stats on filament width
+  if((extrude_status & (ES_STATS_SET))  == (ES_STATS_SET) ) //check whether we should collect stats on filament width
 	  {
 	  if (min_measured_filament_width>current_filwidth || min_measured_filament_width==0)
 		  min_measured_filament_width=current_filwidth;

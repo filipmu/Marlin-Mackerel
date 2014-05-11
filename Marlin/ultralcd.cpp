@@ -946,6 +946,7 @@ static void lcd_control_Filament_PID_menu()
 	{
 	START_MENU();
 	MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
+	MENU_ITEM_EDIT(float32,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
 	MENU_ITEM_EDIT(float53, MSG_PID_P, &fwidthKp, 0.0, 99.999);
 	MENU_ITEM_EDIT(float53, MSG_PID_I, &fwidthKi, 0.0, 99.999);
 	MENU_ITEM_EDIT(float53, MSG_PID_D, &fwidthKd, 0.0, 99.999);
@@ -1012,7 +1013,7 @@ static void lcd_control_temperature_preheat_abs_settings_menu()
     START_MENU();
     MENU_ITEM(back, MSG_TEMPERATURE, lcd_control_temperature_menu);
     MENU_ITEM_EDIT(int3, MSG_HEATER, &absPreheatHotendTemp, 0, HEATER_0_MAXTEMP - 15);
-    MENU_ITEM_EDIT(float32,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
+    
 #if TEMP_SENSOR_BED != 0
     MENU_ITEM_EDIT(int3, MSG_BED, &absPreheatHPBTemp, 0, BED_MAXTEMP - 15);
 #endif
