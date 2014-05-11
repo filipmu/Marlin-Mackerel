@@ -40,6 +40,8 @@ The default baudrate is 250000. This baudrate has less jitter and hence errors t
 Limitations and Possible Improvements
 =====================================
 
+This firmware needs a name.  What about Mackerel (what Marlins eat)?
+
 G-code and M-code control of the firmware is limited to M303 Autotune.  More work is needed to make the codes relevant to a Lyman filament extruder.
 
 This sofware only supports the RAMPS 1.4 and SMART LCD 2004.  More work is needed to make it compatible with other hardware.  Much of the Marlin code that handled board selection is still there, but needs to be updated.
