@@ -40,7 +40,7 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
 #ifdef DELTA
 #define EEPROM_VERSION "V11"
 #else
-#define EEPROM_VERSION "V12"
+#define EEPROM_VERSION "V13"
 #endif
 
 #ifdef EEPROM_SETTINGS
@@ -101,7 +101,7 @@ void Config_StoreSettings()
   EEPROM_WRITE_VAR(i,fwidthKp);
   EEPROM_WRITE_VAR(i,fwidthKi);  //removed delta T portion since we will handle explicitily
   EEPROM_WRITE_VAR(i,fwidthKd);
-   
+  EEPROM_WRITE_VAR(i,fil_length_cutoff); 
    
   char ver2[4]=EEPROM_VERSION;
   i=EEPROM_OFFSET;
@@ -258,7 +258,7 @@ void Config_RetrieveSettings()
         EEPROM_READ_VAR(i,fwidthKp);
         EEPROM_READ_VAR(i,fwidthKi);  //removed delta T portion since we will handle explicitily
         EEPROM_READ_VAR(i,fwidthKd);
-          
+        EEPROM_READ_VAR(i,fil_length_cutoff);  
 
 		// Call updatePID (similar to when we have processed M301)
 		updatePID();
@@ -313,6 +313,7 @@ void Config_ResetDefault()
     absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP;
     absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP;
     default_winder_speed = DEFAULT_WINDER_SPEED;
+    fil_length_cutoff = DEFAULT_LENGTH_CUTOFF;
 #endif
 #ifdef ENABLE_AUTO_BED_LEVELING
     zprobe_zoffset = -Z_PROBE_OFFSET_FROM_EXTRUDER;

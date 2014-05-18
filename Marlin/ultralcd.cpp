@@ -19,6 +19,7 @@ int absPreheatHotendTemp;
 int absPreheatHPBTemp;
 int default_winder_speed;
 
+unsigned long message_millis=0;
 
 #ifdef ULTIPANEL
 static float manual_feedrate[] = MANUAL_FEEDRATE;
@@ -81,6 +82,7 @@ static void menu_action_setting_edit_float5(const char* pstr, float* ptr, float 
 static void menu_action_setting_edit_float51(const char* pstr, float* ptr, float minValue, float maxValue);
 static void menu_action_setting_edit_float52(const char* pstr, float* ptr, float minValue, float maxValue);
 static void menu_action_setting_edit_float53(const char* pstr, float* ptr, float minValue, float maxValue);
+static void menu_action_setting_edit_float6(const char* pstr, float* ptr, float minValue, float maxValue);
 static void menu_action_setting_edit_long5(const char* pstr, unsigned long* ptr, unsigned long minValue, unsigned long maxValue);
 static void menu_action_setting_edit_callback_bool(const char* pstr, bool* ptr, menuFunc_t callbackFunc);
 static void menu_action_setting_edit_callback_int3(const char* pstr, int* ptr, int minValue, int maxValue, menuFunc_t callbackFunc);
@@ -91,6 +93,7 @@ static void menu_action_setting_edit_callback_float5(const char* pstr, float* pt
 static void menu_action_setting_edit_callback_float51(const char* pstr, float* ptr, float minValue, float maxValue, menuFunc_t callbackFunc);
 static void menu_action_setting_edit_callback_float52(const char* pstr, float* ptr, float minValue, float maxValue, menuFunc_t callbackFunc);
 static void menu_action_setting_edit_callback_float53(const char* pstr, float* ptr, float minValue, float maxValue, menuFunc_t callbackFunc);
+static void menu_action_setting_edit_callback_float6(const char* pstr, float* ptr, float minValue, float maxValue, menuFunc_t callbackFunc);
 static void menu_action_setting_edit_callback_long5(const char* pstr, unsigned long* ptr, unsigned long minValue, unsigned long maxValue, menuFunc_t callbackFunc);
 
 #define ENCODER_FEEDRATE_DEADZONE 10
@@ -199,6 +202,7 @@ static void lcd_status_screen()
         currentMenu = lcd_main_menu;
         encoderPosition = 0;
         lcd_quick_feedback();
+        message_millis=millis();  //get message to show up for a while
     }
 
 #ifdef ULTIPANEL_FEEDMULTIPLY
@@ -293,7 +297,10 @@ static void lcd_extruder_pause()
 {
     extrude_status=extrude_status & ES_ENABLE_CLEAR;
     puller_feedrate_default = puller_feedrate;   //save default feed rate
+#ifndef KEEP_WINDER_ON
     winderSpeed = 0;  //stop winder
+#endif
+    
     digitalWrite(CONTROLLERFAN_PIN, 0); //stop fan
     lcd_disable_statistics();
 }
@@ -351,7 +358,9 @@ void lcd_cooldown()
     setTargetHotend1(0);
     setTargetHotend2(0);
     setTargetBed(0);
-    winderSpeed = 0;
+    #ifndef KEEP_WINDER_ON
+       winderSpeed = 0;  //stop winder
+    #endif
     LCD_MESSAGEPGM("Extruder Cooling");
     lcd_return_to_status();
 }
@@ -1013,6 +1022,7 @@ static void lcd_control_temperature_preheat_abs_settings_menu()
     START_MENU();
     MENU_ITEM(back, MSG_TEMPERATURE, lcd_control_temperature_menu);
     MENU_ITEM_EDIT(int3, MSG_HEATER, &absPreheatHotendTemp, 0, HEATER_0_MAXTEMP - 15);
+    MENU_ITEM_EDIT(float6,MSG_LENGTH_CUTOFF, &fil_length_cutoff,1000,999000);
     
 #if TEMP_SENSOR_BED != 0
     MENU_ITEM_EDIT(int3, MSG_BED, &absPreheatHPBTemp, 0, BED_MAXTEMP - 15);
@@ -1222,6 +1232,7 @@ menu_edit_type(float, float5, ftostr5, 0.01)
 menu_edit_type(float, float51, ftostr51, 10)
 menu_edit_type(float, float52, ftostr52, 100)
 menu_edit_type(float, float53, ftostr53, 1000)
+menu_edit_type(float, float6, ftostr6, 0.001)
 menu_edit_type(unsigned long, long5, ftostr5, 0.01)
 
 #ifdef REPRAPWORLD_KEYPAD
@@ -1354,6 +1365,7 @@ void lcd_init()
     pinMode(SDCARDDETECT,INPUT);
     WRITE(SDCARDDETECT, HIGH);
     lcd_oldcardstatus = IS_SD_INSERTED;
+    lcd_oldcardstatus = IS_SD_INSERTED;  //repeat just in case since it seems to change
 #endif//(SDCARDDETECT > 0)
 #ifdef LCD_HAS_SLOW_BUTTONS
     slow_buttons = 0;
@@ -1480,6 +1492,7 @@ void lcd_setstatuspgm(const char* message)
         return;
     strncpy_P(lcd_status_message, message, LCD_WIDTH);
     lcdDrawUpdate = 2;
+    message_millis=millis();  //get message to show up for a while
 }
 void lcd_setalertstatuspgm(const char* message)
 {

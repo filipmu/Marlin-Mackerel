@@ -785,6 +785,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define PULLER_WHEEL_CIRC 120 //circumference of urethane puller wheel in mm
 
 #define DEFAULT_WINDER_SPEED 128  //default winder speed (0-255)
+#define KEEP_WINDER_ON 1 //Define when you want to keep the winder power on and use an external switch
 
 #define DESIRED_FILAMENT_DIA 2.8 //define the default desired Filament diameter
 
@@ -796,6 +797,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define PULLER_PID_MAX_LIMIT 12.0 //max output limit of filament dia control in mm/sec
 #define PULLER_PID_INTEGRATOR_WIND_LIMIT 1000000 //absolute value of integrator windup max value
 
+#define DEFAULT_LENGTH_CUTOFF 150000  //length in mm where extruder will shut down
 
 
 

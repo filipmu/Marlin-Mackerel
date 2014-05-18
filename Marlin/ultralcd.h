@@ -43,6 +43,7 @@
   extern int absPreheatHPBTemp;
   extern int default_winder_speed;
   
+  extern unsigned long message_millis;
   //FMM section
   extern volatile long e_velocity;  //in steps per second
     
@@ -113,10 +114,10 @@ char *ftostr32(const float &x);
 char *ftostr22(const float &x);
 char *ftostr21(const float &x);
 char *ftostr12(const float &x);
-char *ftostr6(const float &x);
 char *ftostr5(const float &x);
 char *ftostr51(const float &x);
 char *ftostr52(const float &x);
 char *ftostr53(const float &x);
+char *ftostr6(const float &x);
 
 #endif //ULTRALCD

@@ -754,7 +754,7 @@ static void updateTemperaturesFromRawValues()
       redundant_temperature = analog2temp(redundant_temperature_raw, 1);
     #endif
  
-     current_filwidth=analog2widthFil();
+     current_filwidth=0.50*current_filwidth+ .5* analog2widthFil();  //FMM smooth out the filament width some more
      
       
       //Reset the watchdog after we know we have a temperature measurement.

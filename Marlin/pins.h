@@ -518,7 +518,7 @@
 #define PS_ON_PIN          -1
 
   #if defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL)
-    #define KILL_PIN           41
+    #define KILL_PIN           -1  //FMM disable the kill pin (momentary pushbutton on LCD)
   #else
     #define KILL_PIN           -1
   #endif

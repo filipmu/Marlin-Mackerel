@@ -376,7 +376,8 @@ static void lcd_implementation_status_screen()
 {
     int tHotend=int(degHotend(0) + 0.5);
     int tTarget=int(degTargetHotend(0) + 0.5);
-
+    uint16_t time;
+    
 #if LCD_WIDTH < 20
     lcd.setCursor(0, 0);
     lcd.print(itostr3(tHotend));
@@ -505,7 +506,27 @@ static void lcd_implementation_status_screen()
     lcd_printPGM(PSTR("Mx"));
     lcd.print(ftostr12(max_measured_filament_width));
             
-            
+    //Status message line on the last line
+    if(message_millis+5000>millis()){
+       	 lcd.setCursor(0, LCD_HEIGHT - 1);
+       	 lcd.print(lcd_status_message);
+        } else {
+		lcd.setCursor(0,3);
+		if((extrude_status & (ES_STATS_SET))  == (ES_STATS_SET) ){
+			lcd_printPGM(PSTR("Trem"));
+			time = timeremaining/60000;
+			lcd.print(itostr2(time/60));
+			lcd.print(':');
+			lcd.print(itostr2(time%60));
+		} else {
+			lcd_printPGM(PSTR("         "));
+		}
+		lcd_printPGM(PSTR("  Tela"));
+		time = duration/60000;
+		lcd.print(itostr2(time/60));
+		lcd.print(':');
+		lcd.print(itostr2(time%60));
+        }
     //lcd.print(LCD_STR_FEEDRATE[0]);
    // lcd.print(itostr3(feedmultiply));
     //lcd.print('%');
@@ -539,9 +560,7 @@ static void lcd_implementation_status_screen()
     
 #endif
 
-    //Status message line on the last line
-    lcd.setCursor(0, LCD_HEIGHT - 1);
-    lcd.print(lcd_status_message);
+   
 }
 static void lcd_implementation_drawmenu_generic(uint8_t row, const char* pstr, char pre_char, char post_char)
 {
@@ -625,6 +644,8 @@ static void lcd_implementation_drawmenu_setting_edit_generic_P(uint8_t row, cons
 #define lcd_implementation_drawmenu_setting_edit_float53(row, pstr, pstr2, data, minValue, maxValue) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, ' ', ftostr53(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_float51_selected(row, pstr, pstr2, data, minValue, maxValue) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, '>', ftostr51(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_float51(row, pstr, pstr2, data, minValue, maxValue) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, ' ', ftostr51(*(data)))
+#define lcd_implementation_drawmenu_setting_edit_float6_selected(row, pstr, pstr2, data, minValue, maxValue) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, '>', ftostr6(*(data)))
+#define lcd_implementation_drawmenu_setting_edit_float6(row, pstr, pstr2, data, minValue, maxValue) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, ' ', ftostr6(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_long5_selected(row, pstr, pstr2, data, minValue, maxValue) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, '>', ftostr5(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_long5(row, pstr, pstr2, data, minValue, maxValue) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, ' ', ftostr5(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_bool_selected(row, pstr, pstr2, data) lcd_implementation_drawmenu_setting_edit_generic_P(row, pstr, '>', (*(data))?PSTR(MSG_ON):PSTR(MSG_OFF))
@@ -647,6 +668,8 @@ static void lcd_implementation_drawmenu_setting_edit_generic_P(uint8_t row, cons
 #define lcd_implementation_drawmenu_setting_edit_callback_float52(row, pstr, pstr2, data, minValue, maxValue, callback) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, ' ', ftostr52(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_callback_float51_selected(row, pstr, pstr2, data, minValue, maxValue, callback) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, '>', ftostr51(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_callback_float51(row, pstr, pstr2, data, minValue, maxValue, callback) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, ' ', ftostr51(*(data)))
+#define lcd_implementation_drawmenu_setting_edit_callback_float6_selected(row, pstr, pstr2, data, minValue, maxValue, callback) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, '>', ftostr6(*(data)))
+#define lcd_implementation_drawmenu_setting_edit_callback_float6(row, pstr, pstr2, data, minValue, maxValue, callback) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, ' ', ftostr6(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_callback_long5_selected(row, pstr, pstr2, data, minValue, maxValue, callback) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, '>', ftostr5(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_callback_long5(row, pstr, pstr2, data, minValue, maxValue, callback) lcd_implementation_drawmenu_setting_edit_generic(row, pstr, ' ', ftostr5(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_callback_bool_selected(row, pstr, pstr2, data, callback) lcd_implementation_drawmenu_setting_edit_generic_P(row, pstr, '>', (*(data))?PSTR(MSG_ON):PSTR(MSG_OFF))

@@ -204,7 +204,13 @@ float sum_measured_filament_width=0;  //numerator in average
 float n_measured_filament_width=0;  //denominator in average
 float avg_measured_filament_width=0; //average
 float extrude_length=0; //length extruded
+float fil_length_cutoff= DEFAULT_LENGTH_CUTOFF; //length of filament at which extruder shuts down
 
+unsigned long starttime=0;
+unsigned long stoptime=0;
+
+unsigned long duration=0;
+unsigned long timeremaining=DEFAULT_LENGTH_CUTOFF/DEFAULT_PULLER_FEEDRATE*1000;  //used to hold a calculated time remaining in ms to hit fil length cutoff
 
 
 float model_out;  //Smith predictor model out
@@ -337,13 +343,15 @@ static unsigned long previous_millis_cmd = 0;
 static unsigned long max_inactive_time = 0;
 static unsigned long stepper_inactive_time = DEFAULT_STEPPER_DEACTIVE_TIME*1000l;
 
-unsigned long starttime=0;
-unsigned long stoptime=0;
+
 
 static uint8_t tmp_extruder;
 
 static float extruder_increment;  //used to calculate the increment to add to create the next planning move for the extruder motor
 static float puller_increment; //used to calculate the increment to add to create the next planning move for the puller motor
+static unsigned long timebuff=0;
+static unsigned long deltatime=0;
+static unsigned long lasttime=0;
 
 //PID variables
 static float dia_iState_fwidth = { 0 };
@@ -627,6 +635,18 @@ void loop()
   lcd_update();
   
   //FMM calculate max, min, and average filament width
+
+  timebuff=millis();
+  deltatime = timebuff-lasttime;  //calculate delta times
+  lasttime = timebuff;  //keep track of last sample time
+  
+#ifdef KEEP_WINDER_ON
+  if(extrude_length < fil_length_cutoff)
+	  winderSpeed = default_winder_speed;  //keep winder on all the time unless at end of spool
+  
+#endif
+  
+  
   
   if((extrude_status & (ES_STATS_SET))  == (ES_STATS_SET) ) //check whether we should collect stats on filament width
 	  {
@@ -638,6 +658,23 @@ void loop()
 	  n_measured_filament_width = n_measured_filament_width + 1.0;
 	  avg_measured_filament_width=sum_measured_filament_width/n_measured_filament_width;
 	  extrude_length=extrude_length+puller_increment;
+	  
+	  
+	  if(extrude_length >= fil_length_cutoff){  //check whether we extruded enough filament
+		  setTargetHotend0(0);
+		  winderSpeed = 0;
+		  digitalWrite(CONTROLLERFAN_PIN, 0);  //stop Fan
+		  extrude_status= extrude_status & ES_ENABLE_CLEAR;  //update extrude_status to shut down extruder
+		  extrude_status= extrude_status & ES_STATS_CLEAR;  //shut down statistics
+		  timeremaining=0;
+		  LCD_MESSAGEPGM(MSG_EXTRUDE_COMPLETE);
+	  } else {
+		  
+		  if(puller_feedrate>0)
+		  timeremaining = (fil_length_cutoff-extrude_length)/puller_feedrate*1000;
+		  
+	  }
+		  
 	  }
 	  
   
@@ -703,6 +740,7 @@ void loop()
 		  //extruder_rpm=extruder_feedrate*0.6;  //convert to rpm
 		  extruder_rpm=extruder_rpm_set;
 		  feedrate=extruder_feedrate;
+		  duration = duration + deltatime;  //keep track of extrusion run time
 		  }
 	  else
 		  {
@@ -816,6 +854,12 @@ void loop()
 	  puller_feedrate=0;
 	  extruder_rpm=0;
   }
+ 
+  
+  
+	
+  
+  
   
 }
 
