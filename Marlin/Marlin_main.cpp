@@ -205,7 +205,7 @@ float n_measured_filament_width=0;  //denominator in average
 float avg_measured_filament_width=0; //average
 float extrude_length=0; //length extruded
 float fil_length_cutoff= DEFAULT_LENGTH_CUTOFF; //length of filament at which extruder shuts down
-
+int default_winder_speed = DEFAULT_WINDER_SPEED;
 unsigned long starttime=0;
 unsigned long stoptime=0;
 
@@ -3876,4 +3876,5 @@ bool setTargetedHotend(int code){
   }
   return false;
 }
+
 

@@ -17,7 +17,7 @@ int plaPreheatFanSpeed;
 
 int absPreheatHotendTemp;
 int absPreheatHPBTemp;
-int default_winder_speed;
+
 
 unsigned long message_millis=0;
 
@@ -1927,3 +1927,4 @@ void copy_and_scalePID_d()
 }
 
 #endif //ULTRA_LCD
+

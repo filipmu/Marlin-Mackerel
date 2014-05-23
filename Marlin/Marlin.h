@@ -235,6 +235,7 @@ extern float puller_feedrate_default;
 extern int feedmultiply;
 extern unsigned long duration;
 extern unsigned long timeremaining;
+extern int default_winder_speed;
 
 extern int extrudemultiply; // Sets extrude multiply factor (in percent) for all extruders
 extern int extruder_multiply[EXTRUDERS]; // sets extrude multiply factor (in percent) for each extruder individually
@@ -281,3 +282,4 @@ extern void digipot_i2c_init();
 #endif
 
 #endif
+

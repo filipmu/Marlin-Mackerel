@@ -777,7 +777,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 
 
 #define DEFAULT_EXTRUDER_RPM 12 //define default extruder RPM
-#define EXTRUDER_RPM_MAX 15
+#define EXTRUDER_RPM_MAX 25
 #define EXTRUDER_RPM_MIN 1
 #define DEFAULT_PULLER_FEEDRATE 6.0 //default puller feedrate when turned on
 #define PULLER_FEEDRATE_MIN 1.0 // min feedrate in manual control, 1 mm/sec min feed
@@ -805,3 +805,4 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #include "thermistortables.h"
 
 #endif //__CONFIGURATION_H
+

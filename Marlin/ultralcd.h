@@ -41,7 +41,7 @@
 
   extern int absPreheatHotendTemp;
   extern int absPreheatHPBTemp;
-  extern int default_winder_speed;
+  
   
   extern unsigned long message_millis;
   //FMM section
@@ -121,3 +121,4 @@ char *ftostr53(const float &x);
 char *ftostr6(const float &x);
 
 #endif //ULTRALCD
+
