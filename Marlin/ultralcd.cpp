@@ -1373,6 +1373,7 @@ void lcd_init()
 #if defined (SDSUPPORT) && defined(SDCARDDETECT) && (SDCARDDETECT > 0)
     pinMode(SDCARDDETECT,INPUT);
     WRITE(SDCARDDETECT, HIGH);
+    delay(500);  //fmm wait 1/2 sec to allow card to stabilize - seems to read 'Card Removed' otherwise
     lcd_oldcardstatus = IS_SD_INSERTED;
     lcd_oldcardstatus = IS_SD_INSERTED;  //repeat just in case since it seems to change
 #endif//(SDCARDDETECT > 0)
