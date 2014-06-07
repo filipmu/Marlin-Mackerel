@@ -15,13 +15,23 @@
 * Add the control for two motors  - complete
 * link the motor velocities so that the puller motor is a percentage of the extruder RPM - complete
 * 
+* Winder speed can't be changed while running - works for 'control' menu but not 'tuning' menu - complete
+* Still getting Card Removed at turn on only.
+* 
 * Display items
 * Show more on the main display (length, rpm, diameter) - complete
+* Trem went blank, but returned - check why this might be - occurs when not collecting stats (like when paused)
+* Remove dmin and dmax since does not seem useful
+* Add one more digit to M2 RPM (0.00)
+* Would like to change the total mm while running. - you can do this already - moved to batter menus - complete
+* Need to clear the Tela time stat with the length stat - complete
+* Figure out how to resent the display periodically so that it restarts after static elect.
 * 
 * Temp control
 * figure out the right thermister - complete
 * seems to hit max or min temp - fixed
 * tune the PID - complete
+* add autotune to the menus
 * 
 * Filament width
 * Add input and code for filament width sensor - complete
@@ -29,7 +39,7 @@
 * add an input for turning the extruder motor on/off - complete
 * get PID to work with the filament width to puller speed control and add LCD manual/automatic control - complete
 * add filament dia max,min, avg, and some way to clear and freeze it - complete
-* add winder on/off control with an input, screen way, and #define to enable/disable in code
+* add winder on/off control with an input, screen way, and #define to enable/disable in code - complete
 * make sure new configuration items are saved in flash
 * add new g-codes for manual/automatic control to allow it to be controlled via pronterface
 * clean-up of LCD menus
@@ -40,12 +50,12 @@
 * 
 * Clear Stats did not zero out the L (length). - complete
 * Need to be able to adjust the M2 rpm same as M1. - complete
-* Clean up the multiplication factors
+* Clean up the multiplication factors - complete
 * Clean up the Tune menu to remove factors no longer needed - complete
 * Change the feedmultiply to an absolute puller_feedrate - complete
 * Info page does not show M2 rpm. - complete
 * Need docs of each function in the menus.
-* Need to save M2 ratio in flash
+* 
 
 * 
 

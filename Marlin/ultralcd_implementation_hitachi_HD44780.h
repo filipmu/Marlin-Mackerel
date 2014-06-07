@@ -377,6 +377,9 @@ static void lcd_implementation_status_screen()
     int tHotend=int(degHotend(0) + 0.5);
     int tTarget=int(degTargetHotend(0) + 0.5);
     uint16_t time;
+
+    
+    lcd_implementation_init();  //FMM debug - see if it helps for when screen goes wacky   
     
 #if LCD_WIDTH < 20
     lcd.setCursor(0, 0);
