@@ -193,8 +193,8 @@ int saved_feedmultiply;
 
 int extrudemultiply=100; //100->1 200->2
 float extruder_feedrate;  //extruder real time 'feed rate' - yet we are really interested in RPM
-int extruder_rpm; //real time extruder rpm
-int extruder_rpm_set= DEFAULT_EXTRUDER_RPM; //setpoint for extruder RPM
+float extruder_rpm; //real time extruder rpm
+float extruder_rpm_set= DEFAULT_EXTRUDER_RPM; //setpoint for extruder RPM
 float puller_feedrate_default = DEFAULT_PULLER_FEEDRATE; //puller motor feed rate in mm/sec
 float puller_feedrate= DEFAULT_PULLER_FEEDRATE; //puller motor feed rate in mm/sec
 float puller_feedrate_last = DEFAULT_PULLER_FEEDRATE;
@@ -721,8 +721,8 @@ void loop()
 	  //puller_feedrate=extruder_feedrate*pullermultiply/1000.0;
 	  
 	 //new
-	  extruder_increment=(float)extruder_rpm_set/EXTRUDER_RPM_MAX*2;  //make extruder increment 1 unit for max RPM and scale down as RPM input decreases
-	  extruder_feedrate=(float)extruder_rpm_set/0.6;
+	  extruder_increment=extruder_rpm_set/EXTRUDER_RPM_MAX*2;  //make extruder increment 1 unit for max RPM and scale down as RPM input decreases
+	  extruder_feedrate=extruder_rpm_set/0.6;
 	  puller_increment=puller_feedrate*0.6/EXTRUDER_RPM_MAX*2;  //make puller increment vary to control it
 	  
 	  
@@ -744,7 +744,7 @@ void loop()
 		  }
 	  else
 		  {
-		  extruder_rpm=0;
+		  extruder_rpm=0.0;
 		  feedrate=puller_feedrate;
 		  }
 	  

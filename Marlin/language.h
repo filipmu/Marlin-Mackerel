@@ -38,7 +38,7 @@
 	#ifdef CUSTOM_MENDEL_NAME
 		#define MACHINE_NAME CUSTOM_MENDEL_NAME
 	#else
-		#define MACHINE_NAME "Lyman Extruder"
+		#define MACHINE_NAME "Filament Extruder"
 	#endif
 
 // Default firmware set to Mendel
@@ -61,6 +61,9 @@
 // Common serial messages
 #define MSG_MARLIN "Marlin"
 
+#define SPLASH1 "    Lyman/Mulier"
+#define SPLASH2 " Filament Extruder"
+#define SPLASH3 "        V5.0"
 
 
 #if LANGUAGE_CHOICE == 1
@@ -68,7 +71,7 @@
 // LCD Menu Messages
 // Please note these are limited to 17 characters!
 
-	#define WELCOME_MSG MACHINE_NAME " OK."
+	#define WELCOME_MSG MACHINE_NAME " OK"
 	#define MSG_SD_INSERTED "Card inserted"
 	#define MSG_SD_REMOVED "Card removed"
 	#define MSG_MAIN "Main"

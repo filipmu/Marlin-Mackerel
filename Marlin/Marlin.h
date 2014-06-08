@@ -201,8 +201,8 @@ void setPwmFrequency(uint8_t pin, int val);
 #endif //CRITICAL_SECTION_START
 
 extern float extruder_feedrate;
-extern int extruder_rpm; 
-extern int extruder_rpm_set;
+extern float extruder_rpm; 
+extern float extruder_rpm_set;
 extern float puller_feedrate;
 extern float homing_feedrate[];
 extern bool axis_relative_modes[];

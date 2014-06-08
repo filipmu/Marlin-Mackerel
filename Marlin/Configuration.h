@@ -16,16 +16,17 @@
 * link the motor velocities so that the puller motor is a percentage of the extruder RPM - complete
 * 
 * Winder speed can't be changed while running - works for 'control' menu but not 'tuning' menu - complete
-* Still getting Card Removed at turn on only.
+* Still getting Card Removed at turn on only. - complete
 * 
 * Display items
 * Show more on the main display (length, rpm, diameter) - complete
 * Trem went blank, but returned - check why this might be - occurs when not collecting stats (like when paused)
 * Remove dmin and dmax since does not seem useful
 * Add one more digit to M2 RPM (0.00)
-* Would like to change the total mm while running. - you can do this already - moved to batter menus - complete
+* Would like to change the total mm while running. - you can do this already - moved to better menus - complete
 * Need to clear the Tela time stat with the length stat - complete
-* Figure out how to resent the display periodically so that it restarts after static elect.
+* Figure out how to resent the display periodically so that it restarts after static elect. - complete
+* display filament diameter every 5 seconds rather than 1 second
 * 
 * Temp control
 * figure out the right thermister - complete
@@ -805,7 +806,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define DESIRED_FILAMENT_DIA 2.8 //define the default desired Filament diameter
 
 #define  DEFAULT_fwidthKp 0.020
-#define  DEFAULT_fwidthKi 0.060
+#define  DEFAULT_fwidthKi 0.020
 #define  DEFAULT_fwidthKd 0.250
 
 #define PULLER_PID_MIN_LIMIT 1.0 //min output limit of filament dia control in mm/sec
