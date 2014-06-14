@@ -793,11 +793,11 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 
 
 #define DEFAULT_EXTRUDER_RPM 12 //define default extruder RPM
-#define EXTRUDER_RPM_MAX 25
+#define EXTRUDER_RPM_MAX 75
 #define EXTRUDER_RPM_MIN 1
 #define DEFAULT_PULLER_FEEDRATE 6.0 //default puller feedrate when turned on
 #define PULLER_FEEDRATE_MIN 1.0 // min feedrate in manual control, 1 mm/sec min feed
-#define PULLER_FEEDRATE_MAX 12.0  // max feedrate in manual control 12mm/sec max feed
+#define PULLER_FEEDRATE_MAX 24.0  // max feedrate in manual control 12mm/sec max feed
 #define PULLER_WHEEL_CIRC 120 //circumference of urethane puller wheel in mm
 
 #define DEFAULT_WINDER_SPEED 128  //default winder speed (0-255)
@@ -810,7 +810,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define  DEFAULT_fwidthKd 0.250
 
 #define PULLER_PID_MIN_LIMIT 1.0 //min output limit of filament dia control in mm/sec
-#define PULLER_PID_MAX_LIMIT 12.0 //max output limit of filament dia control in mm/sec
+#define PULLER_PID_MAX_LIMIT 24.0 //max output limit of filament dia control in mm/sec
 #define PULLER_PID_INTEGRATOR_WIND_LIMIT 1000000 //absolute value of integrator windup max value
 
 #define DEFAULT_LENGTH_CUTOFF 150000  //length in mm where extruder will shut down
