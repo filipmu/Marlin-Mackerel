@@ -199,7 +199,7 @@ static void lcd_status_screen()
 #ifdef ULTIPANEL
     if (LCD_CLICKED)
     {
-    	//lcd_implementation_init();  //FMM debug - re-initialize LCD -see if it helps for when screen goes wacky   
+    	lcd_implementation_init();  //FMM debug - re-initialize LCD -see if it helps for when screen goes wacky   
     	currentMenu = lcd_main_menu;
         encoderPosition = 0;
         lcd_quick_feedback();
@@ -1398,7 +1398,7 @@ void lcd_init()
 #if defined (SDSUPPORT) && defined(SDCARDDETECT) && (SDCARDDETECT > 0)
     pinMode(SDCARDDETECT,INPUT);
     WRITE(SDCARDDETECT, HIGH);
-    //delay(500);  //fmm debug wait 1/2 sec to allow card to stabilize - seems to read 'Card Removed' otherwise
+    delay(500);  //fmm debug wait 1/2 sec to allow card to stabilize - seems to read 'Card Removed' otherwise
     lcd_oldcardstatus = IS_SD_INSERTED;
     lcd_oldcardstatus = IS_SD_INSERTED;  //repeat just in case since it seems to change
 #endif//(SDCARDDETECT > 0)

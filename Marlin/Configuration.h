@@ -61,10 +61,10 @@
 
 * Remove endstop logic out of the stepper interrupt ISR(TIMER1_COMPA_vect)  to improve stepper speed and reliability
 
-Debug notes:
+debug notes:
 - Hardcoded the temperature reading of the extruder for testing - search for FMMDEBUGTEMP
 - Change how milimeters is calculated in the planner - search for FMMDEBUGMMPLAN
-
+15
 
 */
 
@@ -794,11 +794,11 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 
 
 #define DEFAULT_EXTRUDER_RPM 12 //define default extruder RPM
-#define EXTRUDER_RPM_MAX 75
+#define EXTRUDER_RPM_MAX 50
 #define EXTRUDER_RPM_MIN 1
 #define DEFAULT_PULLER_FEEDRATE 6.0 //default puller feedrate when turned on
-#define PULLER_FEEDRATE_MIN 1.0 // min feedrate in manual control, 1 mm/sec min feed
-#define PULLER_FEEDRATE_MAX 24.0  // max feedrate in manual control 12mm/sec max feed
+#define PULLER_FEEDRATE_MIN 1.0 // min feedrate in manual control, 1 mm/sec min feed - limited by max pulse rate of 50,000
+#define PULLER_FEEDRATE_MAX 15.0  // max feedrate in manual control 12mm/sec max feed - limited by max pulse rate of 50,000
 #define PULLER_WHEEL_CIRC 120 //circumference of urethane puller wheel in mm
 
 #define DEFAULT_WINDER_RPM_FACTOR 70  //factor for converting winder PW to rpm - reflects rpm of motor at 12v
