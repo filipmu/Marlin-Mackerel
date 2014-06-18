@@ -496,6 +496,12 @@
       #define FILWIDTH_PIN        5
 	  //Use the RAMPS 1.4 Digital input D3 (usually XMIN endstop pin)
 	  #define EXTRUDER_MOTOR_ON_OFF_PIN		3
+      #define X_MAX_PIN -1 //FMM remove definition for limit pins to speed the stepper interrupt.
+	  #define Y_MAX_PIN -1
+      #define Z_MAX_PIN -1
+      #define X_MIN_PIN -1
+      #define Y_MIN_PIN -1
+      #define Z_MIN_PIN -1
     #endif
 
   #endif

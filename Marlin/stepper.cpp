@@ -350,7 +350,8 @@ ISR(TIMER1_COMPA_vect)
     // Set directions TO DO This should be done once during init of trapezoid. Endstops -> interrupt
     out_bits = current_block->direction_bits;
 
-
+//FMM Disable X,Y,Z output
+/*   
     // Set the direction bits (X_AXIS=A_AXIS and Y_AXIS=B_AXIS for COREXY)
     if((out_bits & (1<<X_AXIS))!=0){
       #ifdef DUAL_X_CARRIAGE
@@ -529,6 +530,8 @@ ISR(TIMER1_COMPA_vect)
       }
     }
 
+    */  // FMM disable x,y,z endstop checking to improve pulse speed.
+    
     #ifndef ADVANCE
       if ((out_bits & (1<<E_AXIS)) != 0) {  // -direction
         //REV_E_DIR();
@@ -662,6 +665,7 @@ ISR(TIMER1_COMPA_vect)
           
           counter_e -= current_block->step_event_count;
           count_position[E_AXIS]+=count_direction[E_AXIS];
+          //delayMicroseconds(1);  //delay here does not work - hear strange noises at high speeds
           //WRITE_E_STEP(INVERT_E_STEP_PIN);
           WRITE(E0_STEP_PIN, INVERT_E_STEP_PIN);//FMM Write step pin for extruder motor 0
           
@@ -676,7 +680,7 @@ ISR(TIMER1_COMPA_vect)
 		  counter_p -= current_block->step_event_count;
 		  count_position[P_AXIS]+=count_direction[P_AXIS];
 		  //WRITE_E_STEP(INVERT_E_STEP_PIN);
-		  
+		  //delayMicroseconds(1);  //delay here does not work - hear strange noises at high speeds
 		  WRITE(P_STEP_PIN, INVERT_P_STEP_PIN);//FMM Write step pin for extruder motor 1
 		  
 		}

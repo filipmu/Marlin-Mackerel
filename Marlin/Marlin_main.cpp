@@ -1,8 +1,8 @@
 /* -*- c++ -*- */
 
 /*
-    Reprap firmware based on Sprinter and grbl.
- Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ Filament Extruder firmware based on Marlin for repraps.
+ Copyright (C) 2014 Filip Mulier/Hugh Lyman
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -19,12 +19,17 @@
  */
 
 /*
- This firmware is a mashup between Sprinter and grbl.
-  (https://github.com/kliment/Sprinter)
-  (https://github.com/simen/grbl/tree)
+ This firmware was designed in conjunction with Hugh Lyman to control a Lyman filament extruder
+ with geared stepper motors. It is currently designed to support the RAMPS 1.4 with Smart LCD 2004
+ and depends on a prototype filament width sensor. It replaces much of the control electronics in
+ the current design with one controller. It can control the extruder motor, puller motor, Extruder
+ heater (PID) with thermistor, winder motor, filament cooling fan and has input for a filament width
+ sensor. The processes and menus have been adapted to control a filament extruder. 
+ 
+ This firmware is based on Marlin 3D Printer Firmware but also has many original parts.
+  (https://github.com/ErikZalm/Marlin)
+  
 
- It has preliminary support for Matthew Roberts advance algorithm
-    http://reprap.org/pipermail/reprap-dev/2011-May/003323.html
  */
 
 #include "Marlin.h"
@@ -198,14 +203,13 @@ float extruder_rpm_set= DEFAULT_EXTRUDER_RPM; //setpoint for extruder RPM
 float puller_feedrate_default = DEFAULT_PULLER_FEEDRATE; //puller motor feed rate in mm/sec
 float puller_feedrate= DEFAULT_PULLER_FEEDRATE; //puller motor feed rate in mm/sec
 float puller_feedrate_last = DEFAULT_PULLER_FEEDRATE;
-float max_measured_filament_width=0;
-float min_measured_filament_width=0;
 float sum_measured_filament_width=0;  //numerator in average
 float n_measured_filament_width=0;  //denominator in average
 float avg_measured_filament_width=0; //average
 float extrude_length=0; //length extruded
 float fil_length_cutoff= DEFAULT_LENGTH_CUTOFF; //length of filament at which extruder shuts down
 int default_winder_speed = DEFAULT_WINDER_SPEED;
+int winder_rpm_factor = DEFAULT_WINDER_RPM_FACTOR;
 unsigned long starttime=0;
 unsigned long stoptime=0;
 
@@ -574,7 +578,7 @@ void setup()
   st_init();    // Initialize stepper, this enables interrupts!
   setup_photpin();
   servo_init();
-
+  setup_extruder_on_off_pin(); //FMM initialize pin to shut down/start up extruder motor.
   lcd_init();
   _delay_ms(1000);	// wait 1sec to display the splash screen
 
@@ -642,7 +646,7 @@ void loop()
   
 #ifdef KEEP_WINDER_ON
   if(extrude_length < fil_length_cutoff)
-	  winderSpeed = default_winder_speed;  //keep winder on all the time unless at end of spool
+	  winderSpeed = default_winder_speed*255/winder_rpm_factor;  //keep winder on all the time unless at end of spool
   
 #endif
   
@@ -650,10 +654,7 @@ void loop()
   
   if((extrude_status & (ES_STATS_SET))  == (ES_STATS_SET) ) //check whether we should collect stats on filament width
 	  {
-	  if (min_measured_filament_width>current_filwidth || min_measured_filament_width==0)
-		  min_measured_filament_width=current_filwidth;
-	  if (max_measured_filament_width<current_filwidth)
-	  		  max_measured_filament_width=current_filwidth;
+	  
 	  sum_measured_filament_width = sum_measured_filament_width+current_filwidth;
 	  n_measured_filament_width = n_measured_filament_width + 1.0;
 	  avg_measured_filament_width=sum_measured_filament_width/n_measured_filament_width;
@@ -721,9 +722,9 @@ void loop()
 	  //puller_feedrate=extruder_feedrate*pullermultiply/1000.0;
 	  
 	 //new
-	  extruder_increment=extruder_rpm_set/EXTRUDER_RPM_MAX*2;  //make extruder increment 1 unit for max RPM and scale down as RPM input decreases
+	  extruder_increment=extruder_rpm_set/EXTRUDER_RPM_MAX*8;  //make extruder increment 1 unit for max RPM and scale down as RPM input decreases *8 for more duration (removes pulsing)
 	  extruder_feedrate=extruder_rpm_set/0.6;
-	  puller_increment=puller_feedrate*0.6/EXTRUDER_RPM_MAX*2;  //make puller increment vary to control it
+	  puller_increment=puller_feedrate*0.6/EXTRUDER_RPM_MAX*8;  //make puller increment vary to control it *8 for more duration (removes pulsing)
 	  
 	  
 	  

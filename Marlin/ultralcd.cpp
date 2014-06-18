@@ -199,7 +199,7 @@ static void lcd_status_screen()
 #ifdef ULTIPANEL
     if (LCD_CLICKED)
     {
-    	lcd_implementation_init();  //FMM debug - re-initialize LCD -see if it helps for when screen goes wacky   
+    	//lcd_implementation_init();  //FMM debug - re-initialize LCD -see if it helps for when screen goes wacky   
     	currentMenu = lcd_main_menu;
         encoderPosition = 0;
         lcd_quick_feedback();
@@ -259,6 +259,13 @@ static void lcd_return_to_status()
     currentMenu = lcd_status_screen;
 }
 
+
+static void lcd_return_to_control_temperature()
+{
+    encoderPosition = 0;
+    currentMenu = lcd_control_temperature_menu;
+}
+
 static void lcd_sdcard_pause()
 {
     card.pauseSDPrint();
@@ -275,8 +282,6 @@ static void lcd_clear_statistics()
 	avg_measured_filament_width=0.0;
 	sum_measured_filament_width=0.0;
 	n_measured_filament_width=0.0;
-	min_measured_filament_width=0.0;
-	max_measured_filament_width=0.0;
 	extrude_length=0.0;
 	duration=0.0;
 	lcd_return_to_status();
@@ -311,7 +316,7 @@ static void lcd_extruder_resume()
 	//feedmultiply=DEFAULT_FEEDMULTIPLY;
 	puller_feedrate = puller_feedrate_default;   //use default feed rate
 	extrude_status=extrude_status|ES_ENABLE_SET;
-	winderSpeed = default_winder_speed;  //start winder
+	winderSpeed = default_winder_speed*255/winder_rpm_factor;  //start winder
 	digitalWrite(CONTROLLERFAN_PIN, 1);  //start Fan
     starttime=millis();
     lcd_enable_statistics();
@@ -523,7 +528,7 @@ static void lcd_tune_menu()
     MENU_ITEM_EDIT(float22,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
     MENU_ITEM_EDIT(float6,MSG_LENGTH_CUTOFF, &fil_length_cutoff,1000,999000);
 #if KEEP_WINDER_ON
-    MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &default_winder_speed, 0, 255);
+    MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &default_winder_speed, 0, DEFAULT_WINDER_RPM_FACTOR);
 #else
     MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &winderSpeed, 0, 255);
 #endif
@@ -703,7 +708,7 @@ static void lcd_prepare_menu()
     MENU_ITEM_EDIT(float22, MSG_SPEED, &puller_feedrate_default, PULLER_FEEDRATE_MIN, PULLER_FEEDRATE_MAX);
     MENU_ITEM_EDIT(float22,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
     MENU_ITEM_EDIT(float6,MSG_LENGTH_CUTOFF, &fil_length_cutoff,1000,999000);
-    MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &default_winder_speed, 0, 255);
+    MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &default_winder_speed, 0, DEFAULT_WINDER_RPM_FACTOR);
 #ifdef SDSUPPORT
     #ifdef MENU_ADDAUTOSTART
       MENU_ITEM(function, MSG_AUTOSTART, lcd_autostart_sd);
@@ -730,7 +735,7 @@ static void lcd_prepare_menu()
         MENU_ITEM(gcode, MSG_SWITCH_PS_ON, PSTR("M80"));
     }
 #endif
-    MENU_ITEM(submenu, MSG_MOVE_AXIS, lcd_move_menu);
+  //  MENU_ITEM(submenu, MSG_MOVE_AXIS, lcd_move_menu);  //FMM remove the move functionality from the menu
     END_MENU();
 }
 
@@ -972,6 +977,16 @@ static void lcd_control_Filament_PID_menu()
 	END_MENU();
 	}
 
+
+static void pid_autotune_action()
+	{
+	LCD_MESSAGEPGM("Autotune Sequence");
+	PID_autotune(absPreheatHotendTemp, 0, 5);  //run autotune with 5 cycles and temp= preheat config temp
+	WRITE(BEEPER,HIGH);
+	LCD_MESSAGEPGM("Autotune Complete");
+	lcd_return_to_control_temperature();
+	}
+
 static void lcd_control_temperature_menu()
 {
 #ifdef PIDTEMP
@@ -1010,8 +1025,12 @@ static void lcd_control_temperature_menu()
 #endif//PIDTEMP
    // MENU_ITEM(submenu, MSG_PREHEAT_PLA_SETTINGS, lcd_control_temperature_preheat_pla_settings_menu);
     MENU_ITEM(submenu, MSG_PREHEAT_ABS_SETTINGS, lcd_control_temperature_preheat_abs_settings_menu);
+    MENU_ITEM(function,MSG_AUTOTUNE,pid_autotune_action);  //FMM add autotune action here
     END_MENU();
 }
+
+
+
 
 static void lcd_control_temperature_preheat_pla_settings_menu()
 {
@@ -1050,7 +1069,7 @@ static void lcd_control_motion_menu()
 #ifdef ENABLE_AUTO_BED_LEVELING
     MENU_ITEM_EDIT(float32, MSG_ZPROBE_ZOFFSET, &zprobe_zoffset, 0.5, 50);
 #endif
-    MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &default_winder_speed, 0, 255);
+    MENU_ITEM_EDIT(int3, MSG_WINDER_RPM_FACTOR, &winder_rpm_factor, 0, 200);
     MENU_ITEM_EDIT(float51, MSG_ESTEPS, &axis_steps_per_unit[E_AXIS], 5, 9999);
     MENU_ITEM_EDIT(float51, MSG_PSTEPS, &axis_steps_per_unit[P_AXIS], 5, 9999);
     MENU_ITEM_EDIT(float5, MSG_A_RETRACT, &retract_acceleration, 100, 99000);
@@ -1379,7 +1398,7 @@ void lcd_init()
 #if defined (SDSUPPORT) && defined(SDCARDDETECT) && (SDCARDDETECT > 0)
     pinMode(SDCARDDETECT,INPUT);
     WRITE(SDCARDDETECT, HIGH);
-    delay(500);  //fmm wait 1/2 sec to allow card to stabilize - seems to read 'Card Removed' otherwise
+    //delay(500);  //fmm debug wait 1/2 sec to allow card to stabilize - seems to read 'Card Removed' otherwise
     lcd_oldcardstatus = IS_SD_INSERTED;
     lcd_oldcardstatus = IS_SD_INSERTED;  //repeat just in case since it seems to change
 #endif//(SDCARDDETECT > 0)

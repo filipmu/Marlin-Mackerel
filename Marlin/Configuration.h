@@ -57,8 +57,9 @@
 * Info page does not show M2 rpm. - complete
 * Need docs of each function in the menus.
 * 
+* make PID autotune go back to the info screen after launching
 
-* 
+* Remove endstop logic out of the stepper interrupt ISR(TIMER1_COMPA_vect)  to improve stepper speed and reliability
 
 Debug notes:
 - Hardcoded the temperature reading of the extruder for testing - search for FMMDEBUGTEMP
@@ -141,7 +142,7 @@ Debug notes:
 // 21 = Elefu Ra Board (v3)
 
 #ifndef MOTHERBOARD
-#define MOTHERBOARD 34
+#define MOTHERBOARD 34  //FMM only works for this motherboard currently
 #endif
 
 // Define this to set a custom name for your generic Mendel,
@@ -515,7 +516,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 // default settings
 
 #define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200.0*8/3,30.6*16, 165.85*16}  // default steps per unit for Ultimaker  //FMM added P_AXIS *16 for 1/16 step
-#define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 40, 40}    // (mm/sec)  //FMM added P_AXIS
+#define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 50, 50}    // (mm/sec)  //FMM added P_AXIS
 #define DEFAULT_MAX_ACCELERATION      {9000,9000,100,900,900}    // X, Y, Z, E,P maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
 
 #define DEFAULT_ACCELERATION          3000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
@@ -800,7 +801,8 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define PULLER_FEEDRATE_MAX 24.0  // max feedrate in manual control 12mm/sec max feed
 #define PULLER_WHEEL_CIRC 120 //circumference of urethane puller wheel in mm
 
-#define DEFAULT_WINDER_SPEED 128  //default winder speed (0-255)
+#define DEFAULT_WINDER_RPM_FACTOR 70  //factor for converting winder PW to rpm - reflects rpm of motor at 12v
+#define DEFAULT_WINDER_SPEED 35  //default winder speed (0-DEFAULT_WINDER_RPM_FACTOR)
 #define KEEP_WINDER_ON 1 //Define when you want to keep the winder power on and use an external switch
 
 #define DESIRED_FILAMENT_DIA 2.8 //define the default desired Filament diameter
@@ -814,6 +816,8 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define PULLER_PID_INTEGRATOR_WIND_LIMIT 1000000 //absolute value of integrator windup max value
 
 #define DEFAULT_LENGTH_CUTOFF 150000  //length in mm where extruder will shut down
+
+
 
 
 

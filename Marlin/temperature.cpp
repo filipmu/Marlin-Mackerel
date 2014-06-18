@@ -184,7 +184,7 @@ void PID_autotune(float temp, int extruder, int ncycles)
 
   long bias, d;
   float Ku, Tu;
-  float Kp, Ki, Kd;
+  float Kp_auto, Ki_auto, Kd_auto;
   float max = 0, min = 10000;
 
   if ((extruder > EXTRUDERS)
@@ -255,13 +255,13 @@ void PID_autotune(float temp, int extruder, int ncycles)
               Tu = ((float)(t_low + t_high)/1000.0);
               SERIAL_PROTOCOLPGM(" Ku: "); SERIAL_PROTOCOL(Ku);
               SERIAL_PROTOCOLPGM(" Tu: "); SERIAL_PROTOCOLLN(Tu);
-              Kp = 0.6*Ku;
-              Ki = 2*Kp/Tu;
-              Kd = Kp*Tu/8;
+              Kp_auto = 0.6*Ku;
+              Ki_auto = 2*Kp_auto/Tu;
+              Kd_auto = Kp_auto*Tu/8;
               SERIAL_PROTOCOLLNPGM(" Classic PID ");
-              SERIAL_PROTOCOLPGM(" Kp: "); SERIAL_PROTOCOLLN(Kp);
-              SERIAL_PROTOCOLPGM(" Ki: "); SERIAL_PROTOCOLLN(Ki);
-              SERIAL_PROTOCOLPGM(" Kd: "); SERIAL_PROTOCOLLN(Kd);
+              SERIAL_PROTOCOLPGM(" Kp: "); SERIAL_PROTOCOLLN(Kp_auto);
+              SERIAL_PROTOCOLPGM(" Ki: "); SERIAL_PROTOCOLLN(Ki_auto);
+              SERIAL_PROTOCOLPGM(" Kd: "); SERIAL_PROTOCOLLN(Kd_auto);
               /*
               Kp = 0.33*Ku;
               Ki = Kp/Tu;
@@ -276,7 +276,7 @@ void PID_autotune(float temp, int extruder, int ncycles)
               SERIAL_PROTOCOLLNPGM(" No overshoot ")
               SERIAL_PROTOCOLPGM(" Kp: "); SERIAL_PROTOCOLLN(Kp);
               SERIAL_PROTOCOLPGM(" Ki: "); SERIAL_PROTOCOLLN(Ki);
-              SERIAL_PROTOCOLPGM(" Kd: "); SERIAL_PROTOCOLLN(Kd);
+              SERIAL_PROTOCOLPGM(" Kd: "); SERIAL_PROTOCOLLN(Kd_auto);
               */
             }
           }
@@ -315,6 +315,15 @@ void PID_autotune(float temp, int extruder, int ncycles)
     }
     if(cycles > ncycles) {
       SERIAL_PROTOCOLLNPGM("PID Autotune finished! Put the last Kp, Ki and Kd constants from above into Configuration.h");
+      
+      //FMM update the PID parameters with the autotuned ones
+      Kp = Kp_auto;
+      Ki = scalePID_i(Ki_auto);
+      Kd = scalePID_d(Kd_auto);
+          
+      // call updatePID (similar to when we have processed M301)
+      updatePID();
+          
       return;
     }
     lcd_update();

@@ -222,8 +222,6 @@ extern unsigned char extrude_status;
 
 
 extern float filament_width_desired; //holds the desired filament width (2.8mm)
-extern float max_measured_filament_width;
-extern float min_measured_filament_width;
 extern float sum_measured_filament_width; 
 extern float n_measured_filament_width;  
 extern float avg_measured_filament_width; 
@@ -236,6 +234,7 @@ extern int feedmultiply;
 extern unsigned long duration;
 extern unsigned long timeremaining;
 extern int default_winder_speed;
+extern int winder_rpm_factor;
 
 extern int extrudemultiply; // Sets extrude multiply factor (in percent) for all extruders
 extern int extruder_multiply[EXTRUDERS]; // sets extrude multiply factor (in percent) for each extruder individually
