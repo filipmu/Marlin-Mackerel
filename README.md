@@ -1,5 +1,5 @@
 ==========================
-Firmware for Lyman Extruder Controller
+Mackerel - Firmware for Lyman Extruder Controller
 ==========================
 This software has a GPL license.
 Please do not use this code in products (3D printers, CNC etc) that are closed source or are crippled by a patent.
@@ -14,6 +14,7 @@ This firmware was designed in conjunction with Hugh Lyman to control a Lyman fil
 
 This firmware is based on Marlin 3D Printer Firmware but also has many original parts.
 
+Marlins eat Mackerels and 3D printers consume filament.
 
 
 Features:
@@ -40,7 +41,6 @@ The default baudrate is 250000. This baudrate has less jitter and hence errors t
 Limitations and Possible Improvements
 =====================================
 
-This firmware needs a name.  What about Mackerel (what Marlins eat)?
 
 G-code and M-code control of the firmware is limited to M303 Autotune.  More work is needed to make the codes relevant to a Lyman filament extruder.
 
