@@ -78,7 +78,7 @@ Install the arduino software IDE/toolset v1.x.x
    http://www.arduino.cc/en/Main/Software
 
 Download the firmware
-   https://github.com/filipmu/Marlin-Marlin_v1-Lyman-Extruder/
+   https://github.com/filipmu/Marlin-Mackerel
    Use the "Download Zip" button on the right.
 
 
