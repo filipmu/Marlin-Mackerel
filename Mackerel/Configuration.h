@@ -21,8 +21,8 @@
 * Display items
 * Show more on the main display (length, rpm, diameter) - complete
 * Trem went blank, but returned - check why this might be - occurs when not collecting stats (like when paused)
-* Remove dmin and dmax since does not seem useful
-* Add one more digit to M2 RPM (0.00)
+* Remove dmin and dmax since does not seem useful - complete
+* Add one more digit to M2 RPM (0.00) - complete
 * Would like to change the total mm while running. - you can do this already - moved to better menus - complete
 * Need to clear the Tela time stat with the length stat - complete
 * Figure out how to resent the display periodically so that it restarts after static elect. - complete
@@ -32,7 +32,7 @@
 * figure out the right thermister - complete
 * seems to hit max or min temp - fixed
 * tune the PID - complete
-* add autotune to the menus
+* add autotune to the menus - complete
 * 
 * Filament width
 * Add input and code for filament width sensor - complete
@@ -41,9 +41,9 @@
 * get PID to work with the filament width to puller speed control and add LCD manual/automatic control - complete
 * add filament dia max,min, avg, and some way to clear and freeze it - complete
 * add winder on/off control with an input, screen way, and #define to enable/disable in code - complete
-* make sure new configuration items are saved in flash
+* make sure new configuration items are saved in flash - complete
 * add new g-codes for manual/automatic control to allow it to be controlled via pronterface
-* clean-up of LCD menus
+* clean-up of LCD menus - complete
 * 
 * need to make filament pid not time based but mm based - complete
 * change back to direct control, not incremental. - complete
@@ -55,12 +55,12 @@
 * Clean up the Tune menu to remove factors no longer needed - complete
 * Change the feedmultiply to an absolute puller_feedrate - complete
 * Info page does not show M2 rpm. - complete
-* Need docs of each function in the menus.
+* Need docs of each function in the menus. - complete
 * 
 * make PID autotune go back to the info screen after launching
 
-* Remove endstop logic out of the stepper interrupt ISR(TIMER1_COMPA_vect)  to improve stepper speed and reliability
-* Rename to Mackerel from Marlin
+* Remove endstop logic out of the stepper interrupt ISR(TIMER1_COMPA_vect)  to improve stepper speed and reliability - complete
+* Rename to Mackerel from Marlin where referred to in code - complete
 
 debug notes:
 - Hardcoded the temperature reading of the extruder for testing - search for FMMDEBUGTEMP
@@ -285,6 +285,9 @@ debug notes:
 
 #define LYMAN_EXTRUDER
 
+//comment the next line out if there is no filament sensor
+#define FILAMENT_SENSOR
+
 
 #define DEFAULT_EXTRUDER_RPM 12 //define default extruder RPM
 #define EXTRUDER_RPM_MAX 50
@@ -296,7 +299,7 @@ debug notes:
 
 #define DEFAULT_WINDER_RPM_FACTOR 70  //factor for converting winder PW to rpm - reflects rpm of motor at 12v
 #define DEFAULT_WINDER_SPEED 35  //default winder speed (0-DEFAULT_WINDER_RPM_FACTOR)
-#define KEEP_WINDER_ON 1 //Define when you want to keep the winder power on and use an external switch
+
 
 #define DESIRED_FILAMENT_DIA 2.8 //define the default desired Filament diameter
 #define PREHEAT_EXTRUDER_TEMP 185  //Set to 185 deg C based on Hugh's suggestion
@@ -316,8 +319,15 @@ debug notes:
 //can be software-disabled for whatever purposes by
 #define PREVENT_DANGEROUS_EXTRUDE
 
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200.0*8/3,30.6*16, 165.85*16}  // default steps per unit for Ultimaker  //FMM added P_AXIS *16 for 1/16 step
-#define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 50, 50}    // (mm/sec)  //FMM added P_AXIS
+
+#define DEFAULT_ESTEP_PER_REV 489.6  //default setting for the extruder step calibration
+#define DEFAULT_PSTEP_PER_MM 2653.6  //default setting for the puller motor step calibration
+
+//The next two defines have arrays of 5 values which correspond to the 5 axis X,Y,Z,E,P
+//For the Lyman Extruder, only E = Extruder Motor and P = Puller Motor settings are utilized
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200.0*8/3,DEFAULT_ESTEP_PER_REV, DEFAULT_PSTEP_PER_MM}    
+#define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 50, 50}    // (mm/sec) 
+
 #define DEFAULT_MOTOR_ACCELERATION  200   // E and P max acceleration in mm/s^2 - controls extruder acceleration
 #define DEFAULT_EJERK                 1.0    // (mm/sec)
 #define DEFAULT_PJERK				  1.0	// (mm/sec)

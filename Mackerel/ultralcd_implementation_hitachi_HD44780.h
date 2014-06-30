@@ -483,9 +483,9 @@ static void lcd_implementation_status_screen()
         lcd.print(' ');
 #  else
     
+    lcd.setCursor(0, 1);
     //Check for filament sensor and show width
-   #if (FILWIDTH_PIN > -1)
-      lcd.setCursor(0, 1);
+   #ifdef FILAMENT_SENSOR
       lcd.print('d');
       //lcd.print(ftostr12(analog2widthFil()));
       lcd.print(ftostr12(current_filwidth));

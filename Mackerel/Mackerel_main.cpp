@@ -645,11 +645,11 @@ void loop()
   deltatime = timebuff-lasttime;  //calculate delta times
   lasttime = timebuff;  //keep track of last sample time
   
-#ifdef KEEP_WINDER_ON
+
   if(extrude_length < fil_length_cutoff)
 	  winderSpeed = default_winder_speed*255/winder_rpm_factor;  //keep winder on all the time unless at end of spool
   
-#endif
+
   
   
   

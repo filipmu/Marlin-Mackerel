@@ -304,9 +304,7 @@ static void lcd_extruder_pause()
 {
     extrude_status=extrude_status & ES_ENABLE_CLEAR;
     puller_feedrate_default = puller_feedrate;   //save default feed rate
-#ifndef KEEP_WINDER_ON
-    winderSpeed = 0;  //stop winder
-#endif
+
     
     digitalWrite(CONTROLLERFAN_PIN, 0); //stop fan
     lcd_disable_statistics();
@@ -365,9 +363,7 @@ void lcd_cooldown()
     setTargetHotend1(0);
     setTargetHotend2(0);
     setTargetBed(0);
-    #ifndef KEEP_WINDER_ON
-       winderSpeed = 0;  //stop winder
-    #endif
+
     LCD_MESSAGEPGM("Extruder Cooling");
     lcd_return_to_status();
 }
@@ -381,10 +377,12 @@ static void lcd_main_menu()
     
     if ((extrude_status & ES_ENABLE_SET) >0)
        	{
+        #ifdef FILAMENT_SENSOR
     	if((extrude_status & ES_AUTO_SET) >0)
     		MENU_ITEM(function,MSG_MAN_EXTRUDER,lcd_extruder_manual);
     	else
     		MENU_ITEM(function,MSG_AUTO_EXTRUDER,lcd_extruder_automatic);
+        #endif
     	MENU_ITEM(function, MSG_PAUSE_EXTRUDER, lcd_extruder_pause);
        	}
        else
@@ -525,13 +523,12 @@ static void lcd_tune_menu()
 #if TEMP_SENSOR_BED != 0
     MENU_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
 #endif
+#ifdef FILAMENT_SENSOR
     MENU_ITEM_EDIT(float22,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
-    MENU_ITEM_EDIT(float6,MSG_LENGTH_CUTOFF, &fil_length_cutoff,1000,999000);
-#if KEEP_WINDER_ON
-    MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &default_winder_speed, 0, DEFAULT_WINDER_RPM_FACTOR);
-#else
-    MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &winderSpeed, 0, 255);
 #endif
+    MENU_ITEM_EDIT(float6,MSG_LENGTH_CUTOFF, &fil_length_cutoff,1000,999000);
+    MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &default_winder_speed, 0, DEFAULT_WINDER_RPM_FACTOR);
+
     
  //   MENU_ITEM_EDIT(int3, MSG_FLOW, &extrudemultiply, 10, 999);
  //   MENU_ITEM_EDIT(int3, MSG_FLOW0, &extruder_multiply[0], 10, 999);
@@ -706,7 +703,9 @@ static void lcd_prepare_menu()
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
     MENU_ITEM_EDIT(float22, MSG_EXT_RPM, &extruder_rpm_set,EXTRUDER_RPM_MIN,EXTRUDER_RPM_MAX);
     MENU_ITEM_EDIT(float22, MSG_SPEED, &puller_feedrate_default, PULLER_FEEDRATE_MIN, PULLER_FEEDRATE_MAX);
+#ifdef FILAMENT_SENSOR
     MENU_ITEM_EDIT(float22,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
+#endif
     MENU_ITEM_EDIT(float6,MSG_LENGTH_CUTOFF, &fil_length_cutoff,1000,999000);
     MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &default_winder_speed, 0, DEFAULT_WINDER_RPM_FACTOR);
 #ifdef SDSUPPORT
@@ -948,7 +947,9 @@ static void lcd_control_menu()
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
     MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
     MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
+#ifdef FILAMENT_SENSOR
     MENU_ITEM(submenu,MSG_FILAMENT_PID, lcd_control_Filament_PID_menu);
+#endif
 #ifdef DOGLCD
 //    MENU_ITEM_EDIT(int3, MSG_CONTRAST, &lcd_contrast, 0, 63);
     MENU_ITEM(submenu, MSG_CONTRAST, lcd_set_contrast);
