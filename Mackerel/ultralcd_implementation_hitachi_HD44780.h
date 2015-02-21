@@ -489,8 +489,21 @@ static void lcd_implementation_status_screen()
       lcd.print('d');
       //lcd.print(ftostr12(analog2widthFil()));
       lcd.print(ftostr12(current_filwidth));
-      lcd_printPGM(PSTR(" Av"));
-      lcd.print(ftostr12(avg_measured_filament_width));
+      if (alt_cnt<5){						// fvd 4-2-2015
+         lcd_printPGM(PSTR(" Av"));
+	 lcd.print(ftostr12(avg_measured_filament_width));
+      };
+      if (alt_cnt>=5 && alt_cnt <10){				
+      	lcd_printPGM(PSTR(" Mx"));
+      	lcd.print(ftostr12(max_measured_filament_width));
+      };
+      if (alt_cnt>=10 && alt_cnt<15){
+      	lcd_printPGM(PSTR(" Mn"));
+      	lcd.print(ftostr12(min_measured_filament_width));
+      };											
+      alt_cnt = alt_cnt + 1;
+      if (alt_cnt==15)
+         alt_cnt=0;						// FVD end
    #else
       lcd_printPGM(PSTR("             "));   
    #endif   

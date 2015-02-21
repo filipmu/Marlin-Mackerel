@@ -207,6 +207,8 @@ float puller_feedrate_last = DEFAULT_PULLER_FEEDRATE;
 float sum_measured_filament_width=0;  //numerator in average
 float n_measured_filament_width=0;  //denominator in average
 float avg_measured_filament_width=0; //average
+float max_measured_filament_width=0; // max measured filament width FVD 31-01-2015
+float min_measured_filament_width=0; // min measured filament width FVD 31-01-2015
 float extrude_length=0; //length extruded
 float fil_length_cutoff= DEFAULT_LENGTH_CUTOFF; //length of filament at which extruder shuts down
 int default_winder_speed = DEFAULT_WINDER_SPEED;
@@ -659,6 +661,10 @@ void loop()
 	  sum_measured_filament_width = sum_measured_filament_width+current_filwidth;
 	  n_measured_filament_width = n_measured_filament_width + 1.0;
 	  avg_measured_filament_width=sum_measured_filament_width/n_measured_filament_width;
+	  max_measured_filament_width=max(max_measured_filament_width,current_filwidth); 	// FVD 31-01-2015
+	  if(min_measured_filament_width==0)							// FVD 31-01-2015
+		min_measured_filament_width=current_filwidth;					// FVD 31-01-2015
+	  min_measured_filament_width=min(min_measured_filament_width,current_filwidth); 	// FVD 31-01-2015
 	  extrude_length=extrude_length+puller_increment;
 	  
 	  

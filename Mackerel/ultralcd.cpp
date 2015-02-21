@@ -18,6 +18,7 @@ int plaPreheatFanSpeed;
 int absPreheatHotendTemp;
 int absPreheatHPBTemp;
 
+int alt_cnt = 0;					// counter for alternate lcd display between av.max min fvd 4-2-2015
 
 unsigned long message_millis=0;
 
@@ -280,6 +281,8 @@ static void lcd_sdcard_resume()
 static void lcd_clear_statistics()
 	{
 	avg_measured_filament_width=0.0;
+	max_measured_filament_width=0; // FVD 31-01-2015
+	min_measured_filament_width=0; // FVD 31-01-2015
 	sum_measured_filament_width=0.0;
 	n_measured_filament_width=0.0;
 	extrude_length=0.0;
