@@ -489,7 +489,7 @@ static void lcd_implementation_status_screen()
       lcd.print('d');
       //lcd.print(ftostr12(analog2widthFil()));
       lcd.print(ftostr12(current_filwidth));
-      if (alt_cnt<5){						// fvd 4-2-2015
+      if (alt_cnt<5){
          lcd_printPGM(PSTR(" Av"));
 	 lcd.print(ftostr12(avg_measured_filament_width));
       };
@@ -503,7 +503,7 @@ static void lcd_implementation_status_screen()
       };											
       alt_cnt = alt_cnt + 1;
       if (alt_cnt==15)
-         alt_cnt=0;						// FVD end
+         alt_cnt=0;
    #else
       lcd_printPGM(PSTR("             "));   
    #endif   
@@ -528,8 +528,8 @@ static void lcd_implementation_status_screen()
     lcd.print(LCD_STR_FEEDRATE[0]);
     lcd.print(ftostr22(puller_feedrate));  //give the feed rate in mm/sec
     
-    lcd_printPGM(PSTR("     P rpm"));
-    lcd.print(ftostr12(puller_feedrate*(60.0/PULLER_WHEEL_CIRC)));
+    lcd_printPGM(PSTR("    P rpm"));
+    lcd.print(ftostr22(puller_feedrate*(60.0/PULLER_WHEEL_CIRC)));
     /*
 #if (FILWIDTH_PIN > -1)
     lcd_printPGM(PSTR("Av"));

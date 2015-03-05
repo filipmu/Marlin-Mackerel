@@ -293,8 +293,8 @@ debug notes:
 #define EXTRUDER_RPM_MAX 50
 #define EXTRUDER_RPM_MIN 1
 #define DEFAULT_PULLER_FEEDRATE 6.0 //default puller feedrate when turned on
-#define PULLER_FEEDRATE_MIN 1.0 // min feedrate in manual control, 1 mm/sec min feed - limited by max pulse rate of 50,000
-#define PULLER_FEEDRATE_MAX 15.0  // max feedrate in manual control 12mm/sec max feed - limited by max pulse rate of 50,000
+#define PULLER_FEEDRATE_MIN 0.5 // min feedrate in manual control, 1 mm/sec min feed - limited by max pulse rate of 50,000
+#define PULLER_FEEDRATE_MAX 35.0  // max feedrate in manual control 15mm/sec max feed - limited by max pulse rate of 50,000
 #define PULLER_WHEEL_CIRC 120 //circumference of urethane puller wheel in mm
 
 #define DEFAULT_WINDER_RPM_FACTOR 70  //factor for converting winder PW to rpm - reflects rpm of motor at 12v
@@ -308,8 +308,8 @@ debug notes:
 #define  DEFAULT_fwidthKi 0.020
 #define  DEFAULT_fwidthKd 0.250
 
-#define PULLER_PID_MIN_LIMIT 1.0 //min output limit of filament dia control in mm/sec
-#define PULLER_PID_MAX_LIMIT 24.0 //max output limit of filament dia control in mm/sec
+#define PULLER_PID_MIN_LIMIT 0.5 //min output limit of filament dia control in mm/sec
+#define PULLER_PID_MAX_LIMIT 35.0 //max output limit of filament dia control in mm/sec
 #define PULLER_PID_INTEGRATOR_WIND_LIMIT 1000000 //absolute value of integrator windup max value
 
 #define DEFAULT_LENGTH_CUTOFF 150000  //length in mm where extruder will shut down
@@ -320,8 +320,8 @@ debug notes:
 #define PREVENT_DANGEROUS_EXTRUDE
 
 
-#define DEFAULT_ESTEP_PER_REV 489.6  //default setting for the extruder step calibration
-#define DEFAULT_PSTEP_PER_MM 2653.6  //default setting for the puller motor step calibration
+#define DEFAULT_ESTEP_PER_REV 489.6  //default setting for the extruder step calibration  1:15.3 gear
+#define DEFAULT_PSTEP_PER_MM 375.3  //default setting for the puller motor step calibration  1:14 gear
 
 //The next two defines have arrays of 5 values which correspond to the 5 axis X,Y,Z,E,P
 //For the Lyman Extruder, only E = Extruder Motor and P = Puller Motor settings are utilized

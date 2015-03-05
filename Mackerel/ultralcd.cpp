@@ -281,8 +281,8 @@ static void lcd_sdcard_resume()
 static void lcd_clear_statistics()
 	{
 	avg_measured_filament_width=0.0;
-	max_measured_filament_width=0; // FVD 31-01-2015
-	min_measured_filament_width=0; // FVD 31-01-2015
+	max_measured_filament_width=0.0;
+	min_measured_filament_width=0.0;
 	sum_measured_filament_width=0.0;
 	n_measured_filament_width=0.0;
 	extrude_length=0.0;
