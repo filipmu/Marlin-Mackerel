@@ -170,6 +170,7 @@
 // M665 - set delta configurations
 // M666 - set delta endstop adjustment
 // M605 - Set dual x-carriage movement mode: S<mode> [ X<duplication x-offset> R<duplication temp offset> ]
+// M700 - Extruder data dump 
 // M907 - Set digital trimpot motor current using axis codes.
 // M908 - Control digital trimpot directly.
 // M350 - Set microstepping mode.
@@ -207,6 +208,8 @@ float puller_feedrate_last = DEFAULT_PULLER_FEEDRATE;
 float sum_measured_filament_width=0;  //numerator in average
 float n_measured_filament_width=0;  //denominator in average
 float avg_measured_filament_width=0; //average
+float max_measured_filament_width=0; // max measured filament width 
+float min_measured_filament_width=0; // min measured filament width 
 float extrude_length=0; //length extruded
 float fil_length_cutoff= DEFAULT_LENGTH_CUTOFF; //length of filament at which extruder shuts down
 int default_winder_speed = DEFAULT_WINDER_SPEED;
@@ -659,6 +662,10 @@ void loop()
 	  sum_measured_filament_width = sum_measured_filament_width+current_filwidth;
 	  n_measured_filament_width = n_measured_filament_width + 1.0;
 	  avg_measured_filament_width=sum_measured_filament_width/n_measured_filament_width;
+	  max_measured_filament_width=max(max_measured_filament_width,current_filwidth);
+	  if(round(min_measured_filament_width)==0)
+		min_measured_filament_width=current_filwidth;
+	  min_measured_filament_width=min(min_measured_filament_width,current_filwidth);
 	  extrude_length=extrude_length+puller_increment;
 	  
 	  
@@ -3195,7 +3202,6 @@ void process_commands()
     }
     break;
     #endif //DUAL_X_CARRIAGE
-
     case 907: // M907 Set digital trimpot motor current using axis codes.
     {
       #if defined(DIGIPOTSS_PIN) && DIGIPOTSS_PIN > -1
@@ -3258,7 +3264,60 @@ void process_commands()
       #endif
     }
     break;
-    case 999: // M999: Restart after being stopped
+	case 700: // M700 - Extruder data dump 
+	{
+		// Duration and time remaining
+		SERIAL_PROTOCOLPGM("ok D:");
+		SERIAL_PROTOCOL(duration);
+		SERIAL_PROTOCOLPGM(" /");
+		SERIAL_PROTOCOL(timeremaining);
+		// lenght    
+		SERIAL_PROTOCOLPGM(" L:");
+		SERIAL_PROTOCOL_F(extrude_length, 1);
+		// filament width
+		SERIAL_PROTOCOLPGM(" Fil:");
+		SERIAL_PROTOCOL_F(current_filwidth, 2);
+		// average filament width
+		SERIAL_PROTOCOLPGM(" Avg:");
+		SERIAL_PROTOCOL_F(avg_measured_filament_width, 2);
+		// min filament width
+		SERIAL_PROTOCOLPGM(" Mn:");
+		SERIAL_PROTOCOL_F(min_measured_filament_width, 2);
+		// max filament width
+		SERIAL_PROTOCOLPGM(" Mx:");
+		SERIAL_PROTOCOL_F(max_measured_filament_width, 2);
+		// extruder rpm
+		SERIAL_PROTOCOLPGM(" E:");
+		SERIAL_PROTOCOL_F(extruder_rpm, 2);
+		// puller feedrate in mm/s
+		SERIAL_PROTOCOLPGM(" P:");
+		SERIAL_PROTOCOL_F(puller_feedrate, 2);
+		// Winder speed
+		SERIAL_PROTOCOLPGM(" W:");
+		SERIAL_PROTOCOL(winderSpeed);
+		//
+#if defined(TEMP_0_PIN) && TEMP_0_PIN > -1
+//		SERIAL_PROTOCOLPGM(" T:");
+//		SERIAL_PROTOCOL_F(degHotend(tmp_extruder), 1);
+//		SERIAL_PROTOCOLPGM(" /");
+//		SERIAL_PROTOCOL_F(degTargetHotend(tmp_extruder), 1);
+		for (int8_t cur_extruder = 0; cur_extruder < EXTRUDERS; ++cur_extruder) {
+			SERIAL_PROTOCOLPGM(" T");
+			SERIAL_PROTOCOL(cur_extruder);
+			SERIAL_PROTOCOLPGM(":");
+			SERIAL_PROTOCOL_F(degHotend(cur_extruder), 1);
+			SERIAL_PROTOCOLPGM(" /");
+			SERIAL_PROTOCOL_F(degTargetHotend(cur_extruder), 1);
+		}
+#else
+		SERIAL_ERROR_START;
+		SERIAL_ERRORLNPGM(MSG_ERR_NO_THERMISTORS);
+#endif
+              SERIAL_PROTOCOLLN("");
+              return;
+	}
+	break;
+	case 999: // M999: Restart after being stopped
       Stopped = false;
       lcd_reset_alert_level();
       gcode_LastN = Stopped_gcode_LastN;
