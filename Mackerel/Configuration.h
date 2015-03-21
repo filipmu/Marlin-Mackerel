@@ -303,13 +303,30 @@ debug notes:
 #define DESIRED_FILAMENT_DIA 2.8 //define the default desired Filament diameter
 #define PREHEAT_EXTRUDER_TEMP 185  //Set to 185 deg C based on Hugh's suggestion
 
+
+/* PID for the filament width control - either the puller RPM or the Extruder motor RPM can be controlled */
+
+//The next two lines define whether the puller or extruder is controlled -only one should be uncommented 
+//#define PULLER_PID_CONTROL
+#define EXTRUDER_RPM_PID_CONTROL
+
+//PID parameters
 #define  DEFAULT_fwidthKp 0.020
 #define  DEFAULT_fwidthKi 0.020
 #define  DEFAULT_fwidthKd 0.250
 
-#define PULLER_PID_MIN_LIMIT 0.5 //min output limit of filament dia control in mm/sec
-#define PULLER_PID_MAX_LIMIT 35.0 //max output limit of filament dia control in mm/sec
+//Puller PID control specific defines
+#define PULLER_PID_MIN_LIMIT 0.5 //min output limit of puller control in mm/sec
+#define PULLER_PID_MAX_LIMIT 35.0 //max output limit of puller control in mm/sec
 #define PULLER_PID_INTEGRATOR_WIND_LIMIT 1000000 //absolute value of integrator windup max value
+
+//Extruder RPM PID control specific defines
+#define EXTRUDER_RPM_PID_MIN_LIMIT 1.0 //min output limit of extruder control in RPM
+#define EXTRUDER_RPM_PID_MAX_LIMIT 24.0 //max output limit of extruder control in RPM
+#define EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT 1000000 //absolute value of integrator windup max value
+#define EXTRUDER_RPM_DT 1.0 //Time step for PID
+
+
 
 #define DEFAULT_LENGTH_CUTOFF 150000  //length in mm where extruder will shut down
 

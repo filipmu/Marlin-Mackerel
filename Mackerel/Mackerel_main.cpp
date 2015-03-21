@@ -202,6 +202,7 @@ int extrudemultiply=100; //100->1 200->2
 float extruder_feedrate;  //extruder real time 'feed rate' - yet we are really interested in RPM
 float extruder_rpm; //real time extruder rpm
 float extruder_rpm_set= DEFAULT_EXTRUDER_RPM; //setpoint for extruder RPM
+float extruder_rpm_set_last = DEFAULT_EXTRUDER_RPM;
 float puller_feedrate_default = DEFAULT_PULLER_FEEDRATE; //puller motor feed rate in mm/sec
 float puller_feedrate= DEFAULT_PULLER_FEEDRATE; //puller motor feed rate in mm/sec
 float puller_feedrate_last = DEFAULT_PULLER_FEEDRATE;
@@ -763,6 +764,9 @@ void loop()
 	  
 	  
 	  
+	
+	#ifdef PULLER_PID_CONTROL 
+	  
 	  //calculate PID - delta is spatial, not time
 	  if((extrude_status & (ES_AUTO_SET | ES_HOT_SET | ES_SWITCH_SET)) == (ES_AUTO_SET | ES_HOT_SET | ES_SWITCH_SET) ){  ///check for normal extrusion
 	  		//  Extruder in Automatic control
@@ -797,6 +801,11 @@ void loop()
 		  
 		  pid_input= model_out+smith_filter_out;
 		 */ 
+		  
+		
+
+		  
+		  
 		 pid_input = current_filwidth;
 		
 			
@@ -849,10 +858,58 @@ void loop()
 	  		  dia_iState_fwidth=0;  //reset the integral
 	  	  }
 	  		  
+#endif 
+	  
+	  
+#ifdef EXTRUDER_RPM_PID_CONTROL 
+  
+	  //need to change direction of control so RPM goes down for diameter too large
+	  //need to figure out analog to puller_increment
+	  
+	  
+  //calculate PID - delta is spatial, not time
+  if((extrude_status & (ES_AUTO_SET | ES_HOT_SET | ES_SWITCH_SET)) == (ES_AUTO_SET | ES_HOT_SET | ES_SWITCH_SET) ){  ///check for normal extrusion
+  		//  Extruder in Automatic control
+  		
+	  
+	 pid_input = current_filwidth;
+	
+		
+			  pid_error_fwidth = -(filament_width_desired - pid_input); //added sign change to change direction of control for extruder RPM
+			  pTerm_fwidth = extruder_rpm_set_last - fwidthKp * pid_error_fwidth;  
+			  
+			  
+			  if((filament_control<EXTRUDER_RPM_PID_MAX_LIMIT && pid_error_fwidth<0) || (filament_control>EXTRUDER_RPM_PID_MIN_LIMIT && pid_error_fwidth>0))
+				  {
+				  dia_iState_fwidth += pid_error_fwidth* EXTRUDER_RPM_DT;
+				  dia_iState_fwidth = constrain(dia_iState_fwidth, -EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT, EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT);
+				  }
+			  iTerm_fwidth = fwidthKi * dia_iState_fwidth;  
+	
+			  //K1 defined in Configuration.h in the PID settings
+			  #define K2 (1.0-K1)
+			  dTerm_fwidth= -((fwidthKd/EXTRUDER_RPM_DT * (pid_input - dia_dState_fwidth))*K2 + (K1 * dTerm_fwidth));  //added direction change to dterm
+			  
+	
+			  filament_control = constrain(pTerm_fwidth - iTerm_fwidth + dTerm_fwidth, EXTRUDER_RPM_PID_MIN_LIMIT, EXTRUDER_RPM_PID_MAX_LIMIT);  
+			  
+			  dia_dState_fwidth = pid_input;
+			  
 	  
 	  
 	  
 	  
+			  
+			  extruder_rpm_set=filament_control;
+  		  
+  		  
+  		  
+  	  } else {
+  		  extruder_rpm_set_last=extruder_rpm_set;  //keep track of last extruder_rpm_set when running manual control
+  		  dia_iState_fwidth=0;  //reset the integral
+  	  }
+  		  
+#endif	  
 	  
 	  //send move
 	  previous_millis_cmd = millis();  //refresh the kill watchdog timer
