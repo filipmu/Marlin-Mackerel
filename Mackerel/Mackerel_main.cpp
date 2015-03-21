@@ -593,6 +593,10 @@ void setup()
   #ifdef DIGIPOT_I2C
     digipot_i2c_init();
   #endif
+    
+  #if BEEPER > 0
+    SET_OUTPUT(BEEPER);
+  #endif
 }
 
 
