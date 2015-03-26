@@ -872,36 +872,35 @@ void loop()
   		//  Extruder in Automatic control
   		
 	  
-	 pid_input = current_filwidth;
+	  if(current_filwidth>1)  //check whether filament measurement is a true measurement
+		  {
+		  pid_input = current_filwidth;
 	
 		
-			  pid_error_fwidth = -(filament_width_desired - pid_input); //added sign change to change direction of control for extruder RPM
-			  pTerm_fwidth = extruder_rpm_set_last - fwidthKp * pid_error_fwidth;  
-			  
-			  
-			  if((filament_control<EXTRUDER_RPM_PID_MAX_LIMIT && pid_error_fwidth<0) || (filament_control>EXTRUDER_RPM_PID_MIN_LIMIT && pid_error_fwidth>0))
-				  {
-				  dia_iState_fwidth += pid_error_fwidth* EXTRUDER_RPM_DT;
-				  dia_iState_fwidth = constrain(dia_iState_fwidth, -EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT, EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT);
-				  }
-			  iTerm_fwidth = fwidthKi * dia_iState_fwidth;  
-	
-			  //K1 defined in Configuration.h in the PID settings
-			  #define K2 (1.0-K1)
-			  dTerm_fwidth= -((fwidthKd/EXTRUDER_RPM_DT * (pid_input - dia_dState_fwidth))*K2 + (K1 * dTerm_fwidth));  //added direction change to dterm
-			  
-	
-			  filament_control = constrain(pTerm_fwidth - iTerm_fwidth + dTerm_fwidth, EXTRUDER_RPM_PID_MIN_LIMIT, EXTRUDER_RPM_PID_MAX_LIMIT);  
-			  
-			  dia_dState_fwidth = pid_input;
-			  
+		  pid_error_fwidth = -(filament_width_desired - pid_input); //added sign change to change direction of control for extruder RPM
+		  pTerm_fwidth = extruder_rpm_set_last - fwidthKp * pid_error_fwidth;  
+		  
+		  
+		  if((filament_control<EXTRUDER_RPM_PID_MAX_LIMIT && pid_error_fwidth<0) || (filament_control>EXTRUDER_RPM_PID_MIN_LIMIT && pid_error_fwidth>0))
+			  {
+			  dia_iState_fwidth += pid_error_fwidth* EXTRUDER_RPM_DT;
+			  dia_iState_fwidth = constrain(dia_iState_fwidth, -EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT, EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT);
+			  }
+		  iTerm_fwidth = fwidthKi * dia_iState_fwidth;  
+
+		  //K1 defined in Configuration.h in the PID settings
+		  #define K2 (1.0-K1)
+		  dTerm_fwidth= -((fwidthKd/EXTRUDER_RPM_DT * (pid_input - dia_dState_fwidth))*K2 + (K1 * dTerm_fwidth));  //added direction change to dterm
+		  
+
+		  filament_control = constrain(pTerm_fwidth - iTerm_fwidth + dTerm_fwidth, EXTRUDER_RPM_PID_MIN_LIMIT, EXTRUDER_RPM_PID_MAX_LIMIT);  
+		  
+		  dia_dState_fwidth = pid_input;
+		  
 	  
 	  
-	  
-	  
-			  
-			  extruder_rpm_set=filament_control;
-  		  
+		  extruder_rpm_set=filament_control;
+		  }
   		  
   		  
   	  } else {
