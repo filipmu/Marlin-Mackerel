@@ -56,6 +56,7 @@ static void lcd_move_menu();
 static void lcd_control_menu();
 static void lcd_control_temperature_menu();
 static void lcd_control_Filament_PID_menu();
+static void lcd_control_Blob_PID_menu();
 static void lcd_control_temperature_preheat_pla_settings_menu();
 static void lcd_control_temperature_preheat_abs_settings_menu();
 static void lcd_control_motion_menu();
@@ -380,7 +381,7 @@ static void lcd_main_menu()
     
     if ((extrude_status & ES_ENABLE_SET) >0)
        	{
-        #ifdef FILAMENT_SENSOR
+        #if defined(FILAMENT_SENSOR) || defined(BLOB_SENSOR)
     	if((extrude_status & ES_AUTO_SET) >0)
     		MENU_ITEM(function,MSG_MAN_EXTRUDER,lcd_extruder_manual);
     	else
@@ -528,6 +529,9 @@ static void lcd_tune_menu()
 #endif
 #ifdef FILAMENT_SENSOR
     MENU_ITEM_EDIT(float22,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
+#endif
+#ifdef BLOB_SENSOR
+    MENU_ITEM_EDIT(float22,MSG_BLOB, &blob_width_desired,1.0,6.0);
 #endif
     MENU_ITEM_EDIT(float6,MSG_LENGTH_CUTOFF, &fil_length_cutoff,1000,999000);
     MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &default_winder_speed, 0, DEFAULT_WINDER_RPM_FACTOR);
@@ -708,6 +712,9 @@ static void lcd_prepare_menu()
     MENU_ITEM_EDIT(float22, MSG_SPEED, &puller_feedrate_default, PULLER_FEEDRATE_MIN, PULLER_FEEDRATE_MAX);
 #ifdef FILAMENT_SENSOR
     MENU_ITEM_EDIT(float22,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
+#endif
+#ifdef BLOB_SENSOR
+    MENU_ITEM_EDIT(float22,MSG_BLOB, &blob_width_desired,1.0,3.0);
 #endif
     MENU_ITEM_EDIT(float6,MSG_LENGTH_CUTOFF, &fil_length_cutoff,1000,999000);
     MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &default_winder_speed, 0, DEFAULT_WINDER_RPM_FACTOR);
@@ -953,6 +960,9 @@ static void lcd_control_menu()
 #ifdef FILAMENT_SENSOR
     MENU_ITEM(submenu,MSG_FILAMENT_PID, lcd_control_Filament_PID_menu);
 #endif
+#ifdef BLOB_SENSOR
+    MENU_ITEM(submenu,MSG_BLOB_PID, lcd_control_Blob_PID_menu);
+#endif
 #ifdef DOGLCD
 //    MENU_ITEM_EDIT(int3, MSG_CONTRAST, &lcd_contrast, 0, 63);
     MENU_ITEM(submenu, MSG_CONTRAST, lcd_set_contrast);
@@ -981,6 +991,16 @@ static void lcd_control_Filament_PID_menu()
 	END_MENU();
 	}
 
+static void lcd_control_Blob_PID_menu()
+	{
+	START_MENU();
+	MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
+	MENU_ITEM_EDIT(float32,MSG_BLOB, &blob_width_desired,1.0,3.0);
+	MENU_ITEM_EDIT(float53, MSG_PID_P, &bwidthKp, 0.0, 99.999);
+	MENU_ITEM_EDIT(float53, MSG_PID_I, &bwidthKi, 0.0, 99.999);
+	MENU_ITEM_EDIT(float53, MSG_PID_D, &bwidthKd, 0.0, 99.999);
+	END_MENU();
+	}
 
 static void pid_autotune_action()
 	{

@@ -18,6 +18,12 @@ void manage_heater(); //it is critical that this is called periodically.
 
 // For converting raw Filament Width to milimeters
 float analog2widthFil();
+
+#ifdef BLOB_SENSOR
+// For converting raw Filament Width to milimeters
+float analog2widthBlob();
+#endif
+
 	
 // For converting raw Filament Width to an extrusion ratio based on area (from width to area)
 int widthFil_to_extrusion_ratio(float nominal_width);
@@ -34,6 +40,7 @@ extern float current_temperature[EXTRUDERS];
 extern int target_temperature_bed;
 extern float current_temperature_bed;
 extern float current_filwidth;
+extern float current_blobwidth;
 
 #ifdef TEMP_SENSOR_1_AS_REDUNDANT
   extern float redundant_temperature;
@@ -53,6 +60,7 @@ extern float current_filwidth;
 #endif
 //#ifdef PIDTEMPBED
   extern float fwidthKp,fwidthKi,fwidthKd;
+  extern float bwidthKp,bwidthKi,bwidthKd;
 //#endif
   
   

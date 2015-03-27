@@ -489,6 +489,13 @@ static void lcd_implementation_status_screen()
       lcd.print('d');
       //lcd.print(ftostr12(analog2widthFil()));
       lcd.print(ftostr12(current_filwidth));
+   #endif
+   #ifdef BLOB_SENSOR
+      lcd_printPGM(PSTR(" b"));
+      	 lcd.print(ftostr12(current_blobwidth));
+   #else
+    
+    #ifdef FILAMENT_SENSOR
       if (alt_cnt<5){
          lcd_printPGM(PSTR(" Av"));
 	 lcd.print(ftostr12(avg_measured_filament_width));
@@ -506,7 +513,8 @@ static void lcd_implementation_status_screen()
          alt_cnt=0;
    #else
       lcd_printPGM(PSTR("             "));   
-   #endif   
+   #endif //FILAMENT_SENSOR
+   #endif //BLOB_SENSOR
       
    lcd_printPGM(PSTR(" L"));
    lcd.print(ftostr6(extrude_length));

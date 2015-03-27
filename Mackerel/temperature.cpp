@@ -19,6 +19,8 @@ int target_temperature[EXTRUDERS] = { 0 };
 int target_temperature_bed = 0;
 int current_raw_filwidth = 0;  //Holds measured filament diameter in raw format
 float current_filwidth = 0; //Holds current measured filament diameter in mm
+int current_raw_blobwidth = 0;//Holds the current measured blob width before the die in raw format
+float current_blobwidth = 0; //Holds the current measured blob width before the die in mm
 int current_temperature_raw[EXTRUDERS] = { 0 };
 float current_temperature[EXTRUDERS] = { 0.0 };
 int current_temperature_bed_raw = 0;
@@ -40,6 +42,9 @@ float current_temperature_bed = 0.0;
   float fwidthKp=DEFAULT_fwidthKp;
   float fwidthKi=DEFAULT_fwidthKi;  //removed delta T portion since we will handle explicitily
   float fwidthKd=DEFAULT_fwidthKd;  //removed delta T portion since we will handle explicitily
+  float bwidthKp=DEFAULT_bwidthKp;
+  float bwidthKi=DEFAULT_bwidthKi;  //removed delta T portion since we will handle explicitily
+  float bwidthKd=DEFAULT_bwidthKd;  //removed delta T portion since we will handle explicitily
 //#endif //PIDTEMPBED
   
 #ifdef FAN_SOFT_PWM
@@ -703,8 +708,16 @@ static float analog2tempBed(int raw) {
  	// For converting raw Filament Width to milimeters
  	float analog2widthFil() {
  	  return current_raw_filwidth/16383.0*5.0;
- 	  //return current_raw_filwidth;
+ 	 
  	}
+ 	
+#ifdef BLOB_SENSOR
+ 	// For converting raw Blob Width to milimeters
+ 	 	float analog2widthBlob() {
+ 	 	  return current_raw_blobwidth/16383.0*5.0;
+ 	 	  
+ 	 	}
+#endif	
 	
  	// For converting raw Filament Width to an extrusion ratio that is based on area, from a width input
  	int widthFil_to_extrusion_ratio(float nominal_width) {
@@ -742,6 +755,10 @@ static void updateTemperaturesFromRawValues()
     #endif
  
      current_filwidth=0.50*current_filwidth+ .5* analog2widthFil();  //FMM smooth out the filament width some more
+     
+	#ifdef BLOB_SENSOR
+     current_blobwidth = 0.50*current_blobwidth + 0.5* analog2widthBlob();
+	#endif
      
       
       //Reset the watchdog after we know we have a temperature measurement.
@@ -1111,8 +1128,9 @@ ISR(TIMER0_COMPB_vect)
   static unsigned long raw_temp_2_value = 0;
   static unsigned long raw_temp_bed_value = 0;
   static unsigned long raw_filwidth_value = 0;  //FMM added for filament width sensor
+  static unsigned long raw_blobwidth_value = 0;  //FMM added for filament blob sensor
 
-  static unsigned char temp_state = 10;  //FMM  one 2 more cases for filament width sensor measurement
+  static unsigned char temp_state = 12;  //FMM  added 4 more cases for filament width sensor measurement and blob width measurement
   static unsigned char pwm_count = (1 << SOFT_PWM_SCALE);
   static unsigned char soft_pwm_0;
   #if (EXTRUDERS > 1) || defined(HEATERS_PARALLEL)
@@ -1276,11 +1294,34 @@ ISR(TIMER0_COMPB_vect)
        raw_filwidth_value= raw_filwidth_value-(raw_filwidth_value>>5);  //multipliy raw_filwidth_value by 31/32
        raw_filwidth_value= raw_filwidth_value + (ADC<<5);  //add new ADC reading
       #endif
+      temp_state = 10;  
+      break;
+    case 10: //Prepare BLOBWIDTH
+      #if defined(BLOBWIDTH_PIN) && (BLOBWIDTH_PIN> -1)
+       #if BLOBWIDTH_PIN>7
+         ADCSRB = 1<<MUX5;
+	   #else
+         ADCSRB = 0;
+       #endif  
+       ADMUX = ((1 << REFS0) | (BLOBWIDTH_PIN & 0x07));
+       ADCSRA |= 1<<ADSC; // Start conversion
+      #endif
+      lcd_buttons_update();
+      temp_state = 11;
+      break;
+    case 11:   //Measure BLOBWIDTH
+      #if defined(BLOBWIDTH_PIN) && (BLOBWIDTH_PIN > -1)
+       //raw_filwidth_value += ADC;  //remove to use IIR filter approach
+       raw_blobwidth_value= raw_blobwidth_value-(raw_blobwidth_value>>5);  //multipliy raw_blobwidth_value by 31/32
+       raw_blobwidth_value= raw_blobwidth_value + (ADC<<5);  //add new ADC reading
+      #endif
       temp_state = 0;  
       break;
-
       
-    case 10: //Startup, delay initial temp reading a tiny bit so the hardware can settle.
+      
+      
+      
+    case 12: //Startup, delay initial temp reading a tiny bit so the hardware can settle.
       temp_state = 0;
       break;
 //    default:
@@ -1309,7 +1350,9 @@ ISR(TIMER0_COMPB_vect)
 #if defined(FILWIDTH_PIN) && (FILWIDTH_PIN > -1)
       current_raw_filwidth = raw_filwidth_value>>6;  //need to divide to get to 0-16384 range since we used 1/32 IIR filter approach
 #endif
-
+#if defined(BLOBWIDTH_PIN) && (BLOBWIDTH_PIN > -1)
+      current_raw_blobwidth = raw_blobwidth_value>>6;  //need to divide to get to 0-16384 range since we used 1/32 IIR filter approach
+#endif
     }
     
     temp_meas_ready = true;

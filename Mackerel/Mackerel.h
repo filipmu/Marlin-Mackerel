@@ -222,6 +222,7 @@ extern unsigned char extrude_status;
 
 
 extern float filament_width_desired; //holds the desired filament width (2.8mm)
+extern float blob_width_desired;
 extern float sum_measured_filament_width; 
 extern float n_measured_filament_width;  
 extern float avg_measured_filament_width; 
@@ -229,7 +230,8 @@ extern float max_measured_filament_width;
 extern float min_measured_filament_width;
 extern float extrude_length;
 extern float fil_length_cutoff;
-extern float filament_control; //output of the PID controller
+extern float filament_control; //output of the Puller PID controller
+extern float blob_control; //output of the extruder RPM PID controller
 extern volatile float filament_width_meas; //holds the filament width as measured by the sensor
 extern float puller_feedrate_default;
 extern int feedmultiply;

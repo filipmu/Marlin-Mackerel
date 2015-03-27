@@ -40,7 +40,7 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
 #ifdef DELTA
 #define EEPROM_VERSION "V11"
 #else
-#define EEPROM_VERSION "V15"
+#define EEPROM_VERSION "V16"
 #endif
 
 #ifdef EEPROM_SETTINGS
@@ -98,9 +98,13 @@ void Config_StoreSettings()
   EEPROM_WRITE_VAR(i,extruder_rpm_set); //setpoint for extruder RPM
   EEPROM_WRITE_VAR(i,puller_feedrate_default); //puller motor feed rate in mm/sec   
   EEPROM_WRITE_VAR(i,filament_width_desired); //holds the desired filament width (i.e like 2.6mm)
+  EEPROM_WRITE_VAR(i,blob_width_desired); //holds the desired blob width (i.e like 4.0mm)
   EEPROM_WRITE_VAR(i,fwidthKp);
   EEPROM_WRITE_VAR(i,fwidthKi);  //removed delta T portion since we will handle explicitily
   EEPROM_WRITE_VAR(i,fwidthKd);
+  EEPROM_WRITE_VAR(i,bwidthKp);
+  EEPROM_WRITE_VAR(i,bwidthKi);  
+  EEPROM_WRITE_VAR(i,bwidthKd);
   EEPROM_WRITE_VAR(i,fil_length_cutoff); 
   EEPROM_WRITE_VAR(i,winder_rpm_factor);
   
@@ -256,9 +260,13 @@ void Config_RetrieveSettings()
         EEPROM_READ_VAR(i,extruder_rpm_set); //setpoint for extruder RPM
         EEPROM_READ_VAR(i,puller_feedrate_default); //puller motor feed rate in mm/sec   
         EEPROM_READ_VAR(i,filament_width_desired); //holds the desired filament width (i.e like 2.6mm)
+        EEPROM_READ_VAR(i,blob_width_desired); //holds the desired blob width (i.e like 4.0mm)
         EEPROM_READ_VAR(i,fwidthKp);
         EEPROM_READ_VAR(i,fwidthKi);  //removed delta T portion since we will handle explicitily
         EEPROM_READ_VAR(i,fwidthKd);
+        EEPROM_READ_VAR(i,bwidthKp);
+        EEPROM_READ_VAR(i,bwidthKi);  
+        EEPROM_READ_VAR(i,bwidthKd);
         EEPROM_READ_VAR(i,fil_length_cutoff);  
         EEPROM_READ_VAR(i,winder_rpm_factor);
         
@@ -340,9 +348,13 @@ void Config_ResetDefault()
  extruder_rpm_set= DEFAULT_EXTRUDER_RPM; //setpoint for extruder RPM
  puller_feedrate_default = DEFAULT_PULLER_FEEDRATE; //puller motor feed rate in mm/sec   
  filament_width_desired= DESIRED_FILAMENT_DIA; //holds the desired filament width (i.e like 2.6mm)
+ blob_width_desired = DESIRED_BLOB_WIDTH;
  fwidthKp=DEFAULT_fwidthKp;
  fwidthKi=DEFAULT_fwidthKi;  //removed delta T portion since we will handle explicitily
  fwidthKd=DEFAULT_fwidthKd;  
+ bwidthKp=DEFAULT_bwidthKp;
+ bwidthKi=DEFAULT_bwidthKi;  //removed delta T portion since we will handle explicitily
+ bwidthKd=DEFAULT_bwidthKd;  
  fil_length_cutoff = DEFAULT_LENGTH_CUTOFF;
  winder_rpm_factor=DEFAULT_WINDER_RPM_FACTOR;
  

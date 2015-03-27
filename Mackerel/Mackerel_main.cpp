@@ -195,6 +195,7 @@ float homing_feedrate[] = HOMING_FEEDRATE;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
 unsigned char extrude_status =0;
 float filament_width_desired= DESIRED_FILAMENT_DIA; //holds the desired filament width (i.e like 2.6mm)
+float blob_width_desired = DESIRED_BLOB_WIDTH; //holds the desired blob width (i.e. like 4mm)
 int feedmultiply; //100->1 200->2
 int saved_feedmultiply;
 
@@ -232,6 +233,7 @@ int model_delay[100]; //Smith predictor delay line
 float last_p_position=0.0;  //keeps track of last position updated in the delay line
 
 float filament_control=0.0;
+float blob_control=0.0;
 
 
 int extruder_multiply[EXTRUDERS] = {100
@@ -362,7 +364,7 @@ static unsigned long timebuff=0;
 static unsigned long deltatime=0;
 static unsigned long lasttime=0;
 
-//PID variables
+//Puller PID variables
 static float dia_iState_fwidth = { 0 };
 static float dia_dState_fwidth = { 0 };
 static float pTerm_fwidth;
@@ -371,7 +373,19 @@ static float dTerm_fwidth;
 static bool pid_reset_fwidth;
   //int output;
 static float pid_error_fwidth;
-static float pid_input;
+static float pid_input_fwidth;
+
+//Extruder PID variables
+static float dia_iState_bwidth = { 0 };
+static float dia_dState_bwidth = { 0 };
+static float pTerm_bwidth;
+static float iTerm_bwidth;
+static float dTerm_bwidth;
+static bool pid_reset_bwidth;
+  //int output;
+static float pid_error_bwidth;
+static float pid_input_bwidth;
+
 
 bool Stopped=false;
 
@@ -806,10 +820,10 @@ void loop()
 
 		  
 		  
-		 pid_input = current_filwidth;
+		 pid_input_fwidth = current_filwidth;
 		
 			
-				  pid_error_fwidth = filament_width_desired - pid_input;
+				  pid_error_fwidth = filament_width_desired - pid_input_fwidth;
 				  pTerm_fwidth = puller_feedrate_last - fwidthKp * pid_error_fwidth;
 				  
 				  /*
@@ -837,12 +851,12 @@ void loop()
 		
 				  //K1 defined in Configuration.h in the PID settings
 				  #define K2 (1.0-K1)
-				  dTerm_fwidth= (fwidthKd/puller_increment * (pid_input - dia_dState_fwidth))*K2 + (K1 * dTerm_fwidth);  //use spatial dT=puller_increment
+				  dTerm_fwidth= (fwidthKd/puller_increment * (pid_input_fwidth - dia_dState_fwidth))*K2 + (K1 * dTerm_fwidth);  //use spatial dT=puller_increment
 				  
 		
 				  filament_control = constrain(pTerm_fwidth - iTerm_fwidth + dTerm_fwidth, PULLER_PID_MIN_LIMIT, PULLER_PID_MAX_LIMIT);
 				  
-				  dia_dState_fwidth = pid_input;
+				  dia_dState_fwidth = pid_input_fwidth;
 				  
 		  
 		  
@@ -872,40 +886,40 @@ void loop()
   		//  Extruder in Automatic control
   		
 	  
-	  if(current_filwidth>1)  //check whether filament measurement is a true measurement
+	  if(current_blobwidth>1)  //check whether blob measurement is a true measurement
 		  {
-		  pid_input = current_filwidth;
+		  pid_input_bwidth = current_blobwidth;
 	
 		
-		  pid_error_fwidth = -(filament_width_desired - pid_input); //added sign change to change direction of control for extruder RPM
-		  pTerm_fwidth = extruder_rpm_set_last - fwidthKp * pid_error_fwidth;  
+		  pid_error_bwidth = -(blob_width_desired - pid_input_bwidth); //added sign change to change direction of control for extruder RPM
+		  pTerm_bwidth = extruder_rpm_set_last - bwidthKp * pid_error_bwidth;  
 		  
 		  
-		  if((filament_control<EXTRUDER_RPM_PID_MAX_LIMIT && pid_error_fwidth<0) || (filament_control>EXTRUDER_RPM_PID_MIN_LIMIT && pid_error_fwidth>0))
+		  if((blob_control<EXTRUDER_RPM_PID_MAX_LIMIT && pid_error_bwidth<0) || (blob_control>EXTRUDER_RPM_PID_MIN_LIMIT && pid_error_bwidth>0))
 			  {
-			  dia_iState_fwidth += pid_error_fwidth* EXTRUDER_RPM_DT;
-			  dia_iState_fwidth = constrain(dia_iState_fwidth, -EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT, EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT);
+			  dia_iState_bwidth += pid_error_bwidth* EXTRUDER_RPM_DT;
+			  dia_iState_bwidth = constrain(dia_iState_bwidth, -EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT, EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT);
 			  }
-		  iTerm_fwidth = fwidthKi * dia_iState_fwidth;  
+		  iTerm_bwidth = bwidthKi * dia_iState_bwidth;  
 
 		  //K1 defined in Configuration.h in the PID settings
 		  #define K2 (1.0-K1)
-		  dTerm_fwidth= -((fwidthKd/EXTRUDER_RPM_DT * (pid_input - dia_dState_fwidth))*K2 + (K1 * dTerm_fwidth));  //added direction change to dterm
+		  dTerm_bwidth= -((bwidthKd/EXTRUDER_RPM_DT * (pid_input_bwidth - dia_dState_bwidth))*K2 + (K1 * dTerm_bwidth));  //added direction change to dterm
 		  
 
-		  filament_control = constrain(pTerm_fwidth - iTerm_fwidth + dTerm_fwidth, EXTRUDER_RPM_PID_MIN_LIMIT, EXTRUDER_RPM_PID_MAX_LIMIT);  
+		  blob_control = constrain(pTerm_bwidth - iTerm_bwidth + dTerm_bwidth, EXTRUDER_RPM_PID_MIN_LIMIT, EXTRUDER_RPM_PID_MAX_LIMIT);  
 		  
-		  dia_dState_fwidth = pid_input;
+		  dia_dState_bwidth = pid_input_bwidth;
 		  
 	  
 	  
-		  extruder_rpm_set=filament_control;
+		  extruder_rpm_set=blob_control;
 		  }
   		  
   		  
   	  } else {
   		  extruder_rpm_set_last=extruder_rpm_set;  //keep track of last extruder_rpm_set when running manual control
-  		  dia_iState_fwidth=0;  //reset the integral
+  		  dia_iState_bwidth=0;  //reset the integral
   	  }
   		  
 #endif	  

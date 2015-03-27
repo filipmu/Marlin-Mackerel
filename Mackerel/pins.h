@@ -495,6 +495,10 @@
 	  //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
       #define FILWIDTH_PIN        5
 	  //Use the RAMPS 1.4 Digital input D3 (usually XMIN endstop pin)
+	  
+      #define BLOBWIDTH_PIN 	  3
+      //Use the RAMPS 1.4 Analog input A3, Digital 57
+
 	  #define EXTRUDER_MOTOR_ON_OFF_PIN		3
       #define X_MAX_PIN -1 //FMM remove definition for limit pins to speed the stepper interrupt.
 	  #define Y_MAX_PIN -1
