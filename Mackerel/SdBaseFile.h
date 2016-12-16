@@ -31,16 +31,16 @@
 #include "SdVolume.h"
 //------------------------------------------------------------------------------
 /**
- * \struct fpos_t
+ * \struct fatpos_t
  * \brief internal type for istream
  * do not use in user apps
  */
-struct fpos_t {
+struct fatpos_t {
   /** stream position */
   uint32_t position;
   /** cluster for position */
   uint32_t cluster;
-  fpos_t() : position(0), cluster(0) {}
+  fatpos_t() : position(0), cluster(0) {}
 };
 
 // use the gnu style oflag in open()
