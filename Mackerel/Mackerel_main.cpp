@@ -787,6 +787,7 @@ void loop()
 	  		
 		  
 		  //add smith predictor here to handle dead time in filament transit
+      // https://www.controleng.com/articles/overcoming-process-deadtime-with-a-smith-predictor/
 		  /*
 		  //calculate model of diameter (low pass filtered version of gain* extruder_RPM/filament control)
 		  model_out=(1.0-model_param)*model_out+model_param*(model_gain*extruder_rpm/filament_control);
@@ -897,14 +898,14 @@ void loop()
 		  
 		  if((blob_control<EXTRUDER_RPM_PID_MAX_LIMIT && pid_error_bwidth<0) || (blob_control>EXTRUDER_RPM_PID_MIN_LIMIT && pid_error_bwidth>0))
 			  {
-			  dia_iState_bwidth += pid_error_bwidth* EXTRUDER_RPM_DT;
+			  dia_iState_bwidth += pid_error_bwidth* deltatime;
 			  dia_iState_bwidth = constrain(dia_iState_bwidth, -EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT, EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT);
 			  }
 		  iTerm_bwidth = bwidthKi * dia_iState_bwidth;  
 
 		  //K1 defined in Configuration.h in the PID settings
 		  #define K2 (1.0-K1)
-		  dTerm_bwidth= -((bwidthKd/EXTRUDER_RPM_DT * (pid_input_bwidth - dia_dState_bwidth))*K2 + (K1 * dTerm_bwidth));  //added direction change to dterm
+		  dTerm_bwidth= -((bwidthKd/deltatime * (pid_input_bwidth - dia_dState_bwidth))*K2 + (K1 * dTerm_bwidth));  //added direction change to dterm
 		  
 
 		  blob_control = constrain(pTerm_bwidth - iTerm_bwidth + dTerm_bwidth, EXTRUDER_RPM_PID_MIN_LIMIT, EXTRUDER_RPM_PID_MAX_LIMIT);  
@@ -4011,5 +4012,3 @@ bool setTargetedHotend(int code){
   }
   return false;
 }
-
-

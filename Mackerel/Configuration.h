@@ -289,21 +289,21 @@ debug notes:
 
 
 #define DEFAULT_EXTRUDER_RPM 12 //define default extruder RPM
-#define EXTRUDER_RPM_MAX 50
+#define EXTRUDER_RPM_MAX 24
 #define EXTRUDER_RPM_MIN 1
-#define DEFAULT_PULLER_FEEDRATE 6.0 //default puller feedrate when turned on
+#define DEFAULT_PULLER_FEEDRATE 2.0 //default puller feedrate when turned on
 #define PULLER_FEEDRATE_MIN 0.5 // min feedrate in manual control, 1 mm/sec min feed - limited by max pulse rate of 50,000
 #define PULLER_FEEDRATE_MAX 35.0  // max feedrate in manual control 15mm/sec max feed - limited by max pulse rate of 50,000
 #define PULLER_WHEEL_CIRC 120 //circumference of urethane puller wheel in mm
 
 #define DEFAULT_WINDER_RPM_FACTOR 70  //factor for converting winder PW to rpm - reflects rpm of motor at 12v
-#define DEFAULT_WINDER_SPEED 35  //default winder speed (0-DEFAULT_WINDER_RPM_FACTOR)
+#define DEFAULT_WINDER_SPEED 25  //default winder speed (0-DEFAULT_WINDER_RPM_FACTOR)
 
 
-#define DESIRED_FILAMENT_DIA 2.8 //define the default desired Filament diameter
-#define DESIRED_BLOB_WIDTH 4.0 //define the default desired Blob width
+#define DESIRED_FILAMENT_DIA 1.65 //define the default desired Filament diameter
+#define DESIRED_BLOB_WIDTH 1.75 //define the default desired Blob width
 
-#define PREHEAT_EXTRUDER_TEMP 185  //Set to 185 deg C based on Hugh's suggestion
+#define PREHEAT_EXTRUDER_TEMP 170  //Set to 185 deg C based on Hugh's suggestion
 
 #define BLOB_SENSOR  //define if there is a second blob sensor attached
 
@@ -312,7 +312,7 @@ debug notes:
 /* PID for the filament width control - either/both the puller RPM or the Extruder motor RPM can be controlled */
 
 
-#define PULLER_PID_CONTROL
+//#define PULLER_PID_CONTROL
 
 //PID parameters for puller control
 #define  DEFAULT_fwidthKp 0.020
@@ -338,7 +338,7 @@ debug notes:
 
 //Extruder RPM PID control specific defines
 #define EXTRUDER_RPM_PID_MIN_LIMIT 1.0 //min output limit of extruder control in RPM
-#define EXTRUDER_RPM_PID_MAX_LIMIT 24.0 //max output limit of extruder control in RPM
+#define EXTRUDER_RPM_PID_MAX_LIMIT 20.0 //max output limit of extruder control in RPM
 #define EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT 1000000 //absolute value of integrator windup max value
 #define EXTRUDER_RPM_DT 1.0 //Time step for PID
 
@@ -346,7 +346,7 @@ debug notes:
 
 #define DEFAULT_LENGTH_CUTOFF 150000  //length in mm where extruder will shut down
 
-#define EXTRUDE_MINTEMP 170  //min temp that extruder motor will run
+#define EXTRUDE_MINTEMP 150  //min temp that extruder motor will run
 //this prevents dangerous Extruder moves, i.e. if the temperature is under the limit
 //can be software-disabled for whatever purposes by
 #define PREVENT_DANGEROUS_EXTRUDE
@@ -880,4 +880,3 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #include "thermistortables.h"
 
 #endif //__CONFIGURATION_H
-

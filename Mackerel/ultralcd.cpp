@@ -196,7 +196,7 @@ static void lcd_status_screen()
     if (lcdDrawUpdate)
     {
         lcd_implementation_status_screen();
-        lcd_status_update_delay = 10;   /* redraw the main screen every second. This is easier then trying keep track of all things that change on the screen */
+        lcd_status_update_delay = 5;   /* redraw the main screen every .5 second. This is easier then trying keep track of all things that change on the screen */
     }
 #ifdef ULTIPANEL
     if (LCD_CLICKED)
@@ -515,8 +515,8 @@ static void lcd_tune_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
-    MENU_ITEM_EDIT(float22, MSG_EXT_RPM, &extruder_rpm_set,EXTRUDER_RPM_MIN,EXTRUDER_RPM_MAX);
-    MENU_ITEM_EDIT(float22, MSG_SPEED, &puller_feedrate, PULLER_FEEDRATE_MIN, PULLER_FEEDRATE_MAX);
+    MENU_ITEM_EDIT(float32, MSG_EXT_RPM, &extruder_rpm_set,EXTRUDER_RPM_MIN,EXTRUDER_RPM_MAX);
+    MENU_ITEM_EDIT(float32, MSG_SPEED, &puller_feedrate, PULLER_FEEDRATE_MIN, PULLER_FEEDRATE_MAX);
     MENU_ITEM_EDIT(int3, MSG_HEATER, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15);
 #if TEMP_SENSOR_1 != 0
     MENU_ITEM_EDIT(int3, MSG_NOZZLE1, &target_temperature[1], 0, HEATER_1_MAXTEMP - 15);
@@ -528,10 +528,10 @@ static void lcd_tune_menu()
     MENU_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
 #endif
 #ifdef FILAMENT_SENSOR
-    MENU_ITEM_EDIT(float22,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
+    MENU_ITEM_EDIT(float32,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
 #endif
 #ifdef BLOB_SENSOR
-    MENU_ITEM_EDIT(float22,MSG_BLOB, &blob_width_desired,1.0,6.0);
+    MENU_ITEM_EDIT(float32,MSG_BLOB, &blob_width_desired,1.0,6.0);
 #endif
     MENU_ITEM_EDIT(float6,MSG_LENGTH_CUTOFF, &fil_length_cutoff,1000,999000);
     MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &default_winder_speed, 0, DEFAULT_WINDER_RPM_FACTOR);
@@ -711,10 +711,10 @@ static void lcd_prepare_menu()
     MENU_ITEM_EDIT(float22, MSG_EXT_RPM, &extruder_rpm_set,EXTRUDER_RPM_MIN,EXTRUDER_RPM_MAX);
     MENU_ITEM_EDIT(float22, MSG_SPEED, &puller_feedrate_default, PULLER_FEEDRATE_MIN, PULLER_FEEDRATE_MAX);
 #ifdef FILAMENT_SENSOR
-    MENU_ITEM_EDIT(float22,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
+    MENU_ITEM_EDIT(float32,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
 #endif
 #ifdef BLOB_SENSOR
-    MENU_ITEM_EDIT(float22,MSG_BLOB, &blob_width_desired,1.0,3.0);
+    MENU_ITEM_EDIT(float32,MSG_BLOB, &blob_width_desired,1.0,6.0);
 #endif
     MENU_ITEM_EDIT(float6,MSG_LENGTH_CUTOFF, &fil_length_cutoff,1000,999000);
     MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &default_winder_speed, 0, DEFAULT_WINDER_RPM_FACTOR);
@@ -987,7 +987,7 @@ static void lcd_control_Filament_PID_menu()
 	MENU_ITEM_EDIT(float6,MSG_LENGTH_CUTOFF, &fil_length_cutoff,1000,999000);
 	MENU_ITEM_EDIT(float53, MSG_PID_P, &fwidthKp, 0.0, 99.999);
 	MENU_ITEM_EDIT(float53, MSG_PID_I, &fwidthKi, 0.0, 99.999);
-	MENU_ITEM_EDIT(float53, MSG_PID_D, &fwidthKd, 0.0, 99.999);
+	MENU_ITEM_EDIT(float32, MSG_PID_D, &fwidthKd, 0.0, 99.999);
 	END_MENU();
 	}
 
@@ -995,10 +995,10 @@ static void lcd_control_Blob_PID_menu()
 	{
 	START_MENU();
 	MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
-	MENU_ITEM_EDIT(float32,MSG_BLOB, &blob_width_desired,1.0,3.0);
+	MENU_ITEM_EDIT(float32,MSG_BLOB, &blob_width_desired,1.0,6.0);
 	MENU_ITEM_EDIT(float53, MSG_PID_P, &bwidthKp, 0.0, 99.999);
 	MENU_ITEM_EDIT(float53, MSG_PID_I, &bwidthKi, 0.0, 99.999);
-	MENU_ITEM_EDIT(float53, MSG_PID_D, &bwidthKd, 0.0, 99.999);
+	MENU_ITEM_EDIT(float32, MSG_PID_D, &bwidthKd, 0.0, 99.999);
 	END_MENU();
 	}
 
@@ -1278,7 +1278,7 @@ void lcd_sdcard_menu()
         callbackFunc = callback;\
     }
 menu_edit_type(int, int3, itostr3, 1)
-menu_edit_type(float, float22, ftostr22, 10)
+menu_edit_type(float, float22, ftostr22, 1)
 menu_edit_type(float, float3, ftostr3, 1)
 menu_edit_type(float, float32, ftostr32, 100)
 menu_edit_type(float, float5, ftostr5, 0.01)
@@ -1986,4 +1986,3 @@ void copy_and_scalePID_d()
 }
 
 #endif //ULTRA_LCD
-

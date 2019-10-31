@@ -1291,8 +1291,8 @@ ISR(TIMER0_COMPB_vect)
     case 9:   //Measure FILWIDTH
       #if defined(FILWIDTH_PIN) && (FILWIDTH_PIN > -1)
        //raw_filwidth_value += ADC;  //remove to use IIR filter approach
-       raw_filwidth_value= raw_filwidth_value-(raw_filwidth_value>>5);  //multipliy raw_filwidth_value by 31/32
-       raw_filwidth_value= raw_filwidth_value + (ADC<<5);  //add new ADC reading
+       raw_filwidth_value= raw_filwidth_value-(raw_filwidth_value>>3);  //multipliy raw_filwidth_value by 7/8
+       raw_filwidth_value= raw_filwidth_value + (ADC<<3);  //add new ADC reading
       #endif
       temp_state = 10;  
       break;
@@ -1312,8 +1312,8 @@ ISR(TIMER0_COMPB_vect)
     case 11:   //Measure BLOBWIDTH
       #if defined(BLOBWIDTH_PIN) && (BLOBWIDTH_PIN > -1)
        //raw_filwidth_value += ADC;  //remove to use IIR filter approach
-       raw_blobwidth_value= raw_blobwidth_value-(raw_blobwidth_value>>5);  //multipliy raw_blobwidth_value by 31/32
-       raw_blobwidth_value= raw_blobwidth_value + (ADC<<5);  //add new ADC reading
+       raw_blobwidth_value= raw_blobwidth_value-(raw_blobwidth_value>>3);  //multipliy raw_blobwidth_value by 7/8
+       raw_blobwidth_value= raw_blobwidth_value + (ADC<<3);  //add new ADC reading
       #endif
       temp_state = 0;  
       break;
@@ -1348,10 +1348,10 @@ ISR(TIMER0_COMPB_vect)
       
       //Filip add similar code for Filament Sensor
 #if defined(FILWIDTH_PIN) && (FILWIDTH_PIN > -1)
-      current_raw_filwidth = raw_filwidth_value>>6;  //need to divide to get to 0-16384 range since we used 1/32 IIR filter approach
+      current_raw_filwidth = raw_filwidth_value>>2;  //need to divide to get to 0-16384 range since we used 1/8 IIR filter approach
 #endif
 #if defined(BLOBWIDTH_PIN) && (BLOBWIDTH_PIN > -1)
-      current_raw_blobwidth = raw_blobwidth_value>>6;  //need to divide to get to 0-16384 range since we used 1/32 IIR filter approach
+      current_raw_blobwidth = raw_blobwidth_value>>2;  //need to divide to get to 0-16384 range since we used 1/8 IIR filter approach
 #endif
     }
     
