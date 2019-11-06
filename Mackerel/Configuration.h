@@ -95,7 +95,7 @@ debug notes:
 
 // This determines the communication speed of the printer
 // This determines the communication speed of the printer
-#define BAUDRATE 250000
+#define BAUDRATE 115200
 
 // This enables the serial port associated to the Bluetooth interface
 //#define BTENABLED              // Enable BT interface on AT90USB devices
@@ -303,14 +303,14 @@ debug notes:
 #define DESIRED_FILAMENT_DIA 1.65 //define the default desired Filament diameter
 #define DESIRED_BLOB_WIDTH 1.75 //define the default desired Blob width
 
-#define PREHEAT_EXTRUDER_TEMP 170  //Set to 185 deg C based on Hugh's suggestion
+#define PREHEAT_EXTRUDER_TEMP 175  //Set to 185 deg C based on Hugh's suggestion
 
 #define BLOB_SENSOR  //define if there is a second blob sensor attached
 
 
 
 /* PID for the filament width control - either/both the puller RPM or the Extruder motor RPM can be controlled */
-
+# define PID_time 250.0 //PID control loop timing
 
 //#define PULLER_PID_CONTROL
 
@@ -320,9 +320,9 @@ debug notes:
 #define  DEFAULT_fwidthKd 0.250
 
 //Puller PID control specific defines
-#define PULLER_PID_MIN_LIMIT 0.5 //min output limit of puller control in mm/sec
+#define PULLER_PID_MIN_LIMIT 1.5 //min output limit of puller control in mm/sec
 #define PULLER_PID_MAX_LIMIT 35.0 //max output limit of puller control in mm/sec
-#define PULLER_PID_INTEGRATOR_WIND_LIMIT 1000000 //absolute value of integrator windup max value
+#define PULLER_PID_INTEGRATOR_WIND_LIMIT 100000000 //absolute value of integrator windup max value
 
 
 
@@ -339,7 +339,7 @@ debug notes:
 //Extruder RPM PID control specific defines
 #define EXTRUDER_RPM_PID_MIN_LIMIT 1.0 //min output limit of extruder control in RPM
 #define EXTRUDER_RPM_PID_MAX_LIMIT 20.0 //max output limit of extruder control in RPM
-#define EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT 1000000 //absolute value of integrator windup max value
+#define EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT 100000000 //absolute value of integrator windup max value
 #define EXTRUDER_RPM_DT 1.0 //Time step for PID
 
 
@@ -363,6 +363,12 @@ debug notes:
 #define DEFAULT_MOTOR_ACCELERATION  200   // E and P max acceleration in mm/s^2 - controls extruder acceleration
 #define DEFAULT_EJERK                 1.0    // (mm/sec)
 #define DEFAULT_PJERK				  1.0	// (mm/sec)
+
+//Output MQTT (JSON) messages on the serial line.  This allows for interfacing to an ESP32 and publishing IOT data
+#define MQTT_SERIAL_OUT
+#define MQTT_TIME_INTERVAL_MS 1000  //interval time in ms to output IOT data
+
+
 
 
 // Bed Temperature Control

@@ -100,6 +100,9 @@ FORCE_INLINE void serialprintPGM(const char *str)
 
 
 void get_command();
+void json_pair(char *label, float value, int place);
+void json_pair_first(char *label, float value, int place);
+void json_pair_last(char *label, float value, int place);
 void process_commands();
 
 void manage_inactivity();
@@ -285,4 +288,3 @@ extern void digipot_i2c_init();
 #endif
 
 #endif
-

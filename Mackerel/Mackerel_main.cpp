@@ -218,7 +218,11 @@ int default_winder_speed = DEFAULT_WINDER_SPEED;
 int winder_rpm_factor = DEFAULT_WINDER_RPM_FACTOR;
 unsigned long starttime=0;
 unsigned long stoptime=0;
+#ifdef MQTT_SERIAL_OUT
+unsigned long time_snap=0;
+extern char *lcd_status_message;
 
+#endif
 unsigned long duration=0;
 unsigned long timeremaining=DEFAULT_LENGTH_CUTOFF/DEFAULT_PULLER_FEEDRATE*1000;  //used to hold a calculated time remaining in ms to hit fil length cutoff
 
@@ -363,6 +367,7 @@ static float puller_increment; //used to calculate the increment to add to creat
 static unsigned long timebuff=0;
 static unsigned long deltatime=0;
 static unsigned long lasttime=0;
+static unsigned long PID_lasttime=0;
 
 //Puller PID variables
 static float dia_iState_fwidth = { 0 };
@@ -778,153 +783,163 @@ void loop()
 	  
 	  
 	  
+	if(millis()-PID_lasttime>250){
+   PID_lasttime=millis(); 
 	
-	#ifdef PULLER_PID_CONTROL 
-	  
-	  //calculate PID - delta is spatial, not time
-	  if((extrude_status & (ES_AUTO_SET | ES_HOT_SET | ES_SWITCH_SET)) == (ES_AUTO_SET | ES_HOT_SET | ES_SWITCH_SET) ){  ///check for normal extrusion
-	  		//  Extruder in Automatic control
-	  		
-		  
-		  //add smith predictor here to handle dead time in filament transit
-      // https://www.controleng.com/articles/overcoming-process-deadtime-with-a-smith-predictor/
-		  /*
-		  //calculate model of diameter (low pass filtered version of gain* extruder_RPM/filament control)
-		  model_out=(1.0-model_param)*model_out+model_param*(model_gain*extruder_rpm/filament_control);
-		  
-		  
-		  //update delay based on spatial delay
-		  
-		  while(current_position[P_AXIS]- last_p_position > 1.0){  //check if over 1 mm passed
-			  
-		  // shift the delay by one
-		     	for (idelay=99; idelay>0 ; idelay--)
-		     		{
-		     		model_delay[idelay]=model_delay[idelay-1];
-		     		}
-		     	// add the new model output to the delay
-		     	model_delay[0]=(int)(model_out*1000);  //convert the model out of 0-3.0 mm to an int in range 0-3000.
-		     	
-		     	last_p_position=last_p_position+1.0;
-		  }
-		  
-		  //calculate difference between measured width and delayed model and filter   	
-		  smith_filter_out=(1.0-smith_filter_param)*smith_filter_out+smith_filter_param*(current_filwidth-model_delay[99]/1000.0);
-		     	
-		  //update the error term to include the model
-		  
-		  
-		  pid_input= model_out+smith_filter_out;
-		 */ 
-		  
-		
-
-		  
-		  
-		 pid_input_fwidth = current_filwidth;
-		
-			
-				  pid_error_fwidth = filament_width_desired - pid_input_fwidth;
-				  pTerm_fwidth = puller_feedrate_last - fwidthKp * pid_error_fwidth;
-				  
-				  /*
-				  if(pTerm_fwidth>PULLER_PID_MAX_LIMIT){
-					  filament_control=PULLER_PID_MAX_LIMIT;
-					  pid_reset_fwidth = true;  
-				  } else if(pTerm_fwidth<PULLER_PID_MIN_LIMIT){
-					  filament_control=PULLER_PID_MIN_LIMIT;
-					  pid_reset_fwidth = true;
-				  }else{
-				  
-					  if(pid_reset_fwidth== true){
-						  dia_iState_fwidth=0.0;
-						  pid_reset_fwidth = false;
-					  }
-				  
-				  */
-				  
-				  if((filament_control<PULLER_PID_MAX_LIMIT && pid_error_fwidth<0) || (filament_control>PULLER_PID_MIN_LIMIT && pid_error_fwidth>0))
-					  {
-					  dia_iState_fwidth += pid_error_fwidth* puller_increment; //use spatial dT=puller_increment
-					  dia_iState_fwidth = constrain(dia_iState_fwidth, -PULLER_PID_INTEGRATOR_WIND_LIMIT, PULLER_PID_INTEGRATOR_WIND_LIMIT);
-					  }
-				  iTerm_fwidth = fwidthKi * dia_iState_fwidth;  
-		
-				  //K1 defined in Configuration.h in the PID settings
-				  #define K2 (1.0-K1)
-				  dTerm_fwidth= (fwidthKd/puller_increment * (pid_input_fwidth - dia_dState_fwidth))*K2 + (K1 * dTerm_fwidth);  //use spatial dT=puller_increment
-				  
-		
-				  filament_control = constrain(pTerm_fwidth - iTerm_fwidth + dTerm_fwidth, PULLER_PID_MIN_LIMIT, PULLER_PID_MAX_LIMIT);
-				  
-				  dia_dState_fwidth = pid_input_fwidth;
-				  
-		  
-		  
-		  
-		  
-				  
-	  		  puller_feedrate=filament_control;
-	  		  
-	  		  
-	  		  
-	  	  } else {
-	  		  puller_feedrate_last=puller_feedrate;  //keep track of last puller_feedrate when running manual control
-	  		  dia_iState_fwidth=0;  //reset the integral
-	  	  }
-	  		  
-#endif 
-	  
-	  
-#ifdef EXTRUDER_RPM_PID_CONTROL 
-  
-	  //need to change direction of control so RPM goes down for diameter too large
-	  //need to figure out analog to puller_increment
-	  
-	  
-  //calculate PID - delta is spatial, not time
-  if((extrude_status & (ES_AUTO_SET | ES_HOT_SET | ES_SWITCH_SET)) == (ES_AUTO_SET | ES_HOT_SET | ES_SWITCH_SET) ){  ///check for normal extrusion
-  		//  Extruder in Automatic control
-  		
-	  
-	  if(current_blobwidth>1)  //check whether blob measurement is a true measurement
-		  {
-		  pid_input_bwidth = current_blobwidth;
-	
-		
-		  pid_error_bwidth = -(blob_width_desired - pid_input_bwidth); //added sign change to change direction of control for extruder RPM
-		  pTerm_bwidth = extruder_rpm_set_last - bwidthKp * pid_error_bwidth;  
-		  
-		  
-		  if((blob_control<EXTRUDER_RPM_PID_MAX_LIMIT && pid_error_bwidth<0) || (blob_control>EXTRUDER_RPM_PID_MIN_LIMIT && pid_error_bwidth>0))
-			  {
-			  dia_iState_bwidth += pid_error_bwidth* deltatime;
-			  dia_iState_bwidth = constrain(dia_iState_bwidth, -EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT, EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT);
-			  }
-		  iTerm_bwidth = bwidthKi * dia_iState_bwidth;  
-
-		  //K1 defined in Configuration.h in the PID settings
-		  #define K2 (1.0-K1)
-		  dTerm_bwidth= -((bwidthKd/deltatime * (pid_input_bwidth - dia_dState_bwidth))*K2 + (K1 * dTerm_bwidth));  //added direction change to dterm
-		  
-
-		  blob_control = constrain(pTerm_bwidth - iTerm_bwidth + dTerm_bwidth, EXTRUDER_RPM_PID_MIN_LIMIT, EXTRUDER_RPM_PID_MAX_LIMIT);  
-		  
-		  dia_dState_bwidth = pid_input_bwidth;
-		  
-	  
-	  
-		  extruder_rpm_set=blob_control;
-		  }
-  		  
-  		  
-  	  } else {
-  		  extruder_rpm_set_last=extruder_rpm_set;  //keep track of last extruder_rpm_set when running manual control
-  		  dia_iState_bwidth=0;  //reset the integral
-  	  }
-  		  
-#endif	  
-	  
+    	#ifdef PULLER_PID_CONTROL 
+    	  
+    	  //calculate PID - delta is spatial, not time
+    	  if((extrude_status & (ES_AUTO_SET | ES_HOT_SET | ES_SWITCH_SET)) == (ES_AUTO_SET | ES_HOT_SET | ES_SWITCH_SET) ){  ///check for normal extrusion
+    	  		//  Extruder in Automatic control
+    	  		
+    		  
+    		  //add smith predictor here to handle dead time in filament transit
+          // https://www.controleng.com/articles/overcoming-process-deadtime-with-a-smith-predictor/
+    		  /*
+    		  //calculate model of diameter (low pass filtered version of gain* extruder_RPM/filament control)
+    		  model_out=(1.0-model_param)*model_out+model_param*(model_gain*extruder_rpm/filament_control);
+    		  
+    		  
+    		  //update delay based on spatial delay
+    		  
+    		  while(current_position[P_AXIS]- last_p_position > 1.0){  //check if over 1 mm passed
+    			  
+    		  // shift the delay by one
+    		     	for (idelay=99; idelay>0 ; idelay--)
+    		     		{
+    		     		model_delay[idelay]=model_delay[idelay-1];
+    		     		}
+    		     	// add the new model output to the delay
+    		     	model_delay[0]=(int)(model_out*1000);  //convert the model out of 0-3.0 mm to an int in range 0-3000.
+    		     	
+    		     	last_p_position=last_p_position+1.0;
+    		  }
+    		  
+    		  //calculate difference between measured width and delayed model and filter   	
+    		  smith_filter_out=(1.0-smith_filter_param)*smith_filter_out+smith_filter_param*(current_filwidth-model_delay[99]/1000.0);
+    		     	
+    		  //update the error term to include the model
+    		  
+    		  
+    		  pid_input= model_out+smith_filter_out;
+    		 */ 
+    		  
+    		
+    
+    		  // make the error squared, since for constant volume, lengh varies as 1/w^2
+    		  
+    		    //pid_input_fwidth = current_filwidth;
+    		      pid_input_fwidth = max(current_filwidth,.1);  //avoid divide by zero later
+    			    
+            //pid_error_fwidth = filament_width_desired - pid_input_fwidth;
+             
+             pid_error_fwidth = (1/pid_input_fwidth)*(1/pid_input_fwidth);
+             pid_error_fwidth = pid_error_fwidth -(1/filament_width_desired)*(1/filament_width_desired);
+             
+             
+    				  pTerm_fwidth = puller_feedrate_last - fwidthKp * pid_error_fwidth;
+    				  
+    				  /*
+    				  if(pTerm_fwidth>PULLER_PID_MAX_LIMIT){
+    					  filament_control=PULLER_PID_MAX_LIMIT;
+    					  pid_reset_fwidth = true;  
+    				  } else if(pTerm_fwidth<PULLER_PID_MIN_LIMIT){
+    					  filament_control=PULLER_PID_MIN_LIMIT;
+    					  pid_reset_fwidth = true;
+    				  }else{
+    				  
+    					  if(pid_reset_fwidth== true){
+    						  dia_iState_fwidth=0.0;
+    						  pid_reset_fwidth = false;
+    					  }
+    				  
+    				  */
+    				  
+    				  if((filament_control<PULLER_PID_MAX_LIMIT && pid_error_fwidth<0) || (filament_control>PULLER_PID_MIN_LIMIT && pid_error_fwidth>0))
+    					  {
+    					  dia_iState_fwidth += pid_error_fwidth* puller_increment; //use spatial dT=puller_increment
+    					  dia_iState_fwidth = constrain(dia_iState_fwidth, -PULLER_PID_INTEGRATOR_WIND_LIMIT, PULLER_PID_INTEGRATOR_WIND_LIMIT);
+    					  }
+    				  iTerm_fwidth = fwidthKi*.001 * dia_iState_fwidth;  
+    		
+    				  //K1 defined in Configuration.h in the PID settings
+    				  #define K2 (1.0-K1)
+    				  dTerm_fwidth= (fwidthKd/puller_increment * (pid_input_fwidth - dia_dState_fwidth))*K2 + (K1 * dTerm_fwidth);  //use spatial dT=puller_increment
+    				  
+    		
+    				  filament_control = constrain(pTerm_fwidth - iTerm_fwidth + dTerm_fwidth, PULLER_PID_MIN_LIMIT, PULLER_PID_MAX_LIMIT);
+    				  
+    				  dia_dState_fwidth = pid_input_fwidth;
+    				  
+    		  
+    		  
+    		  
+    		  
+    				  
+    	  		  puller_feedrate=filament_control;
+    	  		  
+    	  		  
+    	  		  
+    	  	  } else {
+    	  		  puller_feedrate_last=puller_feedrate;  //keep track of last puller_feedrate when running manual control
+    	  		  dia_iState_fwidth=0;  //reset the integral
+    	  	  }
+    	  		  
+    #endif 
+    	  
+    	  
+    #ifdef EXTRUDER_RPM_PID_CONTROL 
+      
+    	  //need to change direction of control so RPM goes down for diameter too large
+    	  //need to figure out analog to puller_increment
+    	  
+    	  
+      //calculate PID - delta is spatial, not time
+      if((extrude_status & (ES_AUTO_SET | ES_HOT_SET | ES_SWITCH_SET)) == (ES_AUTO_SET | ES_HOT_SET | ES_SWITCH_SET) ){  ///check for normal extrusion
+      		//  Extruder in Automatic control
+      		
+    	  
+    	  if(current_blobwidth>1)  //check whether blob measurement is a true measurement
+    		  {
+    		  pid_input_bwidth = current_blobwidth;
+    	
+    		  //use squared terms since we want to hold area constant
+    		  //pid_error_bwidth = -(blob_width_desired - pid_input_bwidth); //added sign change to change direction of control for extruder RPM
+          //subtract the puller error too to have it influence the extrusion rpm
+          pid_error_bwidth = -(blob_width_desired*blob_width_desired - pid_input_bwidth*pid_input_bwidth);
+          
+    		  pTerm_bwidth = extruder_rpm_set_last - bwidthKp * pid_error_bwidth;  
+    		  
+    		  
+    		  if((blob_control<EXTRUDER_RPM_PID_MAX_LIMIT && pid_error_bwidth<0) || (blob_control>EXTRUDER_RPM_PID_MIN_LIMIT && pid_error_bwidth>0))
+    			  {
+    			  dia_iState_bwidth += pid_error_bwidth* PID_time;
+    			  dia_iState_bwidth = constrain(dia_iState_bwidth, -EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT, EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT);
+    			  }
+    		  iTerm_bwidth = bwidthKi*.001 * dia_iState_bwidth;  
+    
+    		  //K1 defined in Configuration.h in the PID settings
+    		  #define K2 (1.0-K1)
+    		  dTerm_bwidth= -((bwidthKd/PID_time * (pid_input_bwidth - dia_dState_bwidth))*K2 + (K1 * dTerm_bwidth));  //added direction change to dterm
+    		  
+    
+    		  blob_control = constrain(pTerm_bwidth - iTerm_bwidth + dTerm_bwidth, EXTRUDER_RPM_PID_MIN_LIMIT, EXTRUDER_RPM_PID_MAX_LIMIT);  
+    		  
+    		  dia_dState_bwidth = pid_input_bwidth;
+    		  
+    	  
+    	  
+    		  extruder_rpm_set=blob_control;
+    		  }
+      		  
+      		  
+      	  } else {
+      		  extruder_rpm_set_last=extruder_rpm_set;  //keep track of last extruder_rpm_set when running manual control
+      		  dia_iState_bwidth=0;  //reset the integral
+      	  }
+      		  
+    #endif	  
+	}  
 	  //send move
 	  previous_millis_cmd = millis();  //refresh the kill watchdog timer
 	  plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS], feedrate, active_extruder);  //FMM added P_AXIS
@@ -940,12 +955,94 @@ void loop()
   }
  
   
+/////Output for MQTT
+#ifdef MQTT_SERIAL_OUT
+  if(millis()>time_snap+MQTT_TIME_INTERVAL_MS){
+    time_snap = millis();
+    MYSERIAL.print("MQTT:/FE/extruder/val/");
+    json_pair_first("ts_m",time_snap,0);
+    json_pair("temp_c",current_temperature[0],0);
+    json_pair_last("rpm",extruder_rpm,2);
+    
+    MYSERIAL.print("MQTT:/FE/puller/val/");
+    json_pair_first("ts_m",time_snap,0);
+    json_pair("feedrate_mm/sec",puller_feedrate,2);
+    json_pair("rpm",puller_feedrate*(60.0/PULLER_WHEEL_CIRC),2);
+    json_pair_last("dist_mm",extrude_length,2);
+    
+    MYSERIAL.print("MQTT:/FE/winder/val/");
+    json_pair_first("ts_m",time_snap,0);
+    json_pair("rpm",default_winder_speed,2);
+    json_pair_last("set",winderSpeed,2);
+    
+    
+    #ifdef FILAMENT_SENSOR
+       MYSERIAL.print("MQTT:/FE/filament_dia/val");
+       json_pair_first("ts_m",time_snap,0);
+       json_pair("fil_mm",current_filwidth,2);
+       json_pair_last("blob_mm",current_blobwidth,2);
+    #endif
+
+    MYSERIAL.print("MQTT:/FE/puller/pid/");
+    json_pair_first("ts_m",time_snap,0);
+    json_pair("dia_tgt_mm",filament_width_desired,2);
+    json_pair("p",fwidthKp,4);
+    json_pair("i",fwidthKi,4);
+    json_pair_last("d",fwidthKd,4);
+    
+    MYSERIAL.print("MQTT:/FE/extruder/rpm/pid/");
+    json_pair_first("ts_m",time_snap,0);
+    json_pair("dia_tgt_mm",blob_width_desired,2);
+    json_pair("p",bwidthKp,4);
+    json_pair("i",bwidthKi,4);
+    json_pair_last("d",bwidthKd,4);
+    
+    MYSERIAL.print("MQTT:/FE/extruder/temp/pid/");
+    json_pair_first("ts_m",time_snap,0);
+    json_pair("tgt_c",target_temperature[0],0);
+    json_pair("p",Kp,4);
+    json_pair("i",Ki,4);
+    json_pair_last("d",Kd,4);
+    
+    MYSERIAL.print("MQTT:/FE/status/");
+    json_pair_first("ts_m",time_snap,0);
+    json_pair("time_remain_sec",timeremaining/60000,0);
+    json_pair("time_elapsed_sec",duration/60000,0);
+    json_pair_last("sys_bits",extrude_status,0);
+
+
+    
+  }
+#endif  
   
-	
   
-  
-  
+} //end of loop
+
+void json_pair_core(char *label, float value,int places) {
+  MYSERIAL.print("\"");
+  MYSERIAL.print(label);
+  MYSERIAL.print("\":");
+  MYSERIAL.print(value,places);
+ 
 }
+
+void json_pair_first(char *label, float value, int places){
+  MYSERIAL.print("{");
+  json_pair_core(label, value, places);
+  MYSERIAL.print(",");
+}
+
+void json_pair(char *label, float value, int places){
+  json_pair_core(label, value,places);
+  MYSERIAL.print(",");
+}
+
+void json_pair_last(char *label, float value, int places){
+  json_pair_core(label, value,places);
+  MYSERIAL.println("}");
+}
+
+
 
 void get_command()
 {
