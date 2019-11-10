@@ -1,6 +1,6 @@
-==========================
-Mackerel - Firmware for Lyman Extruder Controller
-==========================
+
+# Mackerel - Firmware for Lyman Extruder Controller
+
 This software has a GPL license.
 Please do not use this code in products (3D printers, CNC etc) that are closed source or are crippled by a patent.
 https://gnu.org/licenses/gpl.html
@@ -9,6 +9,16 @@ https://gnu.org/licenses/gpl.html
 Quick Information
 ===================
 This firmware was designed in conjunction with Hugh Lyman to control a Lyman filament extruder with geared stepper motors.  It is currently designed to support the RAMPS 1.4 with Smart LCD 2004 and depends on a prototype filament width sensor. It replaces much of the control electronics in the current design with one controller.  It can control the extruder motor, puller motor, Extruder heater (PID) with thermistor, winder motor, filament cooling fan and has input for a filament width sensor.  The processes and menus have been adapted to control a filament extruder.  This code is currently in design, development, and testing and so might not be ready for casual users.
+
+NEW Features in Release Candidate:
+=========
+
+* Blob sensor - an option for an additional filament width sensor input allows for PID control of extruder speed based on measuring the 'blob'.  Where 'blob' is the molten filament that is immediately extruded out of the barrel of the extruder.
+* PID loops for puller and blob have been tuned a bit more, with a slower sampling time and puller loop using a spatial based sampling.  Also the filament diameter input is converted to better units for control.  They are squared to reflect the cross-sectional area and for the puller, the inverse is used.
+* Optional IOT connectivity - Serial output of JSON that can be used to create MQTT messages. Requires an ESP32 board and this project: https://github.com/filipmu/ESP32_Serial_to_AWS_IOT 
+* UI allows more fine grained control of filament width setting, PID settings.
+* Config has new PID parameters
+* Uses the usual 115200 baud (can be configured)
 
 
 
