@@ -303,16 +303,16 @@ debug notes:
 #define DESIRED_FILAMENT_DIA 1.65 //define the default desired Filament diameter
 #define DESIRED_BLOB_WIDTH 1.75 //define the default desired Blob width
 
-#define PREHEAT_EXTRUDER_TEMP 175  //Set to 185 deg C based on Hugh's suggestion
+#define PREHEAT_EXTRUDER_TEMP 180  //Set to 185 deg C based on Hugh's suggestion
 
-#define BLOB_SENSOR  //define if there is a second blob sensor attached
+//#define BLOB_SENSOR  //define if there is a second blob sensor attached
 
 
 
 /* PID for the filament width control - either/both the puller RPM or the Extruder motor RPM can be controlled */
 # define PID_time 250.0 //PID control loop timing
 
-//#define PULLER_PID_CONTROL
+#define PULLER_PID_CONTROL
 
 //PID parameters for puller control
 #define  DEFAULT_fwidthKp 0.020
@@ -327,7 +327,7 @@ debug notes:
 
 
 //The next line defines whether the extruder is controlled by blob size
-#define EXTRUDER_RPM_PID_CONTROL
+//#define EXTRUDER_RPM_PID_CONTROL
 
 //PID parameters for extruder control
 #define  DEFAULT_bwidthKp 2.000
@@ -365,8 +365,9 @@ debug notes:
 #define DEFAULT_PJERK				  1.0	// (mm/sec)
 
 //Output MQTT (JSON) messages on the serial line.  This allows for interfacing to an ESP32 and publishing IOT data
-#define MQTT_SERIAL_OUT
-#define MQTT_TIME_INTERVAL_MS 1000  //interval time in ms to output IOT data
+//see project https://github.com/filipmu/ESP32_Serial_to_AWS_IOT
+//#define MQTT_SERIAL_OUT
+//#define MQTT_TIME_INTERVAL_MS 1000  //interval time in ms to output IOT data
 
 
 
