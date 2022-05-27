@@ -1378,12 +1378,7 @@ static void menu_action_setting_edit_bool(const char* pstr, bool* ptr)
 void lcd_init()
 {
     lcd_implementation_init();
-    lcd.setCursor(0, 1);
-    lcd_printPGM(PSTR(SPLASH1));
-    lcd.setCursor(0, 2);
-    lcd_printPGM(PSTR(SPLASH2));
-    lcd.setCursor(0, 3);
-    lcd_printPGM(PSTR(SPLASH3));
+    lcd_implementation_greet();
 #ifdef NEWPANEL
     pinMode(BTN_EN1,INPUT);
     pinMode(BTN_EN2,INPUT);

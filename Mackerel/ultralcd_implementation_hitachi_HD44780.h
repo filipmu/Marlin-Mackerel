@@ -211,6 +211,16 @@ extern volatile uint16_t buttons;  //an extended version of the last checked but
 #define LCD_STR_CLOCK       "\x07"
 #define LCD_STR_ARROW_RIGHT "\x7E"  /* from the default character set */
 
+static void lcd_implementation_greet()
+{
+    lcd.setCursor(0, 1);
+    lcd_printPGM(PSTR(SPLASH1));
+    lcd.setCursor(0, 2);
+    lcd_printPGM(PSTR(SPLASH2));
+    lcd.setCursor(0, 3);
+    lcd_printPGM(PSTR(SPLASH3));
+}
+
 static void lcd_implementation_init()
 {
     byte bedTemp[8] =
