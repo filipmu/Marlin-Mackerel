@@ -388,9 +388,6 @@ static void lcd_implementation_status_screen()
     int tTarget=int(degTargetHotend(0) + 0.5);
     uint16_t time;
 
-    
-    
-    
 #if LCD_WIDTH < 20
     lcd.setCursor(0, 0);
     lcd.print(itostr3(tHotend));
@@ -433,17 +430,6 @@ static void lcd_implementation_status_screen()
        else
        	lcd_printPGM(PSTR("COLD"));
     
-    
-    
-    
-    
-    
-   
-
-      
-   
-
-
 # if EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
     //If we have an 2nd extruder or heated bed, show that in the top right corner
     lcd.setCursor(10, 0);
