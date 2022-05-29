@@ -86,7 +86,6 @@ U8GLIB_DOGM128 u8g(DOGLCD_CS, DOGLCD_A0); // HW-SPI Com: CS, A0
 
 static void lcd_implementation_greet()
 {
-
 }
 
 static void lcd_implementation_init()
@@ -158,32 +157,22 @@ static void lcd_printPGM(const char *str)
 	}
 }
 
-static void lcd_implementation_status_screen()
+static void lcd_implementation_status_screen_nozzle_temperature(int row, int column)
 {
 	int tHotend = int(degHotend(0) + 0.5);
 	int tTarget = int(degTargetHotend(0) + 0.5);
-	uint16_t time;
 
-	const int leftColumnStart = 12;
-	const int rightColumnStart = 70;
-
-	static unsigned char fan_rot = 0;
-
-	u8g.setColorIndex(1); // black on white
-
-	u8g.drawBitmapP(1, 1, STATUS_SCREENBYTEWIDTH, STATUS_SCREENHEIGHT, status_screen0_bmp);
-
-	//Extruder
-	//=nozzle temperature
 	u8g.setFont(FONT_STATUSMENU);
-	u8g.setPrintPos(leftColumnStart, 10);
+	u8g.setPrintPos(row, column);
 	u8g.print(itostr3(tHotend));
 	u8g.print('/');
 	u8g.print(itostr3left(tTarget));
 	lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+}
 
-	//=RPM
-	u8g.setPrintPos(rightColumnStart, 10);
+static void lcd_implementation_status_screen_extruder_rpm(int row, int column)
+{
+	u8g.setPrintPos(row, column);
 	if ((extrude_status & ES_SWITCH_SET) && (extrude_status & ES_HOT_SET)) //check if extruder motor switch is on
 	{
 		u8g.print(ftostr22(extruder_rpm)); //convert to rpm
@@ -197,27 +186,31 @@ static void lcd_implementation_status_screen()
 	{
 		lcd_printPGM(PSTR("COLD"));
 	}
+}
 
-	//Puller
-	//=Feed rate
+static void lcd_implementation_status_screen_puller_feedrate(int row, int column)
+{
 	u8g.setFont(u8g_font_6x10_marlin);
-	u8g.setPrintPos(leftColumnStart+2, 25);
- 	u8g.print(LCD_STR_FEEDRATE[0]);
- 	u8g.setFont(FONT_STATUSMENU);
-	u8g.setPrintPos(leftColumnStart+9, 25);
+	u8g.setPrintPos(row + 2, column);
+	u8g.print(LCD_STR_FEEDRATE[0]);
+	u8g.setFont(FONT_STATUSMENU);
+	u8g.setPrintPos(row + 9, column);
 	u8g.print(ftostr22(puller_feedrate)); //give the feed rate in mm/sec
+}
 
-	//=RPM
-	u8g.setPrintPos(rightColumnStart, 25);
+static void lcd_implementation_status_screen_puller_rpm(int row, int column)
+{
+	u8g.setPrintPos(row, column);
 	u8g.print(ftostr22(puller_feedrate * (60.0 / PULLER_WHEEL_CIRC)));
 	lcd_printPGM(PSTR(" rpm"));
+}
 
-	//Filament
-	//=Sensor
-	u8g.setPrintPos(leftColumnStart, 37);
+static void lcd_implementation_status_screen_sensor_data(int row, int column)
+{
+	u8g.setPrintPos(row, column);
 #ifdef FILAMENT_SENSOR
 	u8g.print('d');
- 	u8g.print(ftostr12(current_filwidth));
+	u8g.print(ftostr12(current_filwidth));
 #endif
 #ifdef BLOB_SENSOR
 	lcd_printPGM(PSTR(" b"));
@@ -226,17 +219,17 @@ static void lcd_implementation_status_screen()
 #ifdef FILAMENT_SENSOR
 	if (alt_cnt < 5)
 	{
-		lcd_printPGM(PSTR(" Av"));
+		lcd_printPGM(PSTR(" Av: "));
 		u8g.print(ftostr12(avg_measured_filament_width));
 	};
 	if (alt_cnt >= 5 && alt_cnt < 10)
 	{
-		lcd_printPGM(PSTR(" Mx"));
+		lcd_printPGM(PSTR(" Mx: "));
 		u8g.print(ftostr12(max_measured_filament_width));
 	};
 	if (alt_cnt >= 10 && alt_cnt < 15)
 	{
-		lcd_printPGM(PSTR(" Mn"));
+		lcd_printPGM(PSTR(" Mn: "));
 		u8g.print(ftostr12(min_measured_filament_width));
 	};
 	alt_cnt = alt_cnt + 1;
@@ -247,51 +240,81 @@ static void lcd_implementation_status_screen()
 #endif //FILAMENT_SENSOR
 #endif //BLOB_SENSOR
 	lcd_printPGM(PSTR(" mm"));
+}
+
+static void lcd_implementation_status_screen_filament_status_bar(int leftColumnStart, int rightColumnStart, int row)
+{
+	uint16_t time;
 
 	u8g.setColorIndex(1); // black on white
-
-	u8g.drawBox(0, 42, 128, DOG_CHAR_HEIGHT+1);
-	u8g.setColorIndex(0); // following text must be white on black
-
+	u8g.drawBox(0, 42, 128, DOG_CHAR_HEIGHT + 1);
+	
 	//Time
 	//=Elapsed time
+	u8g.setColorIndex(0); // following text must be white on black
 	u8g.setFont(u8g_font_6x10_marlin);
-	u8g.setPrintPos(3, 52);
- 	u8g.print(LCD_STR_CLOCK[0]);
- 	u8g.setFont(FONT_STATUSMENU);
-	u8g.setPrintPos(leftColumnStart, 51);	
+	u8g.setPrintPos(leftColumnStart-2 * DOG_CHAR_WIDTH + 3, row + 1);
+	u8g.print(LCD_STR_CLOCK[0]);
+	u8g.setFont(FONT_STATUSMENU);
+	u8g.setPrintPos(leftColumnStart, row);
 	time = duration / 60000;
 	u8g.print(itostr2(time / 60));
 	u8g.print(':');
 	u8g.print(itostr2(time % 60));
 
-	//=ExpectedTime
-	//I excluded this to make the screen les crowded
-
 	//Filament length
 	//=Lenght icon
-	const int iconX = rightColumnStart-12;
-	const int iconY = 48;
+	const int iconX = rightColumnStart - 12;
+	const int iconY = row-3;
 
-	u8g.drawPixel(iconX,iconY);
-	u8g.drawPixel(iconX,iconY+2);
-	u8g.drawPixel(iconX+9,iconY);
-	u8g.drawPixel(iconX+9,iconY+2);
-	u8g.drawPixel(iconX+1,iconY+1);
-	u8g.drawPixel(iconX+2,iconY+1);
-	u8g.drawPixel(iconX+3,iconY+1);
-	u8g.drawPixel(iconX+4,iconY+1);
-	u8g.drawPixel(iconX+5,iconY+1);
-	u8g.drawPixel(iconX+6,iconY+1);
-	u8g.drawPixel(iconX+7,iconY+1);
-	u8g.drawPixel(iconX+8,iconY+1);
+	u8g.drawPixel(iconX, iconY);
+	u8g.drawPixel(iconX, iconY + 2);
+	u8g.drawPixel(iconX + 9, iconY);
+	u8g.drawPixel(iconX + 9, iconY + 2);
+	u8g.drawPixel(iconX + 1, iconY + 1);
+	u8g.drawPixel(iconX + 2, iconY + 1);
+	u8g.drawPixel(iconX + 3, iconY + 1);
+	u8g.drawPixel(iconX + 4, iconY + 1);
+	u8g.drawPixel(iconX + 5, iconY + 1);
+	u8g.drawPixel(iconX + 6, iconY + 1);
+	u8g.drawPixel(iconX + 7, iconY + 1);
+	u8g.drawPixel(iconX + 8, iconY + 1);
 	//=Lenght icon end
 
-	u8g.setPrintPos(rightColumnStart, 51);
+	u8g.setPrintPos(rightColumnStart, row);
 	u8g.print(ftostr6(extrude_length));
 	lcd_printPGM(PSTR(" mm"));
 
-	u8g.setColorIndex(1); 
+	u8g.setColorIndex(1);
+}
+
+static void lcd_implementation_status_screen()
+{
+	const int leftColumnStart = 12;
+	const int rightColumnStart = 70;
+
+	u8g.setColorIndex(1); // black on white
+
+	u8g.drawBitmapP(1, 1, STATUS_SCREENBYTEWIDTH, STATUS_SCREENHEIGHT, status_screen0_bmp);
+
+	//Extruder
+	//=nozzle temperature
+	lcd_implementation_status_screen_nozzle_temperature(leftColumnStart, 10);
+
+	//=RPM
+	lcd_implementation_status_screen_extruder_rpm(rightColumnStart, 10);
+
+	//Puller
+	lcd_implementation_status_screen_puller_feedrate(leftColumnStart, 25);
+
+	lcd_implementation_status_screen_puller_rpm(rightColumnStart, 25);
+
+	//Filament
+	//=Sensor
+	lcd_implementation_status_screen_sensor_data(leftColumnStart, 37);
+
+	//Filament extrusion status
+	lcd_implementation_status_screen_filament_status_bar(leftColumnStart, rightColumnStart, 51);
 
 	// Status line
 	u8g.setFont(FONT_STATUSMENU);
