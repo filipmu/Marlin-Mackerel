@@ -744,7 +744,7 @@ static void lcd_prepare_menu()
         MENU_ITEM(gcode, MSG_SWITCH_PS_ON, PSTR("M80"));
     }
 #endif
-  //  MENU_ITEM(submenu, MSG_MOVE_AXIS, lcd_move_menu);  //FMM remove the move functionality from the menu
+    MENU_ITEM(submenu, MSG_MOVE_AXIS, lcd_move_menu);  //FMM remove the move functionality from the menu
     END_MENU();
 }
 
@@ -914,13 +914,13 @@ static void lcd_move_menu_axis()
     MENU_ITEM(back, MSG_MOVE_AXIS, lcd_move_menu);
     MENU_ITEM(submenu, MSG_MOVE_E, lcd_move_e);
     MENU_ITEM(submenu, MSG_MOVE_P, lcd_move_p);
-   // MENU_ITEM(submenu, MSG_MOVE_X, lcd_move_x);
-   // MENU_ITEM(submenu, MSG_MOVE_Y, lcd_move_y);
-   // if (move_menu_scale < 10.0)
-   // {
-   //     MENU_ITEM(submenu, MSG_MOVE_Z, lcd_move_z);
+   MENU_ITEM(submenu, MSG_MOVE_X, lcd_move_x);
+   MENU_ITEM(submenu, MSG_MOVE_Y, lcd_move_y);
+   if (move_menu_scale < 10.0)
+   {
+       MENU_ITEM(submenu, MSG_MOVE_Z, lcd_move_z);
         
-   // }
+   }
     END_MENU();
 }
 
