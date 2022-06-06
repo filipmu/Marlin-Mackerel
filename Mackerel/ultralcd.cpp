@@ -318,7 +318,7 @@ static void lcd_extruder_resume()
 	//feedmultiply=DEFAULT_FEEDMULTIPLY;
 	puller_feedrate = puller_feedrate_default;   //use default feed rate
 	extrude_status=extrude_status|ES_ENABLE_SET;
-	winderSpeed = default_winder_speed*255/winder_rpm_factor;  //start winder
+	winderOrFanSpeed = default_winder_speed*255/winder_rpm_factor;  //start winder
 	digitalWrite(CONTROLLERFAN_PIN, 1);  //start Fan
     starttime=millis();
     lcd_enable_statistics();
@@ -563,7 +563,7 @@ void lcd_preheat_pla0()
 {
     setTargetHotend0(plaPreheatHotendTemp);
     setTargetBed(plaPreheatHPBTemp);
-    winderSpeed = plaPreheatFanSpeed;
+    winderOrFanSpeed = plaPreheatFanSpeed;
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
 }
@@ -841,13 +841,12 @@ static void lcd_move_z()
         encoderPosition = 0;
     }
 }
-static void lcd_move_e()
+
+static void lcd_move_extruder_axis(int axis, const char* message)
 {
     if (encoderPosition != 0)
     {
-        
-    	//remove below temporarily 
-    	current_position[E_AXIS] += float((int)encoderPosition) * move_menu_scale;
+        current_position[axis] += float((int)encoderPosition) * move_menu_scale;
         encoderPosition = 0;
         #ifdef DELTA
         calculate_delta(current_position);
@@ -855,22 +854,11 @@ static void lcd_move_e()
         #else
         plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], current_position[P_AXIS],manual_feedrate[E_AXIS]/60, active_extruder);
         #endif
- 
-    	
-    	/*
-    	//new code for testing
-    	e_velocity += float((int)encoderPosition);
-    	encoderPosition = 0;
-    	*/
-        lcdDrawUpdate = 1;
+        lcdDrawUpdate = 1; 
     }
     if (lcdDrawUpdate)
     {
-        //remove code below temporarily
-    	lcd_implementation_drawedit(PSTR("Extruder"), ftostr31(current_position[E_AXIS]));
-    	
-    	//new code for testing
-    	//lcd_implementation_drawedit(PSTR("Extruder V"), itostr4(e_velocity));
+        lcd_implementation_drawedit(message, ftostr31(current_position[axis]));
     }
     if (LCD_CLICKED)
     {
@@ -878,35 +866,22 @@ static void lcd_move_e()
         currentMenu = lcd_move_menu_axis;
         encoderPosition = 0;
     }
+}
+
+static void lcd_move_e()
+{
+    lcd_move_extruder_axis(E_AXIS, PSTR(MSG_MOVE_E));
 }
 
 static void lcd_move_p()
 {
-    if (encoderPosition != 0)
-    {
-        current_position[P_AXIS] += float((int)encoderPosition) * move_menu_scale;
-        //current_position[E_AXIS] += float((int)encoderPosition) * move_menu_scale;  //FMM move both together
-        encoderPosition = 0;
-        #ifdef DELTA
-        calculate_delta(current_position);
-        plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], current_position[P_AXIS],manual_feedrate[E_AXIS]/60, active_extruder);
-        #else
-        plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], current_position[P_AXIS],manual_feedrate[E_AXIS]/60, active_extruder);
-        #endif
-        lcdDrawUpdate = 1;
-    }
-    if (lcdDrawUpdate)
-    {
-        lcd_implementation_drawedit(PSTR("Puller"), ftostr31(current_position[P_AXIS]));
-    }
-    if (LCD_CLICKED)
-    {
-        lcd_quick_feedback();
-        currentMenu = lcd_move_menu_axis;
-        encoderPosition = 0;
-    }
+    lcd_move_extruder_axis(P_AXIS, PSTR(MSG_MOVE_P));
 }
 
+static void lcd_move_w()
+{
+    lcd_move_extruder_axis(X_AXIS, PSTR(MSG_MOVE_W));
+}
 
 static void lcd_move_menu_axis()
 {
@@ -914,13 +889,19 @@ static void lcd_move_menu_axis()
     MENU_ITEM(back, MSG_MOVE_AXIS, lcd_move_menu);
     MENU_ITEM(submenu, MSG_MOVE_E, lcd_move_e);
     MENU_ITEM(submenu, MSG_MOVE_P, lcd_move_p);
-   MENU_ITEM(submenu, MSG_MOVE_X, lcd_move_x);
-   MENU_ITEM(submenu, MSG_MOVE_Y, lcd_move_y);
-   if (move_menu_scale < 10.0)
-   {
-       MENU_ITEM(submenu, MSG_MOVE_Z, lcd_move_z);
-        
-   }
+
+#ifdef USE_WINDER_STEPPER    
+    MENU_ITEM(submenu, MSG_MOVE_W, lcd_move_w);
+#else
+    MENU_ITEM(submenu, MSG_MOVE_X, lcd_move_x);
+#endif
+
+    MENU_ITEM(submenu, MSG_MOVE_Y, lcd_move_y);
+    if (move_menu_scale < 10.0)
+    {
+        MENU_ITEM(submenu, MSG_MOVE_Z, lcd_move_z);
+            
+    }
     END_MENU();
 }
 

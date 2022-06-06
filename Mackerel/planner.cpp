@@ -450,7 +450,7 @@ void check_axes_activity()
   unsigned char z_active = 0;
   unsigned char e_active = 0;
   unsigned char p_active = 0;
-  unsigned char tail_winder_speed = winderSpeed;
+  unsigned char tail_winder_speed = winderOrFanSpeed;
   #ifdef BARICUDA
   unsigned char tail_valve_pressure = ValvePressure;
   unsigned char tail_e_to_p_pressure = EtoPPressure;
@@ -615,7 +615,7 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
     return; 
   }
 
-  block->winder_speed = winderSpeed;
+  block->winder_speed = winderOrFanSpeed;
   #ifdef BARICUDA
   block->valve_pressure = ValvePressure;
   block->e_to_p_pressure = EtoPPressure;

@@ -342,7 +342,7 @@ debug notes:
 #define EXTRUDER_RPM_PID_INTEGRATOR_WIND_LIMIT 100000000 //absolute value of integrator windup max value
 #define EXTRUDER_RPM_DT 1.0 //Time step for PID
 
-
+#define USE_WINDER_STEPPER
 
 #define DEFAULT_LENGTH_CUTOFF 150000  //length in mm where extruder will shut down
 

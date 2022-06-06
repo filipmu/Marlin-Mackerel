@@ -259,7 +259,7 @@ extern float min_pos[3];
 extern float max_pos[3];
 extern bool axis_known_position[3];
 extern float zprobe_zoffset;
-extern int winderSpeed;
+extern int winderOrFanSpeed;
 #ifdef BARICUDA
 extern int ValvePressure;
 extern int EtoPPressure;
