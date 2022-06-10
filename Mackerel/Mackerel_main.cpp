@@ -674,7 +674,7 @@ void loop()
   lasttime = timebuff;  //keep track of last sample time
   
 #ifndef USE_WINDER_STEPPER
-  if(extrude_length < fil_length_cutoff) {
+  if(extrude_length < fil_length_cutoff && (extrude_status & ES_ENABLE_SET)) {
 	  winderOrFanSpeed = default_winder_speed*255/winder_rpm_factor;  //keep winder on all the time unless at end of spool
   }
 #endif
