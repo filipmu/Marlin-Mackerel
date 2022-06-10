@@ -2270,8 +2270,8 @@ void process_commands()
             break;
           }
         }
-      #if defined(WINDER_PIN) && WINDER_PIN > -1
-        if (pin_number == WINDER_PIN)
+      #if defined(WINDER_OR_FAN_PIN) && WINDER_OR_FAN_PIN > -1
+        if (pin_number == WINDER_OR_FAN_PIN)
           winderOrFanSpeed = pin_status;
       #endif
         if (pin_number > -1)
@@ -2488,7 +2488,7 @@ void process_commands()
     #endif
         break;
 
-    #if defined(WINDER_PIN) && WINDER_PIN > -1
+    #if defined(WINDER_OR_FAN_PIN) && WINDER_OR_FAN_PIN > -1
       case 106: //M106 Fan On
         if (code_seen('S')){
            winderOrFanSpeed=constrain(code_value(),0,255);
@@ -2500,7 +2500,7 @@ void process_commands()
       case 107: //M107 Fan Off
         winderOrFanSpeed = 0;
         break;
-    #endif //WINDER_PIN
+    #endif //WINDER_OR_FAN_PIN
     #ifdef BARICUDA
       // PWM for HEATER_1_PIN
       #if defined(HEATER_1_PIN) && HEATER_1_PIN > -1
@@ -3826,7 +3826,7 @@ void prepare_arc_move(char isclockwise) {
 
 #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
 
-#if defined(WINDER_PIN)
+#if defined(WINDER_OR_FAN_PIN)
   #if CONTROLLERFAN_PIN == FAN_PIN
     #error "You cannot set CONTROLLERFAN_PIN equal to FAN_PIN"
   #endif

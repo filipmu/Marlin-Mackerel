@@ -335,7 +335,7 @@ int getHeaterPower(int heater) {
     (defined(EXTRUDER_1_AUTO_FAN_PIN) && EXTRUDER_1_AUTO_FAN_PIN > -1) || \
     (defined(EXTRUDER_2_AUTO_FAN_PIN) && EXTRUDER_2_AUTO_FAN_PIN > -1)
 
-  #if defined(WINDER_PIN) && WINDER_PIN > -1
+  #if defined(WINDER_OR_FAN_PIN) && WINDER_OR_FAN_PIN > -1
     #if EXTRUDER_0_AUTO_FAN_PIN == FAN_PIN 
        #error "You cannot set EXTRUDER_0_AUTO_FAN_PIN equal to FAN_PIN"
     #endif
@@ -524,7 +524,7 @@ void manage_heater()
   previous_millis_bed_heater = millis();
   #endif
 
- // #if TEMP_SENSOR_BED != 0
+// #if TEMP_SENSOR_BED != 0
   
  // #ifdef PIDTEMPBED
  
@@ -803,10 +803,10 @@ void tp_init()
   #if defined(HEATER_BED_PIN) && (HEATER_BED_PIN > -1) 
     SET_OUTPUT(HEATER_BED_PIN);
   #endif  
-  #if defined(WINDER_PIN) && (WINDER_PIN > -1) 
-    SET_OUTPUT(WINDER_PIN);
+  #if defined(WINDER_OR_FAN_PIN) && (WINDER_OR_FAN_PIN > -1) 
+    SET_OUTPUT(WINDER_OR_FAN_PIN);
     #ifdef FAST_PWM_FAN
-    setPwmFrequency(WINDER_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
+    setPwmFrequency(WINDER_OR_FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
     #endif
     #ifdef FAN_SOFT_PWM
     soft_pwm_fan = fanSpeedSoftPwm / 2;

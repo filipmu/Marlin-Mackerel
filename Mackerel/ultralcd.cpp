@@ -309,16 +309,24 @@ static void lcd_extruder_pause()
     extrude_status=extrude_status & ES_ENABLE_CLEAR;
     puller_feedrate_default = puller_feedrate;   //save default feed rate
 
-    
+#ifndef USE_WINDER_STEPPER
+	winderOrFanSpeed = 0;  //turns off the DC puller motor
+#endif
+
     digitalWrite(CONTROLLERFAN_PIN, 0); //stop fan
     lcd_disable_statistics();
 }
+
 static void lcd_extruder_resume()
 {
 	//feedmultiply=DEFAULT_FEEDMULTIPLY;
 	puller_feedrate = puller_feedrate_default;   //use default feed rate
 	extrude_status=extrude_status|ES_ENABLE_SET;
-	winderOrFanSpeed = default_winder_speed*255/winder_rpm_factor;  //start winder
+
+#ifndef USE_WINDER_STEPPER
+	winderOrFanSpeed = default_winder_speed*255/winder_rpm_factor;  //start winder DC motor
+#endif
+
 	digitalWrite(CONTROLLERFAN_PIN, 1);  //start Fan
     starttime=millis();
     lcd_enable_statistics();
@@ -563,7 +571,8 @@ void lcd_preheat_pla0()
 {
     setTargetHotend0(plaPreheatHotendTemp);
     setTargetBed(plaPreheatHPBTemp);
-    winderOrFanSpeed = plaPreheatFanSpeed;
+
+    LCD_MESSAGEPGM("Extruder Warming Up");
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
 }
