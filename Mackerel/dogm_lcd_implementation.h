@@ -365,8 +365,20 @@ static void lcd_implementation_drawmenu_setting_edit_generic(uint8_t row, const 
 	char c;
 	uint8_t n = LCD_WIDTH - 1 - 2 - strlen(data);
 
+	if ((pre_char == '>') || (pre_char == LCD_STR_UPLEVEL[0]))
+	{
+		u8g.setColorIndex(1); // black on white
+		u8g.drawBox(0, row * DOG_CHAR_HEIGHT + 3, 128, DOG_CHAR_HEIGHT);
+		u8g.setColorIndex(0); // following text must be white on black
+	}
+	else
+		u8g.setColorIndex(1); // unmarked text is black on white
+
 	u8g.setPrintPos(0 * DOG_CHAR_WIDTH, (row + 1) * DOG_CHAR_HEIGHT);
-	u8g.print(pre_char);
+	if (pre_char != '>')
+		u8g.print(pre_char);
+	else
+		u8g.print(' '); // Row selector is obsolete
 
 	while ((c = pgm_read_byte(pstr)) != '\0')
 	{
