@@ -280,7 +280,7 @@ float extruder_offset[NUM_EXTRUDER_OFFSETS][EXTRUDERS] = {
 };
 #endif
 uint8_t active_extruder = 0;
-int winderSpeed=0;
+int winderOrFanSpeed=0;
 #ifdef SERVO_ENDSTOPS
   int servo_endstops[] = SERVO_ENDSTOPS;
   int servo_endstop_angles[] = SERVO_ENDSTOP_ANGLES;
@@ -364,6 +364,7 @@ static uint8_t tmp_extruder;
 
 static float extruder_increment;  //used to calculate the increment to add to create the next planning move for the extruder motor
 static float puller_increment; //used to calculate the increment to add to create the next planning move for the puller motor
+static float winder_increment; //used to calculate the increment to add to create the next planning move for the winder motor
 static unsigned long timebuff=0;
 static unsigned long deltatime=0;
 static unsigned long lasttime=0;
@@ -672,11 +673,11 @@ void loop()
   deltatime = timebuff-lasttime;  //calculate delta times
   lasttime = timebuff;  //keep track of last sample time
   
-
-  if(extrude_length < fil_length_cutoff)
-	  winderSpeed = default_winder_speed*255/winder_rpm_factor;  //keep winder on all the time unless at end of spool
-  
-
+#ifndef USE_WINDER_STEPPER
+  if(extrude_length < fil_length_cutoff && (extrude_status & ES_ENABLE_SET)) {
+	  winderOrFanSpeed = default_winder_speed*255/winder_rpm_factor;  //keep winder on all the time unless at end of spool
+  }
+#endif
   
   
   
@@ -695,7 +696,7 @@ void loop()
 	  
 	  if(extrude_length >= fil_length_cutoff){  //check whether we extruded enough filament
 		  setTargetHotend0(0);
-		  winderSpeed = 0;
+		  winderOrFanSpeed = 0;
 		  digitalWrite(CONTROLLERFAN_PIN, 0);  //stop Fan
 		  extrude_status= extrude_status & ES_ENABLE_CLEAR;  //update extrude_status to shut down extruder
 		  extrude_status= extrude_status & ES_STATS_CLEAR;  //shut down statistics
@@ -741,30 +742,18 @@ void loop()
   
   if((extrude_status & ES_ENABLE_SET) >0){
 	  
-	  
-	  
-	  
-	  
-	 //old 
-	 // feedrate=20*60;
-	 // extruder_increment=feedmultiply/100.0;
-	 // puller_increment=extruder_increment*pullermultiply/1000.0;
-	  
-	  //extruder_feedrate=feedrate*extruder_increment/60.0;
-	  //puller_feedrate=extruder_feedrate*pullermultiply/1000.0;
-	  
-	 //new
 	  extruder_increment=extruder_rpm_set/EXTRUDER_RPM_MAX*8;  //make extruder increment 1 unit for max RPM and scale down as RPM input decreases *8 for more duration (removes pulsing)
 	  extruder_feedrate=extruder_rpm_set/0.6;
 	  puller_increment=puller_feedrate*0.6/EXTRUDER_RPM_MAX*8;  //make puller increment vary to control it *8 for more duration (removes pulsing)
 	  
-	  
-	  
-	  
-	  
 	  //calculate move  - always scale step size to feedmultiply (was previously fix step side of 0.1)
 	  destination[P_AXIS] = puller_increment + current_position[P_AXIS]; //puller
-	  
+
+#ifdef USE_WINDER_STEPPER
+    winder_increment=default_winder_speed*0.6/EXTRUDER_RPM_MAX*8;  //We dont need the RMP factor because our stepper has no "default RPM". 
+                                                                   //RPM factor applies only non stepper mottors they have default RPM when supplied full voltage
+	  destination[X_AXIS] = winder_increment + current_position[X_AXIS]; //winder if enabled is using the X_AXIS
+#endif
 
 	  	  
 	  if((extrude_status & ES_HOT_SET) && (extrude_status & ES_SWITCH_SET))  //check that extruder is at temp and switch in on
@@ -942,9 +931,19 @@ void loop()
 	}  
 	  //send move
 	  previous_millis_cmd = millis();  //refresh the kill watchdog timer
-	  plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS], feedrate, active_extruder);  //FMM added P_AXIS
+
+#ifndef USE_WINDER_STEPPER	
+    plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS], feedrate, active_extruder);  //FMM added P_AXIS
 	  current_position[E_AXIS]=destination[E_AXIS];
-	  current_position[P_AXIS]=destination[P_AXIS];
+	  current_position[P_AXIS]=destination[P_AXIS]; 
+#else
+    int max_move_feedrate = max(extruder_feedrate, max(puller_feedrate, (float)default_winder_speed));
+	  plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], destination[P_AXIS], max_move_feedrate , active_extruder);  //FMM added P_AXIS
+	  
+    current_position[X_AXIS]=destination[X_AXIS];
+    current_position[E_AXIS]=destination[E_AXIS];
+	  current_position[P_AXIS]=destination[P_AXIS]; 
+#endif
   }
   else{
 	  extruder_increment=0;
@@ -973,7 +972,7 @@ void loop()
     MYSERIAL.print("MQTT:/FE/winder/val/");
     json_pair_first("ts_m",time_snap,0);
     json_pair("rpm",default_winder_speed,2);
-    json_pair_last("set",winderSpeed,2);
+    json_pair_last("set",winderOrFanSpeed,2);
     
     
     #ifdef FILAMENT_SENSOR
@@ -2271,9 +2270,9 @@ void process_commands()
             break;
           }
         }
-      #if defined(WINDER_PIN) && WINDER_PIN > -1
-        if (pin_number == WINDER_PIN)
-          winderSpeed = pin_status;
+      #if defined(WINDER_OR_FAN_PIN) && WINDER_OR_FAN_PIN > -1
+        if (pin_number == WINDER_OR_FAN_PIN)
+          winderOrFanSpeed = pin_status;
       #endif
         if (pin_number > -1)
         {
@@ -2489,19 +2488,19 @@ void process_commands()
     #endif
         break;
 
-    #if defined(WINDER_PIN) && WINDER_PIN > -1
+    #if defined(WINDER_OR_FAN_PIN) && WINDER_OR_FAN_PIN > -1
       case 106: //M106 Fan On
         if (code_seen('S')){
-           winderSpeed=constrain(code_value(),0,255);
+           winderOrFanSpeed=constrain(code_value(),0,255);
         }
         else {
-          winderSpeed=255;
+          winderOrFanSpeed=255;
         }
         break;
       case 107: //M107 Fan Off
-        winderSpeed = 0;
+        winderOrFanSpeed = 0;
         break;
-    #endif //WINDER_PIN
+    #endif //WINDER_OR_FAN_PIN
     #ifdef BARICUDA
       // PWM for HEATER_1_PIN
       #if defined(HEATER_1_PIN) && HEATER_1_PIN > -1
@@ -2562,7 +2561,7 @@ void process_commands()
         disable_p();
         disable_e2();
         finishAndDisableSteppers();
-        winderSpeed = 0;
+        winderOrFanSpeed = 0;
         delay(1000); // Wait a little before to switch off
       #if defined(SUICIDE_PIN) && SUICIDE_PIN > -1
         st_synchronize();
@@ -3466,7 +3465,7 @@ void process_commands()
 		SERIAL_PROTOCOL_F(puller_feedrate, 2);
 		// Winder speed
 		SERIAL_PROTOCOLPGM(" W:");
-		SERIAL_PROTOCOL(winderSpeed);
+		SERIAL_PROTOCOL(winderOrFanSpeed);
 		//
 #if defined(TEMP_0_PIN) && TEMP_0_PIN > -1
 //		SERIAL_PROTOCOLPGM(" T:");
@@ -3668,14 +3667,19 @@ void get_arc_coordinates()
 
 void clamp_to_software_endstops(float target[3])
 {
+  //when using X axis as winder we don't need the endstops
   if (min_software_endstops) {
+#ifndef USE_WINDER_STEPPER
     if (target[X_AXIS] < min_pos[X_AXIS]) target[X_AXIS] = min_pos[X_AXIS];
+#endif
     if (target[Y_AXIS] < min_pos[Y_AXIS]) target[Y_AXIS] = min_pos[Y_AXIS];
     if (target[Z_AXIS] < min_pos[Z_AXIS]) target[Z_AXIS] = min_pos[Z_AXIS];
   }
 
   if (max_software_endstops) {
+#ifndef USE_WINDER_STEPPER
     if (target[X_AXIS] > max_pos[X_AXIS]) target[X_AXIS] = max_pos[X_AXIS];
+#endif
     if (target[Y_AXIS] > max_pos[Y_AXIS]) target[Y_AXIS] = max_pos[Y_AXIS];
     if (target[Z_AXIS] > max_pos[Z_AXIS]) target[Z_AXIS] = max_pos[Z_AXIS];
   }
@@ -3822,7 +3826,7 @@ void prepare_arc_move(char isclockwise) {
 
 #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
 
-#if defined(WINDER_PIN)
+#if defined(WINDER_OR_FAN_PIN)
   #if CONTROLLERFAN_PIN == FAN_PIN
     #error "You cannot set CONTROLLERFAN_PIN equal to FAN_PIN"
   #endif

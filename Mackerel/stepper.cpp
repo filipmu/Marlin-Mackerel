@@ -351,7 +351,7 @@ ISR(TIMER1_COMPA_vect)
     out_bits = current_block->direction_bits;
 
 //FMM Disable X,Y,Z output
-/*   
+  
     // Set the direction bits (X_AXIS=A_AXIS and Y_AXIS=B_AXIS for COREXY)
     if((out_bits & (1<<X_AXIS))!=0){
       #ifdef DUAL_X_CARRIAGE
@@ -454,6 +454,7 @@ ISR(TIMER1_COMPA_vect)
       }
     }
 
+/* No need for Y and Z axes sofar
     #ifndef COREXY
     if ((out_bits & (1<<Y_AXIS)) != 0) {   // -direction
     #else
@@ -529,8 +530,8 @@ ISR(TIMER1_COMPA_vect)
         #endif
       }
     }
-
-    */  // FMM disable x,y,z endstop checking to improve pulse speed.
+*/
+    // FMM disable x,y,z endstop checking to improve pulse speed.
     
     #ifndef ADVANCE
       if ((out_bits & (1<<E_AXIS)) != 0) {  // -direction
@@ -582,7 +583,7 @@ ISR(TIMER1_COMPA_vect)
       }
       #endif //ADVANCE
 
-      /*//disable x
+    //write x axis
         counter_x += current_block->steps_x;
         if (counter_x > 0) {
         #ifdef DUAL_X_CARRIAGE
@@ -616,7 +617,7 @@ ISR(TIMER1_COMPA_vect)
           WRITE(X_STEP_PIN, INVERT_X_STEP_PIN);
         #endif
         }
-*/  //end disable x
+  //end write x axis
       
       /*//disable y
         counter_y += current_block->steps_y;
