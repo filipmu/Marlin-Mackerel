@@ -100,16 +100,25 @@ static void menu_action_setting_edit_callback_long5(const char* pstr, unsigned l
 
 #define ENCODER_FEEDRATE_DEADZONE 10
 
-#if !defined(LCD_I2C_VIKI)
+
+  
+#if defined(LCD_I2C_VIKI)
   #ifndef ENCODER_STEPS_PER_MENU_ITEM
-    #define ENCODER_STEPS_PER_MENU_ITEM 5
+    #define ENCODER_STEPS_PER_MENU_ITEM 2 // VIKI LCD rotary encoder uses a different number of steps per rotation
   #endif
   #ifndef ENCODER_PULSES_PER_STEP
     #define ENCODER_PULSES_PER_STEP 1
   #endif
+#elif defined(DOGLCD)
+    #ifndef ENCODER_STEPS_PER_MENU_ITEM
+        #define ENCODER_STEPS_PER_MENU_ITEM 1
+    #endif
+    #ifndef ENCODER_PULSES_PER_STEP
+        #define ENCODER_PULSES_PER_STEP 4
+    #endif
 #else
   #ifndef ENCODER_STEPS_PER_MENU_ITEM
-    #define ENCODER_STEPS_PER_MENU_ITEM 2 // VIKI LCD rotary encoder uses a different number of steps per rotation
+    #define ENCODER_STEPS_PER_MENU_ITEM 5
   #endif
   #ifndef ENCODER_PULSES_PER_STEP
     #define ENCODER_PULSES_PER_STEP 1
@@ -1378,12 +1387,7 @@ static void menu_action_setting_edit_bool(const char* pstr, bool* ptr)
 void lcd_init()
 {
     lcd_implementation_init();
-    lcd.setCursor(0, 1);
-    lcd_printPGM(PSTR(SPLASH1));
-    lcd.setCursor(0, 2);
-    lcd_printPGM(PSTR(SPLASH2));
-    lcd.setCursor(0, 3);
-    lcd_printPGM(PSTR(SPLASH3));
+    lcd_implementation_greet();
 #ifdef NEWPANEL
     pinMode(BTN_EN1,INPUT);
     pinMode(BTN_EN2,INPUT);

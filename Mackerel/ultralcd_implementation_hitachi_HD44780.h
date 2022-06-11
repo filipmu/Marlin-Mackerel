@@ -211,6 +211,16 @@ extern volatile uint16_t buttons;  //an extended version of the last checked but
 #define LCD_STR_CLOCK       "\x07"
 #define LCD_STR_ARROW_RIGHT "\x7E"  /* from the default character set */
 
+static void lcd_implementation_greet()
+{
+    lcd.setCursor(0, 1);
+    lcd_printPGM(PSTR(SPLASH1));
+    lcd.setCursor(0, 2);
+    lcd_printPGM(PSTR(SPLASH2));
+    lcd.setCursor(0, 3);
+    lcd_printPGM(PSTR(SPLASH3));
+}
+
 static void lcd_implementation_init()
 {
     byte bedTemp[8] =
@@ -378,9 +388,6 @@ static void lcd_implementation_status_screen()
     int tTarget=int(degTargetHotend(0) + 0.5);
     uint16_t time;
 
-    
-    
-    
 #if LCD_WIDTH < 20
     lcd.setCursor(0, 0);
     lcd.print(itostr3(tHotend));
@@ -423,17 +430,6 @@ static void lcd_implementation_status_screen()
        else
        	lcd_printPGM(PSTR("COLD"));
     
-    
-    
-    
-    
-    
-   
-
-      
-   
-
-
 # if EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
     //If we have an 2nd extruder or heated bed, show that in the top right corner
     lcd.setCursor(10, 0);
