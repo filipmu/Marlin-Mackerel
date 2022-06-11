@@ -321,7 +321,14 @@ static void lcd_extruder_resume()
 {
 	//feedmultiply=DEFAULT_FEEDMULTIPLY;
 	puller_feedrate = puller_feedrate_default;   //use default feed rate
-	extrude_status=extrude_status|ES_ENABLE_SET;
+
+    for(int8_t i=0; i < NUM_AXIS; i++) {
+        current_position[i] = 0;
+    }
+
+    plan_set_position(current_position[X_AXIS],current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], current_position[P_AXIS]);
+
+	extrude_status=extrude_status|ES_ENABLE_SET;  
 
 #ifndef USE_WINDER_STEPPER
 	winderOrFanSpeed = default_winder_speed*255/winder_rpm_factor;  //start winder DC motor
