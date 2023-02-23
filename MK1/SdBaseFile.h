@@ -17,7 +17,7 @@
  * along with the Arduino SdFat Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include "Mackerel.h"
+#include "MK1.h"
 #ifdef SDSUPPORT
 
 #ifndef SdBaseFile_h
@@ -26,7 +26,7 @@
  * \file
  * \brief SdBaseFile class
  */
-#include "Mackerel.h"
+#include "MK1.h"
 #include "SdFatConfig.h"
 #include "SdVolume.h"
 //------------------------------------------------------------------------------
@@ -481,4 +481,3 @@ class SdBaseFile {
 
 #endif  // SdBaseFile_h
 #endif
-

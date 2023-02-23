@@ -524,7 +524,7 @@
 #define PS_ON_PIN          -1
 
   #if defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL)
-    #define KILL_PIN           -1  //FMM disable the kill pin (momentary pushbutton on LCD)
+    #define KILL_PIN           41  //FMM disable the kill pin (momentary pushbutton on LCD)
   #else
     #define KILL_PIN           -1
   #endif
@@ -621,8 +621,8 @@
       #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
         #define BEEPER 37
 
-        #define BTN_EN1 31
-        #define BTN_EN2 33
+        #define BTN_EN1 33 //Rotery Encoder Richtung 
+        #define BTN_EN2 31
         #define BTN_ENC 35
 
         #define SDCARDDETECT 49
@@ -1816,9 +1816,9 @@
 #define E0_ENABLE_PIN      13
 
 #define TEMP_0_PIN          0   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!! (pin 33 extruder)
-#define TEMP_1_PIN         -1   
+#define TEMP_1_PIN         -1
 #define TEMP_2_PIN         -1
-#define TEMP_BED_PIN        5   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!! (pin 34 bed)  
+#define TEMP_BED_PIN        5   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!! (pin 34 bed)
 #define SDPOWER            -1
 #define SDSS               4
 #define HEATER_2_PIN       -1
@@ -2591,5 +2591,3 @@
                         _E0_PINS _P_PINS _E2_PINS             \
                         analogInputToDigitalPin(TEMP_0_PIN), analogInputToDigitalPin(TEMP_1_PIN), analogInputToDigitalPin(TEMP_2_PIN), analogInputToDigitalPin(TEMP_BED_PIN) }
 #endif
-
-

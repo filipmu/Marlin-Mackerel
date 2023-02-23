@@ -21,7 +21,7 @@
  * \file
  * \brief configuration definitions
  */
-#include "Mackerel.h"
+#include "MK1.h"
 #ifdef SDSUPPORT
 
 #ifndef SdFatConfig_h
@@ -119,4 +119,3 @@ uint8_t const SOFT_SPI_SCK_PIN = 13;
 
 
 #endif
-

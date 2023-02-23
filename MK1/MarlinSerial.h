@@ -21,7 +21,7 @@
 
 #ifndef MarlinSerial_h
 #define MarlinSerial_h
-#include "Mackerel.h"
+#include "MK1.h"
 
 #if !defined(SERIAL_PORT) 
 #define SERIAL_PORT 0
@@ -187,4 +187,3 @@ extern MarlinSerial MSerial;
 #endif
 
 #endif
-

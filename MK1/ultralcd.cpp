@@ -1,7 +1,7 @@
 #include "temperature.h"
 #include "ultralcd.h"
 #ifdef ULTRA_LCD
-#include "Mackerel.h"
+#include "MK1.h"
 #include "language.h"
 #include "cardreader.h"
 #include "temperature.h"
@@ -381,21 +381,16 @@ static void lcd_main_menu()
     if ((extrude_status & ES_ENABLE_SET) >0)
        	{
         #ifdef FILAMENT_SENSOR
+        MENU_ITEM(function, MSG_PAUSE_EXTRUDER, lcd_extruder_pause);
+         }
+       else
+        MENU_ITEM(function, MSG_RESUME_EXTRUDER, lcd_extruder_resume);
     	if((extrude_status & ES_AUTO_SET) >0)
     		MENU_ITEM(function,MSG_MAN_EXTRUDER,lcd_extruder_manual);
     	else
     		MENU_ITEM(function,MSG_AUTO_EXTRUDER,lcd_extruder_automatic);
         #endif
-    	MENU_ITEM(function, MSG_PAUSE_EXTRUDER, lcd_extruder_pause);
-       	}
-       else
-       	MENU_ITEM(function, MSG_RESUME_EXTRUDER, lcd_extruder_resume);
-    
-    MENU_ITEM(function, MSG_CLEAR_STATS, lcd_clear_statistics);
-    if((extrude_status & ES_STATS_SET)>0)
-    	MENU_ITEM(function, MSG_DISABLE_STATS, lcd_disable_statistics);
-    else
-    	MENU_ITEM(function, MSG_ENABLE_STATS, lcd_enable_statistics);
+    	
     
     if (movesplanned() || IS_SD_PRINTING)
     {
@@ -406,7 +401,13 @@ static void lcd_main_menu()
     MENU_ITEM(function, MSG_PREHEAT_ABS, lcd_preheat_extruder);
     MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
     MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
-   
+
+    MENU_ITEM(function, MSG_CLEAR_STATS, lcd_clear_statistics);
+    if((extrude_status & ES_STATS_SET)>0)
+      MENU_ITEM(function, MSG_DISABLE_STATS, lcd_disable_statistics);
+    else
+      MENU_ITEM(function, MSG_ENABLE_STATS, lcd_enable_statistics);
+       
 /*
 #ifdef SDSUPPORT
     if (card.cardOK)
@@ -515,22 +516,25 @@ static void lcd_tune_menu()
     START_MENU();
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
     MENU_ITEM_EDIT(float22, MSG_EXT_RPM, &extruder_rpm_set,EXTRUDER_RPM_MIN,EXTRUDER_RPM_MAX);
-    MENU_ITEM_EDIT(float22, MSG_SPEED, &puller_feedrate, PULLER_FEEDRATE_MIN, PULLER_FEEDRATE_MAX);
+   // MENU_ITEM_EDIT(float22, MSG_SPEED, &puller_feedrate, PULLER_FEEDRATE_MIN, PULLER_FEEDRATE_MAX);
     MENU_ITEM_EDIT(int3, MSG_HEATER, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15);
 #if TEMP_SENSOR_1 != 0
     MENU_ITEM_EDIT(int3, MSG_NOZZLE1, &target_temperature[1], 0, HEATER_1_MAXTEMP - 15);
 #endif
+    MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &default_winder_speed, 0, 99);
 #if TEMP_SENSOR_2 != 0
     MENU_ITEM_EDIT(int3, MSG_NOZZLE2, &target_temperature[2], 0, HEATER_2_MAXTEMP - 15);
 #endif
 #if TEMP_SENSOR_BED != 0
     MENU_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
 #endif
-#ifdef FILAMENT_SENSOR
-    MENU_ITEM_EDIT(float22,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
-#endif
     MENU_ITEM_EDIT(float6,MSG_LENGTH_CUTOFF, &fil_length_cutoff,1000,999000);
-    MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &default_winder_speed, 0, DEFAULT_WINDER_RPM_FACTOR);
+
+//30.05.2020 auskommentiert
+//#ifdef FILAMENT_SENSOR
+//    MENU_ITEM_EDIT(float22,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
+//#endif
+
 
     
  //   MENU_ITEM_EDIT(int3, MSG_FLOW, &extrudemultiply, 10, 999);
@@ -705,17 +709,22 @@ static void lcd_prepare_menu()
     START_MENU();
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
     MENU_ITEM_EDIT(float22, MSG_EXT_RPM, &extruder_rpm_set,EXTRUDER_RPM_MIN,EXTRUDER_RPM_MAX);
-    MENU_ITEM_EDIT(float22, MSG_SPEED, &puller_feedrate_default, PULLER_FEEDRATE_MIN, PULLER_FEEDRATE_MAX);
-#ifdef FILAMENT_SENSOR
-    MENU_ITEM_EDIT(float22,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
-#endif
+    MENU_ITEM_EDIT(int3, MSG_HEATER, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15); 
+    MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &default_winder_speed, 0, 99);
+   // MENU_ITEM_EDIT(float22, MSG_SPEED, &puller_feedrate_default, PULLER_FEEDRATE_MIN, PULLER_FEEDRATE_MAX);
     MENU_ITEM_EDIT(float6,MSG_LENGTH_CUTOFF, &fil_length_cutoff,1000,999000);
-    MENU_ITEM_EDIT(int3, MSG_WINDER_SPEED, &default_winder_speed, 0, DEFAULT_WINDER_RPM_FACTOR);
 #ifdef SDSUPPORT
     #ifdef MENU_ADDAUTOSTART
       MENU_ITEM(function, MSG_AUTOSTART, lcd_autostart_sd);
     #endif
 #endif
+
+
+//30.05.2020 auskommentiert
+//#ifdef FILAMENT_SENSOR
+//    MENU_ITEM_EDIT(float22,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
+//#endif
+//
 //    MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
  //   MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
     //MENU_ITEM(gcode, MSG_SET_ORIGIN, PSTR("G92 X0 Y0 Z0"));
@@ -973,12 +982,15 @@ static void lcd_control_Filament_PID_menu()
 	{
 	START_MENU();
 	MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
-	MENU_ITEM_EDIT(float32,MSG_FILAMENT, &filament_width_desired,1.0,3.0);
+	MENU_ITEM_EDIT(float32,MSG_FILAMENT, &filament_width_desired,1.0,9.0);
 	MENU_ITEM_EDIT(float6,MSG_LENGTH_CUTOFF, &fil_length_cutoff,1000,999000);
 	MENU_ITEM_EDIT(float53, MSG_PID_P, &fwidthKp, 0.0, 99.999);
 	MENU_ITEM_EDIT(float53, MSG_PID_I, &fwidthKi, 0.0, 99.999);
 	MENU_ITEM_EDIT(float53, MSG_PID_D, &fwidthKd, 0.0, 99.999);
-	END_MENU();
+    MENU_ITEM_EDIT(float5, "Faktor 1", &fFactor1, 1000, 50000);
+    MENU_ITEM_EDIT(float32, "Faktor 2", &fFactor2, 1, 20);
+    MENU_ITEM_EDIT(float32, "P Circ", &pcirc, 1, 300);
+    END_MENU();
 	}
 
 
@@ -1073,7 +1085,7 @@ static void lcd_control_motion_menu()
 #ifdef ENABLE_AUTO_BED_LEVELING
     MENU_ITEM_EDIT(float32, MSG_ZPROBE_ZOFFSET, &zprobe_zoffset, 0.5, 50);
 #endif
-    MENU_ITEM_EDIT(int3, MSG_WINDER_RPM_FACTOR, &winder_rpm_factor, 0, 200);
+   // MENU_ITEM_EDIT(int3, MSG_WINDER_RPM_FACTOR, &winder_rpm_factor, 0, 200);  //ausgeklammert, da nicht benötigt
     MENU_ITEM_EDIT(float51, MSG_ESTEPS, &axis_steps_per_unit[E_AXIS], 5, 9999);
     MENU_ITEM_EDIT(float51, MSG_PSTEPS, &axis_steps_per_unit[P_AXIS], 5, 9999);
     MENU_ITEM_EDIT(float5, MSG_A_RETRACT, &retract_acceleration, 100, 99000);
@@ -1531,7 +1543,7 @@ void lcd_setstatuspgm(const char* message)
         return;
     strncpy_P(lcd_status_message, message, LCD_WIDTH);
     lcdDrawUpdate = 2;
-    message_millis=millis();  //get message to show up for a while
+//    message_millis=millis();  //get message to show up for a while
 }
 void lcd_setalertstatuspgm(const char* message)
 {
@@ -1966,4 +1978,3 @@ void copy_and_scalePID_d()
 }
 
 #endif //ULTRA_LCD
-

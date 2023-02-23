@@ -1,7 +1,7 @@
 #ifndef SPEED_LOOKUPTABLE_H
 #define SPEED_LOOKUPTABLE_H
 
-#include "Mackerel.h"
+#include "MK1.h"
 
 #if F_CPU == 16000000
 
@@ -150,4 +150,3 @@ const uint16_t speed_lookuptable_slow[256][2] PROGMEM = {
 #endif
 
 #endif
-

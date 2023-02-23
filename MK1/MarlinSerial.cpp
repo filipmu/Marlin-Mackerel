@@ -20,7 +20,7 @@
   Modified 28 September 2010 by Mark Sproul
 */
 
-#include "Mackerel.h"
+#include "MK1.h"
 #include "MarlinSerial.h"
 
 #ifndef AT90USB
@@ -325,5 +325,3 @@ MarlinSerial MSerial;
 #if defined(AT90USB) && defined (BTENABLED)
    HardwareSerial bt;
 #endif
-
-

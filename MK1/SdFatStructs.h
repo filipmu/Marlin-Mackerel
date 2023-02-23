@@ -17,7 +17,7 @@
  * along with the Arduino SdFat Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include "Mackerel.h"
+#include "MK1.h"
 #ifdef SDSUPPORT
 
 #ifndef SdFatStructs_h
@@ -644,4 +644,3 @@ static inline uint8_t DIR_IS_FILE_OR_SUBDIR(const dir_t* dir) {
 
 
 #endif
-

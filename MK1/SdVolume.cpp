@@ -17,7 +17,7 @@
  * along with the Arduino SdFat Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include "Mackerel.h"
+#include "MK1.h"
 #ifdef SDSUPPORT
 
 #include "SdVolume.h"
@@ -403,4 +403,3 @@ bool SdVolume::init(Sd2Card* dev, uint8_t part) {
   return false;
 }
 #endif
-

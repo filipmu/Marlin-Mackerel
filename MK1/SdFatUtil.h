@@ -17,7 +17,7 @@
  * along with the Arduino SdFat Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include "Mackerel.h"
+#include "MK1.h"
 #ifdef SDSUPPORT
 
 #ifndef SdFatUtil_h
@@ -26,7 +26,7 @@
  * \file
  * \brief Useful utility functions.
  */
-#include "Mackerel.h"
+#include "MK1.h"
 #include "MarlinSerial.h"
 /** Store and print a string in flash memory.*/
 #define PgmPrint(x) SerialPrint_P(PSTR(x))
@@ -46,4 +46,3 @@ using namespace SdFatUtil;  // NOLINT
 
 
 #endif
-

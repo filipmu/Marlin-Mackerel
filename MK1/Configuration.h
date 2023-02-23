@@ -209,8 +209,8 @@ debug notes:
 #define MAX_REDUNDANT_TEMP_SENSOR_DIFF 10
 
 // Actual temperature must be close to target for this long before M109 returns success
-#define TEMP_RESIDENCY_TIME 10  // (seconds)
-#define TEMP_HYSTERESIS 3       // (degC) range of +/- temperatures considered "close" to the target one
+#define TEMP_RESIDENCY_TIME 30  // (seconds)
+#define TEMP_HYSTERESIS 2       // (degC) range of +/- temperatures considered "close" to the target one
 #define TEMP_WINDOW     1       // (degC) Window around target to start the residency timer x degC early.
 
 // The minimal temperature defines the temperature below which the heater will not be enabled It is used
@@ -254,9 +254,9 @@ debug notes:
 
 // If you are using a pre-configured hotend then you can use one of the value sets by uncommenting it
 //Lyman Filament Extruder
-    #define  DEFAULT_Kp 12.66
-    #define  DEFAULT_Ki 0.27
-    #define  DEFAULT_Kd 146.24
+    #define  DEFAULT_Kp 61.27
+    #define  DEFAULT_Ki 1.78
+    #define  DEFAULT_Kd 524.51
 
 // Ultimaker
 //    #define  DEFAULT_Kp 22.2
@@ -288,46 +288,52 @@ debug notes:
 #define FILAMENT_SENSOR
 
 
-#define DEFAULT_EXTRUDER_RPM 12 //define default extruder RPM
-#define EXTRUDER_RPM_MAX 50
-#define EXTRUDER_RPM_MIN 1
-#define DEFAULT_PULLER_FEEDRATE 6.0 //default puller feedrate when turned on
-#define PULLER_FEEDRATE_MIN 0.5 // min feedrate in manual control, 1 mm/sec min feed - limited by max pulse rate of 50,000
-#define PULLER_FEEDRATE_MAX 35.0  // max feedrate in manual control 15mm/sec max feed - limited by max pulse rate of 50,000
-#define PULLER_WHEEL_CIRC 120 //circumference of urethane puller wheel in mm
+#define DEFAULT_EXTRUDER_RPM 7 //define default extruder RPM
+#define EXTRUDER_RPM_MAX 25 
+#define EXTRUDER_RPM_MIN 0.5
+#define DEFAULT_PULLER_FEEDRATE 12.0 //default puller feedrate when turned on
+#define PULLER_FEEDRATE_MIN 2.0 // min feedrate in manual control, 1 mm/sec min feed - limited by max pulse rate of 50,000
+#define PULLER_FEEDRATE_MAX 70.0  // max feedrate in manual control 15mm/sec max feed - limited by max pulse rate of 50,000
+//#define PULLER_WHEEL_CIRC 34.56 //circumference of urethane puller wheel in mm. 
+#define DEFAULT_PULLER_WHEEL_CIRC 34.56 // default circumference of puller wheel in mm. 
 
-#define DEFAULT_WINDER_RPM_FACTOR 70  //factor for converting winder PW to rpm - reflects rpm of motor at 12v
-#define DEFAULT_WINDER_SPEED 35  //default winder speed (0-DEFAULT_WINDER_RPM_FACTOR)
+#define DEFAULT_WINDER_RPM_FACTOR 100  //factor for converting winder PW to rpm - reflects rpm of motor at 12v
+#define DEFAULT_WINDER_SPEED 0  //default winder speed (0-DEFAULT_WINDER_RPM_FACTOR)
 
 
-#define DESIRED_FILAMENT_DIA 2.8 //define the default desired Filament diameter
-#define PREHEAT_EXTRUDER_TEMP 185  //Set to 185 deg C based on Hugh's suggestion
+#define DESIRED_FILAMENT_DIA 4.0 //define the default desired Filament diameter
+#define PREHEAT_EXTRUDER_TEMP 180  //Set to 185 deg C based on Hugh's suggestion
 
-#define  DEFAULT_fwidthKp 0.020
-#define  DEFAULT_fwidthKi 0.020
-#define  DEFAULT_fwidthKd 0.250
+#define  DEFAULT_fwidthKp 22.000 // 0.005 with hall sensor, 35.00 with optical sensor
+#define  DEFAULT_fwidthKi 0.009 // 0.002 with hall sensor, 0.008 with optical sensor
+#define  DEFAULT_fwidthKd 0.009 // 0.098 with hall sensor, 0.008 with optical sensor
+#define  DEFAULT_fFact1 16300
+#define  DEFAULT_fFact2 9.5
 
-#define PULLER_PID_MIN_LIMIT 0.5 //min output limit of filament dia control in mm/sec
-#define PULLER_PID_MAX_LIMIT 35.0 //max output limit of filament dia control in mm/sec
+
+#define PULLER_PID_MIN_LIMIT 2.0 //min output limit of filament dia control in mm/sec
+#define PULLER_PID_MAX_LIMIT 80.0 //max output limit of filament dia control in mm/sec
 #define PULLER_PID_INTEGRATOR_WIND_LIMIT 1000000 //absolute value of integrator windup max value
 
-#define DEFAULT_LENGTH_CUTOFF 150000  //length in mm where extruder will shut down
 
-#define EXTRUDE_MINTEMP 170  //min temp that extruder motor will run
+
+#define DEFAULT_LENGTH_CUTOFF 250000  //length in mm where extruder will shut down
+
+#define EXTRUDE_MINTEMP 90  //min temp that extruder motor will run
 //this prevents dangerous Extruder moves, i.e. if the temperature is under the limit
 //can be software-disabled for whatever purposes by
 #define PREVENT_DANGEROUS_EXTRUDE
 
 
 #define DEFAULT_ESTEP_PER_REV 489.6  //default setting for the extruder step calibration  1:15.3 gear
-#define DEFAULT_PSTEP_PER_MM 375.3  //default setting for the puller motor step calibration  1:14 gear
+#define DEFAULT_PSTEP_PER_MM 93.0  //default setting for the puller motor step calibration  without gear
 
 //The next two defines have arrays of 5 values which correspond to the 5 axis X,Y,Z,E,P
 //For the Lyman Extruder, only E = Extruder Motor and P = Puller Motor settings are utilized
 #define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200.0*8/3,DEFAULT_ESTEP_PER_REV, DEFAULT_PSTEP_PER_MM}    
 #define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 50, 50}    // (mm/sec) 
 
-#define DEFAULT_MOTOR_ACCELERATION  200   // E and P max acceleration in mm/s^2 - controls extruder acceleration
+#define DEFAULT_MOTOR_ACCELERATION  100   // E and P max acceleration in mm/s^2 - controls extruder acceleration
 #define DEFAULT_EJERK                 1.0    // (mm/sec)
 #define DEFAULT_PJERK				  1.0	// (mm/sec)
 
@@ -376,6 +382,44 @@ debug notes:
 
 
 #define EXTRUDE_MAXLENGTH (X_MAX_LENGTH+Y_MAX_LENGTH) //prevent extrusion of very large distances.
+
+/*================== Thermal Runaway Protection ==============================
+This is a feature to protect your printer from burn up in flames if it has
+a thermistor coming off place (this happened to a friend of mine recently and
+motivated me writing this feature).
+
+The issue: If a thermistor come off, it will read a lower temperature than actual.
+The system will turn the heater on forever, burning up the filament and anything
+else around.
+
+After the temperature reaches the target for the first time, this feature will 
+start measuring for how long the current temperature stays below the target 
+minus _HYSTERESIS (set_temperature - THERMAL_RUNAWAY_PROTECTION_HYSTERESIS).
+
+If it stays longer than _PERIOD, it means the thermistor temperature
+cannot catch up with the target, so something *may be* wrong. Then, to be on the
+safe side, the system will he halt.
+
+Bear in mind the count down will just start AFTER the first time the 
+thermistor temperature is over the target, so you will have no problem if
+your extruder heater takes 2 minutes to hit the target on heating.
+
+*/
+// If you want to enable this feature for all your extruder heaters,
+// uncomment the 2 defines below:
+
+// Parameters for all extruder heaters
+#define THERMAL_RUNAWAY_PROTECTION_PERIOD 180 //in seconds
+#define THERMAL_RUNAWAY_PROTECTION_HYSTERESIS 20 // in degree Celsius
+
+// If you want to enable this feature for your bed heater,
+// uncomment the 2 defines below:
+
+// Parameters for the bed heater
+#define THERMAL_RUNAWAY_PROTECTION_BED_PERIOD 20 //in seconds
+#define THERMAL_RUNAWAY_PROTECTION_BED_HYSTERESIS 5 // in degree Celsius
+//===========================================================================
+
 
 //===========================================================================
 //=============================Mechanical Settings===========================
@@ -604,7 +648,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define EEPROM_CHITCHAT
 
 // Preheat Constants
-#define PLA_PREHEAT_HOTEND_TEMP 180
+#define PLA_PREHEAT_HOTEND_TEMP 185
 #define PLA_PREHEAT_HPB_TEMP 70
 #define PLA_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
 
@@ -847,4 +891,3 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #include "thermistortables.h"
 
 #endif //__CONFIGURATION_H
-

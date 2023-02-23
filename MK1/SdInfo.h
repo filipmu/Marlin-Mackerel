@@ -17,7 +17,7 @@
  * along with the Arduino Sd2Card Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include "Mackerel.h"
+#include "MK1.h"
 #ifdef SDSUPPORT
 
 #ifndef SdInfo_h
@@ -278,4 +278,3 @@ union csd_t {
 #endif  // SdInfo_h
 
 #endif
-

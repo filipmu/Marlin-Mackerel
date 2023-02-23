@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "Mackerel.h"
+#include "MK1.h"
 #ifdef SDSUPPORT
 
 #ifndef Sd2Card_h
@@ -239,4 +239,3 @@ class Sd2Card {
 
 
 #endif
-

@@ -414,15 +414,15 @@ static void lcd_implementation_status_screen()
     if (tTarget < 10)
         lcd.print(' ');
     
-    lcd.setCursor(10, 0);
-    lcd_printPGM(PSTR("E rpm"));
+    lcd.setCursor(10, 0); //Änderunge 31.05.2020
+    lcd_printPGM(PSTR("E:"));
     if((extrude_status & ES_SWITCH_SET) && (extrude_status & ES_HOT_SET))  //check if extruder motor switch is on
        	lcd.print(ftostr22(extruder_rpm));  //convert to rpm
        else if(extrude_status & ES_HOT_SET)
        	lcd_printPGM(PSTR("OFF "));
        else
        	lcd_printPGM(PSTR("COLD"));
-    
+    lcd_printPGM(PSTR("rpm "));
     
     
     
@@ -486,31 +486,31 @@ static void lcd_implementation_status_screen()
     lcd.setCursor(0, 1);
     //Check for filament sensor and show width
    #ifdef FILAMENT_SENSOR
-      lcd.print('d');
+      lcd.print('S');
       //lcd.print(ftostr12(analog2widthFil()));
       lcd.print(ftostr12(current_filwidth));
       if (alt_cnt<5){
          lcd_printPGM(PSTR(" Av"));
-	 lcd.print(ftostr12(avg_measured_filament_width));
+   lcd.print(ftostr12(avg_measured_filament_width));
       };
-      if (alt_cnt>=5 && alt_cnt <10){				
-      	lcd_printPGM(PSTR(" Mx"));
-      	lcd.print(ftostr12(max_measured_filament_width));
+      if (alt_cnt>=5 && alt_cnt <10){       
+        lcd_printPGM(PSTR(" Mx"));
+        lcd.print(ftostr12(max_measured_filament_width));
       };
       if (alt_cnt>=10 && alt_cnt<15){
-      	lcd_printPGM(PSTR(" Mn"));
-      	lcd.print(ftostr12(min_measured_filament_width));
-      };											
+        lcd_printPGM(PSTR(" Mn"));
+        lcd.print(ftostr12(min_measured_filament_width));
+      };                      
       alt_cnt = alt_cnt + 1;
       if (alt_cnt==15)
          alt_cnt=0;
    #else
-      lcd_printPGM(PSTR("             "));   
+      lcd_printPGM(PSTR(""));   
    #endif   
-      
-   lcd_printPGM(PSTR(" L"));
-   lcd.print(ftostr6(extrude_length));
-   
+     
+  lcd_printPGM(PSTR(" L:"));
+ lcd.print(ftostr6(extrude_length));
+ lcd_printPGM(PSTR(""));
    
    
 
@@ -524,12 +524,14 @@ static void lcd_implementation_status_screen()
 #endif//LCD_HEIGHT > 2
 
 #if LCD_HEIGHT > 3
-    lcd.setCursor(0, 2);
-    lcd.print(LCD_STR_FEEDRATE[0]);
-    lcd.print(ftostr22(puller_feedrate));  //give the feed rate in mm/sec
+    lcd.setCursor(0, 2); //Änderung31.05.2020
+    //lcd.print(LCD_STR_FEEDRATE[0]);
+    //lcd.print(ftostr22(puller_feedrate));  //give the feed rate in mm/sec
     
-    lcd_printPGM(PSTR("    P rpm"));
-    lcd.print(ftostr22(puller_feedrate*(60.0/PULLER_WHEEL_CIRC)));
+    lcd_printPGM(PSTR("Puller:"));
+    lcd.print(ftostr22(puller_feedrate*(60.0/pcirc)));
+    lcd_printPGM(PSTR("rpm     "));
+
     /*
 #if (FILWIDTH_PIN > -1)
     lcd_printPGM(PSTR("Av"));
@@ -544,9 +546,11 @@ static void lcd_implementation_status_screen()
 */
     
     
-       
+       //auskommentier 31.05.2020
     //Status message line on the last line
-    if(message_millis+5000>millis()){
+    lcd.setCursor(0,3);
+    lcd.print(lcd_status_message);
+ /*   if(message_millis+5000>millis()){
        	 lcd.setCursor(0, LCD_HEIGHT - 1);
        	 lcd.print(lcd_status_message);
         } else {
@@ -564,8 +568,8 @@ static void lcd_implementation_status_screen()
 		time = duration/60000;
 		lcd.print(itostr2(time/60));
 		lcd.print(':');
-		lcd.print(itostr2(time%60));
-        }
+		lcd.print(itostr2(time%60));  
+        }*/
     //lcd.print(LCD_STR_FEEDRATE[0]);
    // lcd.print(itostr3(feedmultiply));
     //lcd.print('%');
@@ -892,4 +896,3 @@ static uint8_t lcd_implementation_read_slow_buttons()
 #endif
 
 #endif//ULTRA_LCD_IMPLEMENTATION_HITACHI_HD44780_H
-

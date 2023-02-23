@@ -38,7 +38,7 @@
 	#ifdef CUSTOM_MENDEL_NAME
 		#define MACHINE_NAME CUSTOM_MENDEL_NAME
 	#else
-		#define MACHINE_NAME "Filament Extruder"
+		#define MACHINE_NAME "ARTME 3D MK1 is"
 	#endif
 
 // Default firmware set to Mendel
@@ -61,9 +61,9 @@
 // Common serial messages
 #define MSG_MARLIN "Mackerel"
 
-#define SPLASH1 "    Lyman/Mulier"
-#define SPLASH2 " Filament Extruder"
-#define SPLASH3 "        V5.0"
+#define SPLASH1 "      ARTME 3D      "
+#define SPLASH2 "  Desktop Filament  "
+#define SPLASH3 "    Extruder MK1    "
 
 
 #if LANGUAGE_CHOICE == 1
@@ -110,13 +110,13 @@
 	#define MSG_SPEED   "Puller mm/s"
     #define MSG_EXT_RPM "Extruder RPM"
 	#define MSG_NOZZLE "Nozzle"
-	#define MSG_HEATER "Extruder T"
+	#define MSG_HEATER "Extruder Temp"
     #define MSG_LENGTH_CUTOFF "L cutoff"
-    #define MSG_FILAMENT "Fil Dia"
+    #define MSG_FILAMENT "Sensor Pos."
 	#define MSG_NOZZLE1 "Nozzle2"
 	#define MSG_NOZZLE2 "Nozzle3"
 	#define MSG_BED "Bed"
-	#define MSG_WINDER_SPEED "Winder RPM"
+	#define MSG_WINDER_SPEED "Fan Speed"
     #define MSG_WINDER_RPM_FACTOR "Winder RPM Factor"
 	#define MSG_FLOW "Flow"
 	#define MSG_FLOW0 "Flow 0"
@@ -155,7 +155,7 @@
 	#define MSG_RECTRACT "Rectract"
 	#define MSG_TEMPERATURE "Temperature"
 	#define MSG_MOTION "Motion"
-    #define MSG_FILAMENT_PID "Filament PID"
+    #define MSG_FILAMENT_PID "Puller PID"
 	#define MSG_CONTRAST "LCD contrast"
 	#define MSG_STORE_EPROM "Store memory"
 	#define MSG_LOAD_EPROM "Load memory"
@@ -167,10 +167,10 @@
 	#define MSG_TUNE "Tune"
 	#define MSG_PAUSE_PRINT "Pause print"
 	#define MSG_RESUME_PRINT "Resume print"
-    #define MSG_PAUSE_EXTRUDER "Pause extruder"
-	#define MSG_RESUME_EXTRUDER "Resume extruder"
-    #define MSG_AUTO_EXTRUDER "Extruder Auto Contrl"
-    #define MSG_MAN_EXTRUDER "Extruder Man Control"
+    #define MSG_PAUSE_EXTRUDER "STOP Extruder"
+	#define MSG_RESUME_EXTRUDER "START Extruder"
+    #define MSG_AUTO_EXTRUDER "Automatic pulling"
+    #define MSG_MAN_EXTRUDER "Manually pulling"
 	#define MSG_CLEAR_STATS "Clear Statistics"
 	#define MSG_ENABLE_STATS "Enable Statistics"
 	#define MSG_DISABLE_STATS "Pause Statistics"
@@ -2274,4 +2274,3 @@
 #endif
 
 #endif // ifndef LANGUAGE_H
-

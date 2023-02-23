@@ -33,7 +33,7 @@
 
  */
 
-#include "Mackerel.h"
+#include "MK1.h"
 
 #ifdef ENABLE_AUTO_BED_LEVELING
 #include "vector_3.h"
@@ -672,7 +672,7 @@ void loop()
 	  min_measured_filament_width=min(min_measured_filament_width,current_filwidth);
 	  extrude_length=extrude_length+puller_increment;
 	  
-	  
+
 	  if(extrude_length >= fil_length_cutoff){  //check whether we extruded enough filament
 		  setTargetHotend0(0);
 		  winderSpeed = 0;
@@ -713,7 +713,13 @@ void loop()
   if(((degHotend(active_extruder) >= (degTargetHotend(active_extruder)-TEMP_WINDOW)) && (degHotend(active_extruder) <= (degTargetHotend(active_extruder)+TEMP_WINDOW)))  && ((extrude_status & ES_TEMP_SET)==0))  //check if extruder at or near setpoint
   	  {
 	  extrude_status=extrude_status | ES_TEMP_SET;
-	  WRITE(BEEPER,HIGH);
+    WRITE(BEEPER,HIGH);
+	  delay(1000); //Änderunge 31.05.2020 5.Eichbaum
+    WRITE(BEEPER,LOW);
+    delay(500);
+    WRITE(BEEPER,HIGH);
+    delay(1000); //Änderunge 31.05.2020
+    WRITE(BEEPER,LOW);
 	  LCD_MESSAGEPGM(MSG_HEATING_COMPLETE);
   	  }
   	
@@ -3941,5 +3947,3 @@ bool setTargetedHotend(int code){
   }
   return false;
 }
-
-

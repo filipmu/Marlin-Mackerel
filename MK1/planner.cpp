@@ -51,7 +51,7 @@
  IntersectionDistance[s1_, s2_, a_, d_] := (2 a d - s1^2 + s2^2)/(4 a)
  */
 
-#include "Mackerel.h"
+#include "MK1.h"
 #include "planner.h"
 #include "stepper.h"
 #include "temperature.h"
@@ -1043,4 +1043,3 @@ void reset_acceleration_rates()
         axis_steps_per_sqr_second[i] = max_acceleration_units_per_sq_second[i] * axis_steps_per_unit[i];
         }
 }
-

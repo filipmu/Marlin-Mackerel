@@ -1,4 +1,4 @@
-#include "Mackerel.h"
+#include "MK1.h"
 
 #ifdef USE_WATCHDOG
 #include <avr/wdt.h>
@@ -54,4 +54,3 @@ ISR(WDT_vect)
 #endif//RESET_MANUAL
 
 #endif//USE_WATCHDOG
-

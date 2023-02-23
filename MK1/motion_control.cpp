@@ -19,7 +19,7 @@
   along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Mackerel.h"
+#include "MK1.h"
 #include "stepper.h"
 #include "planner.h"
 
@@ -139,5 +139,3 @@ void mc_arc(float *position, float *target, float *offset, uint8_t axis_0, uint8
 
   //   plan_set_acceleration_manager_enabled(acceleration_manager_was_enabled);
 }
-
-

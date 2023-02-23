@@ -17,7 +17,7 @@
  * along with the Arduino SdFat Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include "Mackerel.h"
+#include "MK1.h"
 
 #ifdef SDSUPPORT
 #include "SdFatUtil.h"
@@ -77,4 +77,3 @@ void SdFatUtil::SerialPrintln_P(PGM_P str) {
   println_P( str);
 }
 #endif
-

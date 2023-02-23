@@ -1,4 +1,4 @@
-#include "Mackerel.h"
+#include "MK1.h"
 #include "cardreader.h"
 #include "ultralcd.h"
 #include "stepper.h"
@@ -636,4 +636,3 @@ void CardReader::printingHasFinished()
     }
 }
 #endif //SDSUPPORT
-

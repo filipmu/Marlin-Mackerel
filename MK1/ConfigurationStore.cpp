@@ -1,4 +1,4 @@
-#include "Mackerel.h"
+#include "MK1.h"
 #include "planner.h"
 #include "temperature.h"
 #include "ultralcd.h"
@@ -101,8 +101,11 @@ void Config_StoreSettings()
   EEPROM_WRITE_VAR(i,fwidthKp);
   EEPROM_WRITE_VAR(i,fwidthKi);  //removed delta T portion since we will handle explicitily
   EEPROM_WRITE_VAR(i,fwidthKd);
+  EEPROM_WRITE_VAR(i,fFactor1);
+  EEPROM_WRITE_VAR(i,fFactor2);
   EEPROM_WRITE_VAR(i,fil_length_cutoff); 
   EEPROM_WRITE_VAR(i,winder_rpm_factor);
+  EEPROM_WRITE_VAR(i,pcirc);
   
   char ver2[4]=EEPROM_VERSION;
   i=EEPROM_OFFSET;
@@ -259,8 +262,11 @@ void Config_RetrieveSettings()
         EEPROM_READ_VAR(i,fwidthKp);
         EEPROM_READ_VAR(i,fwidthKi);  //removed delta T portion since we will handle explicitily
         EEPROM_READ_VAR(i,fwidthKd);
+        EEPROM_READ_VAR(i,fFactor1);
+        EEPROM_READ_VAR(i,fFactor2);
         EEPROM_READ_VAR(i,fil_length_cutoff);  
         EEPROM_READ_VAR(i,winder_rpm_factor);
+        EEPROM_READ_VAR(i,pcirc);
         
 		// Call updatePID (similar to when we have processed M301)
 		updatePID();
@@ -342,7 +348,10 @@ void Config_ResetDefault()
  filament_width_desired= DESIRED_FILAMENT_DIA; //holds the desired filament width (i.e like 2.6mm)
  fwidthKp=DEFAULT_fwidthKp;
  fwidthKi=DEFAULT_fwidthKi;  //removed delta T portion since we will handle explicitily
- fwidthKd=DEFAULT_fwidthKd;  
+ fwidthKd=DEFAULT_fwidthKd;
+ fFactor1=DEFAULT_fFact1;
+ fFactor2=DEFAULT_fFact2; 
+ pcirc=DEFAULT_PULLER_WHEEL_CIRC;
  fil_length_cutoff = DEFAULT_LENGTH_CUTOFF;
  winder_rpm_factor=DEFAULT_WINDER_RPM_FACTOR;
  
@@ -351,4 +360,3 @@ SERIAL_ECHO_START;
 SERIAL_ECHOLNPGM("Hardcoded Default Settings Loaded");
 
 }
-

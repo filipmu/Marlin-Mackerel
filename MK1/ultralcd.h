@@ -1,7 +1,7 @@
 #ifndef ULTRALCD_H
 #define ULTRALCD_H
 
-#include "Mackerel.h"
+#include "MK1.h"
 
 #ifdef ULTRA_LCD
 
@@ -121,4 +121,3 @@ char *ftostr53(const float &x);
 char *ftostr6(const float &x);
 
 #endif //ULTRALCD
-

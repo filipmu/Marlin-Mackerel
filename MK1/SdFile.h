@@ -21,7 +21,7 @@
  * \file
  * \brief SdFile class
  */
-#include "Mackerel.h"
+#include "MK1.h"
 
 #ifdef SDSUPPORT
 #include "SdBaseFile.h"
@@ -52,4 +52,3 @@ class SdFile : public SdBaseFile, public Print {
 
 
 #endif
-

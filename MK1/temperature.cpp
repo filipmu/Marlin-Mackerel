@@ -7,7 +7,7 @@
  */
 
 
-#include "Mackerel.h"
+#include "MK1.h"
 #include "ultralcd.h"
 #include "temperature.h"
 #include "watchdog.h"
@@ -40,6 +40,9 @@ float current_temperature_bed = 0.0;
   float fwidthKp=DEFAULT_fwidthKp;
   float fwidthKi=DEFAULT_fwidthKi;  //removed delta T portion since we will handle explicitily
   float fwidthKd=DEFAULT_fwidthKd;  //removed delta T portion since we will handle explicitily
+  float fFactor1 = DEFAULT_fFact1;
+  float fFactor2 = DEFAULT_fFact2;
+  float pcirc = DEFAULT_PULLER_WHEEL_CIRC;
 //#endif //PIDTEMPBED
   
 #ifdef FAN_SOFT_PWM
@@ -410,7 +413,9 @@ void manage_heater()
 
   for(int e = 0; e < EXTRUDERS; e++) 
   {
-
+    #if defined (THERMAL_RUNAWAY_PROTECTION_PERIOD) && THERMAL_RUNAWAY_PROTECTION_PERIOD > 0
+    thermal_runaway_protection(&thermal_runaway_state_machine[e], &thermal_runaway_timer[e], current_temperature[e], target_temperature[e], e, THERMAL_RUNAWAY_PROTECTION_PERIOD, THERMAL_RUNAWAY_PROTECTION_HYSTERESIS);
+  #endif
   #ifdef PIDTEMP
     pid_input = current_temperature[e];
 
@@ -702,7 +707,7 @@ static float analog2tempBed(int raw) {
 
  	// For converting raw Filament Width to milimeters
  	float analog2widthFil() {
- 	  return current_raw_filwidth/16383.0*5.0;
+ 	  return current_raw_filwidth / (float)fFactor1 * fFactor2;
  	  //return current_raw_filwidth;
  	}
 	
@@ -712,7 +717,7 @@ static float analog2tempBed(int raw) {
  	  float temp;
 	  
  	  #if (FILWIDTH_PIN > -1)    //check if a sensor is supported
- 	    filament_width_meas=current_raw_filwidth/16383.0*5.0;
+ 	    filament_width_meas=current_raw_filwidth/18000.0*11.0;
  	  #endif  
 	    
  	    temp=nominal_width/filament_width_meas;
@@ -965,6 +970,74 @@ void setWatch()
 #endif 
 }
 
+
+#if (defined (THERMAL_RUNAWAY_PROTECTION_PERIOD) && THERMAL_RUNAWAY_PROTECTION_PERIOD > 0) || (defined (THERMAL_RUNAWAY_PROTECTION_BED_PERIOD) && THERMAL_RUNAWAY_PROTECTION_BED_PERIOD > 0)
+void thermal_runaway_protection(int *state, unsigned long *timer, float temperature, float target_temperature, int heater_id, int period_seconds, int hysteresis_degc)
+{
+/*
+      SERIAL_ECHO_START;
+      SERIAL_ECHO("Thermal Thermal Runaway Running. Heater ID:");
+      SERIAL_ECHO(heater_id);
+      SERIAL_ECHO(" ;  State:");
+      SERIAL_ECHO(*state);
+      SERIAL_ECHO(" ;  Timer:");
+      SERIAL_ECHO(*timer);
+      SERIAL_ECHO(" ;  Temperature:");
+      SERIAL_ECHO(temperature);
+      SERIAL_ECHO(" ;  Target Temp:");
+      SERIAL_ECHO(target_temperature);
+      SERIAL_ECHOLN("");    
+*/
+  if ((target_temperature == 0) || thermal_runaway)
+  {
+    *state = 0;
+    *timer = 0;
+    return;
+  }
+  switch (*state)
+  {
+    case 0: // "Heater Inactive" state
+      if (target_temperature > 0) *state = 1;
+      break;
+    case 1: // "First Heating" state
+      if (temperature >= target_temperature) *state = 2;
+      break;
+    case 2: // "Temperature Stable" state
+      SERIAL_ERRORPGM("TEMP");
+      SERIAL_ERRORLN(temperature);
+      SERIAL_ERRORPGM("TARGET");
+     SERIAL_ERRORLN(target_temperature);
+      
+      if (temperature >= (target_temperature - hysteresis_degc))
+      {
+        *timer = millis();
+      } 
+      else if ( (millis() - *timer) > ((unsigned long) period_seconds) * 1000)
+      {
+        SERIAL_ERROR_START;
+        SERIAL_ERRORPGM("Thermal Runaway, system stopped! Heater_ID: ");
+        if (heater_id == 10)
+          SERIAL_ERRORLNPGM("bed");
+        else
+          SERIAL_ERRORLN((int)heater_id);
+        LCD_ALERTMESSAGEPGM("THERMAL RUNAWAY");
+        thermal_runaway = true;
+        while(1)
+        {
+          disable_heater();
+          disable_x();
+          disable_y();
+          disable_z();
+          disable_e0();
+          
+          manage_heater();
+          lcd_update();
+        }
+      }
+      break;
+  }
+}
+#endif
 
 void disable_heater()
 {
@@ -1425,6 +1498,3 @@ float unscalePID_d(float d)
 }
 
 #endif //PIDTEMP
-
-
-

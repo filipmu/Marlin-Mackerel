@@ -4018,4 +4018,3 @@ pins
 #endif
 
 #endif /* _FASTIO_ARDUINO_H */
-

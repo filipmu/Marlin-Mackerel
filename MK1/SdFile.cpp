@@ -17,7 +17,7 @@
  * along with the Arduino SdFat Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include "Mackerel.h"
+#include "MK1.h"
 
 #ifdef SDSUPPORT
 #include "SdFile.h"
@@ -93,4 +93,3 @@ void SdFile::writeln_P(PGM_P str) {
 
 
 #endif
-

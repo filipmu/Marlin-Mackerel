@@ -24,7 +24,7 @@
 #ifndef planner_h
 #define planner_h
 
-#include "Mackerel.h"
+#include "MK1.h"
 
 #ifdef ENABLE_AUTO_BED_LEVELING
 #include "vector_3.h"
@@ -167,4 +167,3 @@ void set_extrude_min_temp(float temp);
 
 void reset_acceleration_rates();
 #endif
-

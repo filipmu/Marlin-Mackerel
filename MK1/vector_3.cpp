@@ -17,7 +17,7 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 #include <math.h>
-#include "Mackerel.h"
+#include "MK1.h"
 
 #ifdef ENABLE_AUTO_BED_LEVELING
 #include "vector_3.h"
@@ -164,5 +164,3 @@ void matrix_3x3::debug(char* title)
 }
 
 #endif // #ifdef ENABLE_AUTO_BED_LEVELING
-
-

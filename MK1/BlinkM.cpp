@@ -2,7 +2,7 @@
   BlinkM.cpp - Library for controlling a BlinkM over i2c
   Created by Tim Koster, August 21 2013.
 */
-#include "Mackerel.h"
+#include "MK1.h"
 #ifdef BLINKM
 
 #if (ARDUINO >= 100)
@@ -26,5 +26,3 @@ void SendColors(byte red, byte grn, byte blu)
 }
 
 #endif //BLINKM
-
-

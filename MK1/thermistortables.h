@@ -1,7 +1,7 @@
 #ifndef THERMISTORTABLES_H_
 #define THERMISTORTABLES_H_
 
-#include "Mackerel.h"
+#include "MK1.h"
 
 #define OVERSAMPLENR 16
 
@@ -1015,4 +1015,3 @@ const short temptable_1047[][2] PROGMEM = {
 #endif
 
 #endif //THERMISTORTABLES_H_
-

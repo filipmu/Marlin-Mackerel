@@ -17,7 +17,7 @@
  * along with the Arduino Sd2Card Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include "Mackerel.h"
+#include "MK1.h"
 
 #ifdef SDSUPPORT
 #include "Sd2Card.h"
@@ -639,4 +639,3 @@ bool Sd2Card::writeStop() {
 }
 
 #endif
-

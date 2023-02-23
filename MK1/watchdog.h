@@ -1,7 +1,7 @@
 #ifndef WATCHDOG_H
 #define WATCHDOG_H
 
-#include "Mackerel.h"
+#include "MK1.h"
 
 #ifdef USE_WATCHDOG
   // initialize watch dog with a 1 sec interrupt time
@@ -15,4 +15,3 @@
 #endif
 
 #endif
-
