@@ -19,6 +19,7 @@ int target_temperature[EXTRUDERS] = { 0 };
 int target_temperature_bed = 0;
 int current_raw_filwidth = 0;  //Holds measured filament diameter in raw format
 float current_filwidth = 0; //Holds current measured filament diameter in mm
+uint16_t runoutStartTimeMS = -1;
 int current_temperature_raw[EXTRUDERS] = { 0 };
 float current_temperature[EXTRUDERS] = { 0.0 };
 int current_temperature_bed_raw = 0;
