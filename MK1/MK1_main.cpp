@@ -232,7 +232,7 @@ int model_delay[100]; //Smith predictor delay line
 float last_p_position=0.0;  //keeps track of last position updated in the delay line
 
 float filament_control=0.0;
-uint16_t runoutStartTimeMS = -1;
+unsigned long runoutStartTimeMS = 0;
 
 int extruder_multiply[EXTRUDERS] = {100
   #if EXTRUDERS > 1
@@ -695,21 +695,21 @@ void loop()
     
     if (current_filwidth < 1) {
       MYSERIAL.println("filwidth < 1");
-      if (runoutStartTimeMS == -1) {
+      if (runoutStartTimeMS == 0) {
         MYSERIAL.println("starting timeout");
         runoutStartTimeMS = millis();
       }
     } else {
-      runoutStartTimeMS = -1;
+      runoutStartTimeMS = 0;
       MYSERIAL.println("resetting timeout");
     }
 
-    if (runoutStartTimeMS != -1) {
+    if (runoutStartTimeMS != 0) {
+      unsigned long elapsedTimeMS = millis() - runoutStartTimeMS;
       MYSERIAL.print("elapsed time: ");
-      MYSERIAL.println(runoutStartTimeMS, DEC);
-      if (millis() - runoutStartTimeMS > 30000) {
+      MYSERIAL.println(elapsedTimeMS, DEC);
+      if (elapsedTimeMS > 30000) {
         LCD_ALERTMESSAGEPGM("SENSOR RUNOUT");
-        thermal_runaway = true;
         while(1)
         {
           disable_heater();
@@ -724,7 +724,7 @@ void loop()
       }
     }
   } else {
-    runoutStartTimeMS = -1;
+    runoutStartTimeMS = 0;
     MYSERIAL.println("not watching filwidth");
   }
     
