@@ -690,7 +690,7 @@ void loop()
 		  
 	  }
 	// puller stop when filament stuck for more than 30 secs
-  if  ((extrude_status & ES_AUTO_SET) <= 0) {
+  if  ((extrude_status & ES_AUTO_SET) > 0) {
 
     if (current_filwidth < 1) {
       if (runoutStartTimeMS == -1) {
@@ -702,7 +702,7 @@ void loop()
 
     if (runoutStartTimeMS != -1) {
       if (millis() - runoutStartTimeMS > 30000) {
-        LCD_ALERTMESSAGEPGM("THERMAL RUNAWAY");
+        LCD_ALERTMESSAGEPGM("SENSOR RUNOUT");
         thermal_runaway = true;
         while(1)
         {
