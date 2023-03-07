@@ -53,6 +53,7 @@
 #include "language.h"
 #include "pins_arduino.h"
 #include "math.h"
+#include <Arduino.h>
 
 #ifdef BLINKM
 #include "BlinkM.h"
@@ -691,16 +692,21 @@ void loop()
 	  }
 	// puller stop when filament stuck for more than 30 secs
   if  ((extrude_status & ES_AUTO_SET) > 0) {
-
+    
     if (current_filwidth < 1) {
+      MYSERIAL.println("filwidth < 1");
       if (runoutStartTimeMS == -1) {
+        MYSERIAL.println("starting timeout");
         runoutStartTimeMS = millis();
       }
     } else {
       runoutStartTimeMS = -1;
+      MYSERIAL.println("resetting timeout");
     }
 
     if (runoutStartTimeMS != -1) {
+      MYSERIAL.print("elapsed time: ");
+      MYSERIAL.println(runoutStartTimeMS, DEC);
       if (millis() - runoutStartTimeMS > 30000) {
         LCD_ALERTMESSAGEPGM("SENSOR RUNOUT");
         thermal_runaway = true;
@@ -717,6 +723,9 @@ void loop()
         }
       }
     }
+  } else {
+    runoutStartTimeMS = -1;
+    MYSERIAL.println("not watching filwidth");
   }
     
 
