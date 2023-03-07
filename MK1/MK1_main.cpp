@@ -231,7 +231,7 @@ int model_delay[100]; //Smith predictor delay line
 float last_p_position=0.0;  //keeps track of last position updated in the delay line
 
 float filament_control=0.0;
-
+uint16_t runoutStartTimeMS = -1;
 
 int extruder_multiply[EXTRUDERS] = {100
   #if EXTRUDERS > 1
