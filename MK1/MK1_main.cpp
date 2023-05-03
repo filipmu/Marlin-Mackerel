@@ -694,20 +694,20 @@ void loop()
   if  ((extrude_status & ES_AUTO_SET) > 0) {
     
     if (current_filwidth < sensorRunoutMin || current_filwidth > sensorRunoutMax) {
-      MYSERIAL.println("sensor runout detected");
+      // MYSERIAL.println("sensor runout detected");
       if (runoutStartTimeMS == 0) {
-        MYSERIAL.println("starting timeout");
+        // MYSERIAL.println("starting timeout");
         runoutStartTimeMS = millis();
       }
     } else {
       runoutStartTimeMS = 0;
-      MYSERIAL.println("resetting timeout");
+      // MYSERIAL.println("resetting timeout");
     }
 
     if (runoutStartTimeMS != 0) {
       unsigned long elapsedTimeMS = millis() - runoutStartTimeMS;
-      MYSERIAL.print("elapsed time: ");
-      MYSERIAL.println(elapsedTimeMS, DEC);
+      // MYSERIAL.print("elapsed time: ");
+      // MYSERIAL.println(elapsedTimeMS, DEC);
       if (elapsedTimeMS > 30000) {
         LCD_ALERTMESSAGEPGM("SENSOR RUNOUT");
         while(1)
@@ -725,7 +725,7 @@ void loop()
     }
   } else {
     runoutStartTimeMS = 0;
-    MYSERIAL.println("not watching filwidth");
+    // MYSERIAL.println("not watching filwidth");
   }
     
 
