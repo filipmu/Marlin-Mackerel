@@ -990,6 +990,8 @@ static void lcd_control_Filament_PID_menu()
     MENU_ITEM_EDIT(float5, "Faktor 1", &fFactor1, 1000, 50000);
     MENU_ITEM_EDIT(float32, "Faktor 2", &fFactor2, 1, 20);
     MENU_ITEM_EDIT(float32, "P Circ", &pcirc, 1, 300);
+    MENU_ITEM_EDIT(float32, "Sens RO Min", &sensorRunoutMin, 0, 1);
+    MENU_ITEM_EDIT(float32, "Sens RO Max", &sensorRunoutMax, 1, 10);
     END_MENU();
 	}
 

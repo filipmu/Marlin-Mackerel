@@ -297,6 +297,9 @@ debug notes:
 //#define PULLER_WHEEL_CIRC 34.56 //circumference of urethane puller wheel in mm. 
 #define DEFAULT_PULLER_WHEEL_CIRC 34.56 // default circumference of puller wheel in mm. 
 
+#define DEFAULT_SENSOR_RUNOUT_MIN 1 // default sensor runout min 
+#define DEFAULT_SENSOR_RUNOUT_MAX 5 // default sensor runout max
+
 #define DEFAULT_WINDER_RPM_FACTOR 100  //factor for converting winder PW to rpm - reflects rpm of motor at 12v
 #define DEFAULT_WINDER_SPEED 0  //default winder speed (0-DEFAULT_WINDER_RPM_FACTOR)
 

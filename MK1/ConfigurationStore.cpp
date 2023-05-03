@@ -106,6 +106,9 @@ void Config_StoreSettings()
   EEPROM_WRITE_VAR(i,fil_length_cutoff); 
   EEPROM_WRITE_VAR(i,winder_rpm_factor);
   EEPROM_WRITE_VAR(i,pcirc);
+  EEPROM_WRITE_VAR(i,sensorRunoutMin);
+  EEPROM_WRITE_VAR(i,sensorRunoutMax);
+  
   
   char ver2[4]=EEPROM_VERSION;
   i=EEPROM_OFFSET;
@@ -267,6 +270,8 @@ void Config_RetrieveSettings()
         EEPROM_READ_VAR(i,fil_length_cutoff);  
         EEPROM_READ_VAR(i,winder_rpm_factor);
         EEPROM_READ_VAR(i,pcirc);
+        EEPROM_READ_VAR(i,sensorRunoutMin);
+        EEPROM_READ_VAR(i,sensorRunoutMax);
         
 		// Call updatePID (similar to when we have processed M301)
 		updatePID();
@@ -352,6 +357,8 @@ void Config_ResetDefault()
  fFactor1=DEFAULT_fFact1;
  fFactor2=DEFAULT_fFact2; 
  pcirc=DEFAULT_PULLER_WHEEL_CIRC;
+ sensorRunoutMin = DEFAULT_SENSOR_RUNOUT_MIN;
+ sensorRunoutMax = DEFAULT_SENSOR_RUNOUT_MAX;
  fil_length_cutoff = DEFAULT_LENGTH_CUTOFF;
  winder_rpm_factor=DEFAULT_WINDER_RPM_FACTOR;
  
